@@ -106,6 +106,14 @@
       animation: blink 1s steps(1) infinite;
     }
 
+    .message img {
+      max-width: 200px;
+      max-height: 200px;
+      border-radius: 12px;
+      display: block;
+      margin-top: 8px;
+    }
+
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -129,7 +137,7 @@
       font-size: 16px;
     }
 
-    #sendBtn {
+    #sendBtn, #generateImageBtn {
       padding: 0 24px;
       background: var(--primary);
       color: white;
@@ -140,11 +148,13 @@
       transition: background-color 0.2s ease;
     }
 
-    #sendBtn:hover:not(:disabled) {
+    #sendBtn:hover:not(:disabled),
+    #generateImageBtn:hover:not(:disabled) {
       background: #4338ca;
     }
 
-    #sendBtn:disabled {
+    #sendBtn:disabled,
+    #generateImageBtn:disabled {
       background: #9ca3af;
       cursor: not-allowed;
     }
@@ -231,7 +241,7 @@
         flex-direction: column;
       }
 
-      #sendBtn {
+      #sendBtn, #generateImageBtn {
         width: 100%;
       }
     }
@@ -281,6 +291,7 @@
       <div id="chatbox" role="log" aria-live="polite" aria-relevant="additions"></div>
       <div id="input-container">
         <input type="text" id="userInput" placeholder="Digite sua mensagem..." autocomplete="off" aria-label="Digite sua mensagem"/>
+        <button id="generateImageBtn" aria-label="Gerar imagem">Gerar Imagem</button>
         <button id="sendBtn" aria-label="Enviar mensagem">Enviar</button>
       </div>
     </div>
@@ -303,229 +314,352 @@
         maxTokens: 1024
       },
 
-      language: 'pt',
-      conversations: {},
+      replicateToken: "r8_M1Ic7mKU9eTZqMjWf6ucMW1ZkjF8sM74V6w56",
+
+      DOM: {
+        chatbox: null,
+        input: null,
+        sendBtn: null,
+        generateImageBtn: null,
+        newConversationBtn: null,
+        conversationList: null,
+        languageSelector: null,
+        typingIndicator: null
+      },
+
       currentConversationId: null,
+      conversations: {},
 
       init() {
-        this.DOM = {
-          chatbox: document.getElementById('chatbox'),
-          input: document.getElementById('userInput'),
-          sendBtn: document.getElementById('sendBtn'),
-          langSelector: document.getElementById('languageSelector'),
-          conversationList: document.getElementById('conversationList'),
-          newConvBtn: document.getElementById('newConversationBtn'),
-          typingIndicator: this.createTypingIndicator()
-        };
+        this.DOM.chatbox = document.getElementById("chatbox");
+        this.DOM.input = document.getElementById("userInput");
+        this.DOM.sendBtn = document.getElementById("sendBtn");
+        this.DOM.generateImageBtn = document.getElementById("generateImageBtn");
+        this.DOM.newConversationBtn = document.getElementById("newConversationBtn");
+        this.DOM.conversationList = document.getElementById("conversationList");
+        this.DOM.languageSelector = document.getElementById("languageSelector");
+
+        this.DOM.typingIndicator = document.createElement("div");
+        this.DOM.typingIndicator.className = "message bot typing";
+        this.DOM.typingIndicator.textContent = "ViBot está digitando...";
 
         this.loadConversations();
 
         if (!this.currentConversationId) {
           this.createNewConversation();
         } else {
-          this.renderConversation();
+          this.renderConversationsList();
+          this.renderCurrentConversation();
         }
 
-        this.setupEvents();
-        this.renderConversationsList();
-
-        this.DOM.input.placeholder = this.getPlaceholder(this.language);
-      },
-
-      setupEvents() {
-        this.DOM.sendBtn.addEventListener('click', () => this.sendMessage());
-        this.DOM.input.addEventListener('keypress', e => {
-          if (e.key === 'Enter') this.sendMessage();
+        this.DOM.sendBtn.addEventListener("click", () => this.sendMessage());
+        this.DOM.input.addEventListener("keydown", e => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            this.sendMessage();
+          }
         });
-        this.DOM.langSelector.addEventListener('change', e => {
-          this.language = e.target.value;
-          this.DOM.input.placeholder = this.getPlaceholder(this.language);
-        });
+        this.DOM.generateImageBtn.addEventListener("click", () => this.generateImageFromPrompt());
 
-        this.DOM.newConvBtn.addEventListener('click', () => {
-          this.createNewConversation();
-          this.renderConversationsList();
+        this.DOM.newConversationBtn.addEventListener("click", () => this.createNewConversation());
+
+        this.DOM.languageSelector.addEventListener("change", () => {
+          // Pode implementar mudança de idioma aqui, ou enviar idioma no prompt
         });
       },
 
-      getPlaceholder(lang) {
-        return {
-          pt: "Digite sua mensagem...",
-          en: "Type your message...",
-          es: "Escribe tu mensaje...",
-          zh: "输入你的信息...",
-          hi: "अपना संदेश टाइप करें...",
-          ar: "اكتب رسالتك...",
-          fr: "Tapez votre message...",
-          ru: "Введите ваше сообщение..."
-        }[lang] || "Digite sua mensagem...";
-      },
-
+      // Cria conversa nova
       createNewConversation() {
-        const id = `conv_${Date.now()}`;
+        const id = "conv_" + Date.now();
         this.conversations[id] = [];
         this.currentConversationId = id;
-        this.renderConversation();
         this.saveConversations();
         this.renderConversationsList();
+        this.renderCurrentConversation();
+        this.DOM.input.focus();
       },
 
-      renderConversation() {
-        this.DOM.chatbox.innerHTML = '';
-        const msgs = this.conversations[this.currentConversationId] || [];
-        msgs.forEach(m => this.addMessage(m.content, m.role === 'user' ? 'user' : (m.role === 'assistant' ? 'bot' : 'error'), false));
+      // Salva no localStorage
+      saveConversations() {
+        localStorage.setItem("vibot_conversations", JSON.stringify(this.conversations));
+        localStorage.setItem("vibot_current", this.currentConversationId);
+      },
+
+      // Carrega do localStorage
+      loadConversations() {
+        const conv = localStorage.getItem("vibot_conversations");
+        if (conv) {
+          this.conversations = JSON.parse(conv);
+          this.currentConversationId = localStorage.getItem("vibot_current") || Object.keys(this.conversations)[0];
+        }
+      },
+
+      // Renderiza lista lateral de conversas
+      renderConversationsList() {
+        this.DOM.conversationList.innerHTML = "";
+        for (const id of Object.keys(this.conversations).reverse()) {
+          const btn = document.createElement("button");
+          btn.className = "conversation-btn" + (id === this.currentConversationId ? " active" : "");
+          btn.textContent = this.getConversationTitle(this.conversations[id]) || "Nova Conversa";
+          btn.title = "Abrir conversa";
+          btn.addEventListener("click", () => {
+            this.currentConversationId = id;
+            this.saveConversations();
+            this.renderConversationsList();
+            this.renderCurrentConversation();
+          });
+          this.DOM.conversationList.appendChild(btn);
+        }
+      },
+
+      // Gera um título simples da conversa
+      getConversationTitle(messages) {
+        for (const m of messages) {
+          if (m.role === "user") {
+            return m.content.length > 20 ? m.content.slice(0, 20) + "..." : m.content;
+          }
+        }
+        return "";
+      },
+
+      // Renderiza conversa atual
+      renderCurrentConversation() {
+        this.DOM.chatbox.innerHTML = "";
+        const conv = this.conversations[this.currentConversationId];
+        if (!conv) return;
+
+        for (const msg of conv) {
+          if (msg.type === "image") {
+            this.addImageMessage(msg.content);
+          } else if (msg.type === "image-array") {
+            try {
+              const urls = JSON.parse(msg.content);
+              this.addImagesMessages(urls);
+            } catch {
+              this.addMessage("Erro ao carregar imagens", "error");
+            }
+          } else if (msg.role === "error") {
+            this.addMessage(msg.content, "error");
+          } else {
+            this.addMessage(msg.content, msg.role);
+          }
+        }
+      },
+
+      // Adiciona mensagem simples texto
+      addMessage(text, role) {
+        const msg = document.createElement("div");
+        msg.className = "message " + (role === "user" ? "user" : role === "bot" ? "bot" : "error");
+        msg.textContent = text;
+        this.DOM.chatbox.appendChild(msg);
         this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
       },
 
-      renderConversationsList() {
-        if (!this.DOM.conversationList) return;
-
-        this.DOM.conversationList.innerHTML = '';
-        Object.entries(this.conversations).forEach(([id, messages]) => {
-          const btn = document.createElement('button');
-          btn.className = 'conversation-btn';
-          btn.textContent = messages.length > 0 ? messages[0].content.slice(0, 20) : 'Nova conversa';
-          if (id === this.currentConversationId) btn.classList.add('active');
-
-          btn.onclick = () => {
-            this.currentConversationId = id;
-            this.renderConversation();
-            this.renderConversationsList();
-          };
-
-          this.DOM.conversationList.appendChild(btn);
-        });
+      // Adiciona uma imagem única como mensagem bot
+      addImageMessage(url) {
+        const msg = document.createElement("div");
+        msg.className = "message bot";
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = "Imagem gerada";
+        msg.appendChild(img);
+        this.DOM.chatbox.appendChild(msg);
+        this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
       },
 
-      async sendMessage() {
-        const message = this.DOM.input.value.trim();
-        if (!message) return;
+      // Adiciona múltiplas imagens como mensagens bot
+      addImagesMessages(urls) {
+        urls.forEach(url => {
+          const msg = document.createElement("div");
+          msg.className = "message bot";
+          const img = document.createElement("img");
+          img.src = url;
+          img.alt = "Imagem gerada";
+          msg.appendChild(img);
+          this.DOM.chatbox.appendChild(msg);
+        });
+        this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
+      },
 
-        this.addMessage(message, 'user');
-        this.conversations[this.currentConversationId].push({ role: 'user', content: message });
-        this.DOM.input.value = '';
+      // Envia mensagem texto para API do chatbot (OpenAI via Groq)
+      async sendMessage() {
+        const prompt = this.DOM.input.value.trim();
+        if (!prompt) return;
+
         this.DOM.sendBtn.disabled = true;
+        this.DOM.generateImageBtn.disabled = true;
+
+        this.addMessage(prompt, "user");
+        this.conversations[this.currentConversationId].push({ role: "user", content: prompt });
+        this.saveConversations();
 
         this.DOM.chatbox.appendChild(this.DOM.typingIndicator);
         this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
 
         try {
-          const messagesForAPI = this.buildMessagesForAPI();
+          const lang = this.DOM.languageSelector.value;
+          const systemPrompt = this.getSystemPrompt(lang);
 
-          const responseText = await this.callAPI(messagesForAPI);
+          // Monta o histórico para enviar
+          const messages = [
+            { role: "system", content: systemPrompt },
+            ...this.conversations[this.currentConversationId]
+          ];
+
+          const response = await fetch(this.config.apiUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${this.config.apiKey}`
+            },
+            body: JSON.stringify({
+              model: this.config.model,
+              messages: messages,
+              max_tokens: this.config.maxTokens,
+              temperature: this.config.temperature
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error("Erro na API de chat");
+          }
+
+          const data = await response.json();
+
+          const botReply = data.choices?.[0]?.message?.content?.trim();
+          if (!botReply) throw new Error("Resposta vazia");
+
           this.DOM.chatbox.removeChild(this.DOM.typingIndicator);
 
-          this.addMessage(responseText, 'bot');
-          this.conversations[this.currentConversationId].push({ role: 'assistant', content: responseText });
-
+          this.addMessage(botReply, "bot");
+          this.conversations[this.currentConversationId].push({ role: "bot", content: botReply });
           this.saveConversations();
         } catch (error) {
           this.DOM.chatbox.removeChild(this.DOM.typingIndicator);
-          this.addMessage(`Erro: ${error.message}`, 'error');
-          this.conversations[this.currentConversationId].push({ role: 'error', content: `Erro: ${error.message}` });
+          this.addMessage("Erro: " + error.message, "error");
+          this.conversations[this.currentConversationId].push({ role: "error", content: "Erro: " + error.message });
           this.saveConversations();
           console.error("ViBot Error:", error);
         } finally {
           this.DOM.sendBtn.disabled = false;
+          this.DOM.generateImageBtn.disabled = false;
+          this.DOM.input.value = "";
           this.DOM.input.focus();
           this.renderConversationsList();
         }
       },
 
-      buildMessagesForAPI() {
-        const systemMsg = this.language !== 'pt'
-          ? { role: 'system', content: `Responda em ${this.getLanguageName(this.language)}.` }
-          : { role: 'system', content: `Você é um assistente virtual que responde em português.` };
+      // Gera imagem usando Replicate minimax/image-01
+      async generateImageFromPrompt() {
+        const prompt = this.DOM.input.value.trim();
+        if (!prompt) return;
 
-        const history = this.conversations[this.currentConversationId] || [];
-        const filtered = history.filter(m => m.role === 'user' || m.role === 'assistant');
+        this.DOM.sendBtn.disabled = true;
+        this.DOM.generateImageBtn.disabled = true;
 
-        return [systemMsg, ...filtered];
+        this.addMessage(prompt, "user");
+        this.conversations[this.currentConversationId].push({ role: "user", content: prompt });
+        this.saveConversations();
+
+        this.DOM.chatbox.appendChild(this.DOM.typingIndicator);
+        this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
+
+        try {
+          const imageUrls = await this.callImageAPI(prompt);
+          this.DOM.chatbox.removeChild(this.DOM.typingIndicator);
+
+          this.addImagesMessages(imageUrls);
+
+          // Salva o array de urls em string JSON na conversa
+          this.conversations[this.currentConversationId].push({
+            role: "bot",
+            content: JSON.stringify(imageUrls),
+            type: "image-array"
+          });
+          this.saveConversations();
+        } catch (error) {
+          this.DOM.chatbox.removeChild(this.DOM.typingIndicator);
+          this.addMessage("Erro: " + error.message, "error");
+          this.conversations[this.currentConversationId].push({ role: "error", content: "Erro: " + error.message });
+          this.saveConversations();
+          console.error("ViBot Image Error:", error);
+        } finally {
+          this.DOM.sendBtn.disabled = false;
+          this.DOM.generateImageBtn.disabled = false;
+          this.DOM.input.value = "";
+          this.DOM.input.focus();
+          this.renderConversationsList();
+        }
       },
 
-      async callAPI(messages) {
-        const response = await fetch(this.config.apiUrl, {
-          method: 'POST',
+      // Chama API Replicate para gerar imagem
+      async callImageAPI(prompt) {
+        // Versão correta do minimax/image-01 - confirme no site replicate.com/models/minimax/image-01
+        const version = "5c72d2605f4b9fca1e1f01c616ac233bd00e91c9d1ce85f7a23f8f43cf6db04f";
+
+        const input = {
+          prompt: prompt,
+          aspect_ratio: "3:4"
+        };
+
+        const response = await fetch("https://api.replicate.com/v1/predictions", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.config.apiKey}`
+            "Authorization": "Token " + this.replicateToken,
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            model: this.config.model,
-            messages: messages,
-            temperature: this.config.temperature,
-            max_tokens: this.config.maxTokens
+            version: version,
+            input: input
           })
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error?.message || 'Erro na API');
+          const err = await response.json();
+          throw new Error(err.detail || "Erro ao gerar imagem");
         }
 
-        const data = await response.json();
+        const prediction = await response.json();
 
-        if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-          return data.choices[0].message.content.trim();
-        } else {
-          throw new Error('Resposta inesperada da API');
-        }
+        // Aguarda resultado com polling
+        return await this.waitForPrediction(prediction.urls.get);
       },
 
-      addMessage(text, type, scroll = true) {
-        const msg = document.createElement('div');
-        msg.className = `message ${type}`;
-        msg.textContent = text;
-        this.DOM.chatbox.appendChild(msg);
-        if (scroll) this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
-      },
-
-      createTypingIndicator() {
-        const indicator = document.createElement('div');
-        indicator.className = 'message bot typing';
-        indicator.textContent = 'Digitando...';
-        return indicator;
-      },
-
-      saveConversations() {
-        try {
-          localStorage.setItem('ViBotConversations', JSON.stringify(this.conversations));
-        } catch (e) {
-          console.warn("Não foi possível salvar as conversas:", e);
-        }
-      },
-
-      loadConversations() {
-        try {
-          const stored = localStorage.getItem('ViBotConversations');
-          if (stored) {
-            this.conversations = JSON.parse(stored);
-            const keys = Object.keys(this.conversations);
-            if (keys.length > 0) {
-              this.currentConversationId = keys[keys.length - 1];
+      async waitForPrediction(url) {
+        while (true) {
+          const response = await fetch(url, {
+            headers: {
+              "Authorization": "Token " + this.replicateToken
             }
+          });
+          const prediction = await response.json();
+
+          if (prediction.status === "succeeded") {
+            return prediction.output; // Array de URLs das imagens
+          } else if (prediction.status === "failed") {
+            throw new Error("Falha na geração da imagem");
           }
-        } catch (e) {
-          console.warn("Erro ao carregar conversas:", e);
-          this.conversations = {};
+          await new Promise(r => setTimeout(r, 1000));
         }
       },
 
-      getLanguageName(code) {
-        return {
-          pt: "Português",
-          en: "Inglês",
-          es: "Espanhol",
-          zh: "Chinês",
-          hi: "Hindi",
-          ar: "Árabe",
-          fr: "Francês",
-          ru: "Russo"
-        }[code] || "Português";
+      // Retorna prompt do sistema para cada idioma (exemplo simples)
+      getSystemPrompt(lang) {
+        switch (lang) {
+          case "en": return "You are a helpful assistant.";
+          case "es": return "Eres un asistente útil.";
+          case "zh": return "你是一个有帮助的助手。";
+          case "hi": return "आप एक सहायक सहायक हैं।";
+          case "ar": return "أنت مساعد مفيد.";
+          case "fr": return "Vous êtes un assistant utile.";
+          case "ru": return "Вы полезный помощник.";
+          default: return "Você é um assistente útil.";
+        }
       }
     };
 
-    document.addEventListener('DOMContentLoaded', () => ViBot.init());
+    window.addEventListener("DOMContentLoaded", () => ViBot.init());
   </script>
 </body>
 </html>
+
