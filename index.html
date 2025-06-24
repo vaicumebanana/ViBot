@@ -13,62 +13,45 @@
       --text: #111827;
       --error-text: #dc2626;
     }
-
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #f9fafb;
+      background: #f9fafb;
       margin: 0;
       padding: 0;
     }
-
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 16px 32px;
-      background-color: white;
+      background: white;
       border-bottom: 1px solid #e5e7eb;
     }
-
-    h1 {
-      margin: 0;
-      color: var(--primary);
-    }
-
+    h1 { margin: 0; color: var(--primary); }
     #languageSelector {
       padding: 8px;
       border-radius: 8px;
       border: 1px solid #d1d5db;
-      font-size: 14px;
     }
-
     main {
+      display: flex;
       max-width: 1100px;
       margin: 20px auto;
-      display: flex;
       gap: 20px;
       padding: 0 20px;
     }
-
-    #chat-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
+    #chat-container { flex: 1; display: flex; flex-direction: column; }
     #chatbox {
-      height: 65vh;
       background: white;
       border: 1px solid #e5e7eb;
       border-radius: 12px;
+      flex: 1;
       padding: 16px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      scroll-behavior: smooth;
     }
-
     .message {
       padding: 12px 16px;
       border-radius: 12px;
@@ -78,49 +61,17 @@
       word-wrap: break-word;
       white-space: pre-wrap;
     }
-
-    .message.user {
-      background: var(--user-bg);
-      color: white;
-      align-self: flex-end;
-      border-bottom-right-radius: 4px;
-    }
-
-    .message.bot {
-      background: var(--bot-bg);
-      color: var(--text);
-      align-self: flex-start;
-      border-bottom-left-radius: 4px;
-    }
-
-    .message.error {
-      background: var(--error-bg);
-      color: var(--error-text);
-      align-self: center;
-      text-align: center;
-    }
-
-    .message.typing {
+    .user { background: var(--user-bg); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .bot  { background: var(--bot-bg);  color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .error{ background: var(--error-bg); color: var(--error-text); align-self: center; text-align: center; }
+    .typing {
       color: #6b7280;
       font-style: italic;
       animation: blink 1s steps(1) infinite;
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes blink {
-      50% { opacity: 0.5; }
-    }
-
-    #input-container {
-      display: flex;
-      gap: 12px;
-      margin-top: 12px;
-    }
-
+    @keyframes fadeIn { from {opacity:0;transform:translateY(10px);} to {opacity:1;transform:translateY(0);} }
+    @keyframes blink { 50%{opacity:0.5;} }
+    #input-container { display: flex; gap: 12px; margin-top: 12px; }
     #userInput {
       flex: 1;
       padding: 12px 16px;
@@ -128,27 +79,18 @@
       border-radius: 12px;
       font-size: 16px;
     }
-
     #sendBtn {
-      padding: 0 24px;
       background: var(--primary);
       color: white;
       border: none;
       border-radius: 12px;
+      padding: 0 24px;
       font-weight: 500;
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      transition: background-color 0.2s;
     }
-
-    #sendBtn:hover:not(:disabled) {
-      background: #4338ca;
-    }
-
-    #sendBtn:disabled {
-      background: #9ca3af;
-      cursor: not-allowed;
-    }
-
+    #sendBtn:hover:not(:disabled) { background: #4338ca; }
+    #sendBtn:disabled { background: #9ca3af; cursor: not-allowed; }
     aside {
       width: 250px;
       background: white;
@@ -158,24 +100,17 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      height: 65vh;
     }
-
     #newConversationBtn {
-      padding: 12px;
       background: var(--primary);
       color: white;
       border: none;
       border-radius: 12px;
-      font-weight: 600;
+      padding: 12px;
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      transition: background-color 0.2s;
     }
-
-    #newConversationBtn:hover {
-      background: #4338ca;
-    }
-
+    #newConversationBtn:hover { background: #4338ca; }
     #conversationList {
       overflow-y: auto;
       flex: 1;
@@ -183,63 +118,35 @@
       flex-direction: column;
       gap: 8px;
     }
-
     .conversation-btn {
       background: #f3f4f6;
       border: none;
       border-radius: 8px;
       padding: 8px 12px;
-      cursor: pointer;
-      text-align: left;
       font-size: 14px;
       color: var(--text);
-      transition: background-color 0.2s ease;
+      text-align: left;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      cursor: pointer;
+      transition: background-color 0.2s;
     }
-
-    .conversation-btn:hover {
-      background: var(--primary);
-      color: white;
-    }
-
-    .conversation-btn.active {
-      background: var(--primary);
-      color: white;
-      font-weight: 700;
-    }
-
-    @media (max-width: 768px) {
-      main {
-        flex-direction: column;
-      }
-
-      aside {
-        width: 100%;
-        height: auto;
-        order: -1;
-        margin-bottom: 20px;
-      }
-
-      #chatbox {
-        height: 50vh;
-      }
-
-      #input-container {
-        flex-direction: column;
-      }
-
-      #sendBtn {
-        width: 100%;
-      }
+    .conversation-btn:hover { background: var(--primary); color: white; }
+    .conversation-btn.active { background: var(--primary); color: white; font-weight: 700; }
+    @media(max-width:768px) {
+      main { flex-direction: column; }
+      aside { width:100%; margin-bottom:20px; order:-1; }
+      #chatbox { height:50vh; }
+      #input-container { flex-direction:column; }
+      #sendBtn { width:100%; }
     }
   </style>
 </head>
 <body>
   <header>
     <h1>ViBot</h1>
-    <select id="languageSelector" title="Selecione o idioma">
+    <select id="languageSelector">
       <option value="pt" selected>Português</option>
       <option value="en">English</option>
       <option value="es">Español</option>
@@ -253,16 +160,15 @@
 
   <main>
     <div id="chat-container">
-      <div id="chatbox" role="log" aria-live="polite" aria-relevant="additions"></div>
+      <div id="chatbox" role="log" aria-live="polite"></div>
       <div id="input-container">
-        <input type="text" id="userInput" placeholder="Digite sua mensagem..." autocomplete="off" aria-label="Digite sua mensagem"/>
-        <button id="sendBtn" aria-label="Enviar mensagem">📩 Enviar</button>
+        <input id="userInput" placeholder="Digite sua mensagem..." />
+        <button id="sendBtn">📩 Enviar</button>
       </div>
     </div>
-
-    <aside aria-label="Lista de conversas anteriores e nova conversa">
-      <button id="newConversationBtn" aria-label="Nova conversa">➕ Nova Conversa</button>
-      <div id="conversationList" role="list" aria-label="Conversas anteriores"></div>
+    <aside>
+      <button id="newConversationBtn">➕ Nova Conversa</button>
+      <div id="conversationList"></div>
     </aside>
   </main>
 
@@ -270,47 +176,28 @@
     const ViBot = {
       config: {
         apiUrl: "https://api.groq.com/openai/v1/chat/completions",
-        apiKey: "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",
+        apiKey: "SUA_API_KEY_AQUI",
         model: "llama3-70b-8192",
         temperature: 0.7,
         maxTokens: 1024
       },
-
-      DOM: {},
-      currentConversationId: null,
-      conversations: {},
-
+      DOM: {}, currentConversationId: null, conversations: {},
       init() {
-        this.DOM = {
-          chatbox: document.getElementById("chatbox"),
-          input: document.getElementById("userInput"),
-          sendBtn: document.getElementById("sendBtn"),
-          newConversationBtn: document.getElementById("newConversationBtn"),
-          conversationList: document.getElementById("conversationList"),
-          languageSelector: document.getElementById("languageSelector"),
-          typingIndicator: Object.assign(document.createElement("div"), {
-            className: "message bot typing",
-            textContent: "ViBot está digitando..."
-          })
-        };
-
+        const ids = ["chatbox","userInput","sendBtn","newConversationBtn","conversationList","languageSelector"];
+        ids.forEach(id => this.DOM[id] = document.getElementById(id));
+        this.DOM.typingIndicator = Object.assign(document.createElement("div"), {
+          className: "message bot typing",
+          textContent: "ViBot está digitando..."
+        });
         this.loadConversations();
         if (!this.currentConversationId) this.createNewConversation();
-        else {
-          this.renderConversationsList();
-          this.renderCurrentConversation();
-        }
-
+        else { this.renderConversationsList(); this.renderCurrentConversation(); }
         this.DOM.sendBtn.addEventListener("click", () => this.sendMessage());
-        this.DOM.input.addEventListener("keydown", e => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            this.sendMessage();
-          }
+        this.DOM.userInput.addEventListener("keydown", e => {
+          if (e.key === "Enter") { e.preventDefault(); this.sendMessage(); }
         });
         this.DOM.newConversationBtn.addEventListener("click", () => this.createNewConversation());
       },
-
       createNewConversation() {
         const id = "conv_" + Date.now();
         this.conversations[id] = [];
@@ -318,14 +205,12 @@
         this.saveConversations();
         this.renderConversationsList();
         this.renderCurrentConversation();
-        this.DOM.input.focus();
+        this.DOM.userInput.focus();
       },
-
       saveConversations() {
         localStorage.setItem("vibot_conversations", JSON.stringify(this.conversations));
         localStorage.setItem("vibot_current", this.currentConversationId);
       },
-
       loadConversations() {
         const conv = localStorage.getItem("vibot_conversations");
         if (conv) {
@@ -333,117 +218,76 @@
           this.currentConversationId = localStorage.getItem("vibot_current") || Object.keys(this.conversations)[0];
         }
       },
-
       renderConversationsList() {
         this.DOM.conversationList.innerHTML = "";
-        for (const id of Object.keys(this.conversations).reverse()) {
+        Object.keys(this.conversations).reverse().forEach(id => {
           const btn = document.createElement("button");
           btn.className = "conversation-btn" + (id === this.currentConversationId ? " active" : "");
           btn.textContent = this.getConversationTitle(this.conversations[id]) || "Nova Conversa";
-          btn.title = "Abrir conversa";
-          btn.addEventListener("click", () => {
-            this.currentConversationId = id;
-            this.saveConversations();
-            this.renderConversationsList();
-            this.renderCurrentConversation();
-          });
+          btn.onclick = () => { this.currentConversationId = id; this.saveConversations(); this.renderConversationsList(); this.renderCurrentConversation(); };
           this.DOM.conversationList.appendChild(btn);
-        }
+        });
       },
-
       getConversationTitle(messages) {
-        for (const m of messages) {
-          if (m.role === "user") return m.content.length > 20 ? m.content.slice(0, 20) + "..." : m.content;
-        }
-        return "";
+        const first = messages.find(m => m.role === "user");
+        return first ? (first.content.length > 20 ? first.content.slice(0, 20) + "..." : first.content) : "";
       },
-
       renderCurrentConversation() {
         this.DOM.chatbox.innerHTML = "";
-        const conv = this.conversations[this.currentConversationId];
-        if (!conv) return;
-        for (const msg of conv) this.addMessage(msg.content, msg.role);
+        this.conversations[this.currentConversationId].forEach(msg => this.addMessage(msg.content, msg.role));
       },
-
       addMessage(text, role) {
-        const msg = document.createElement("div");
-        msg.className = "message " + (role === "user" ? "user" : role === "bot" ? "bot" : "error");
-        msg.textContent = text;
-        this.DOM.chatbox.appendChild(msg);
+        const d = document.createElement("div");
+        d.className = "message " + (["user","bot","error"].includes(role) ? role : "bot");
+        d.textContent = text;
+        this.DOM.chatbox.appendChild(d);
         this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
       },
-
       async sendMessage() {
-        const prompt = this.DOM.input.value.trim();
+        const prompt = this.DOM.userInput.value.trim();
         if (!prompt) return;
-
         this.DOM.sendBtn.disabled = true;
-
+        // user message
         this.addMessage(prompt, "user");
         this.conversations[this.currentConversationId].push({ role: "user", content: prompt });
         this.saveConversations();
-
         this.DOM.chatbox.appendChild(this.DOM.typingIndicator);
         this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
-
         try {
           const lang = this.DOM.languageSelector.value;
-          const systemPrompt = this.getSystemPrompt(lang);
-          const messages = [{ role: "system", content: systemPrompt }, ...this.conversations[this.currentConversationId]];
-
+          const messages = [{ role: "system", content: this.getSystemPrompt(lang) }, ...this.conversations[this.currentConversationId]];
           const res = await fetch(this.config.apiUrl, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${this.config.apiKey}`
-            },
-            body: JSON.stringify({
-              model: this.config.model,
-              messages,
-              max_tokens: this.config.maxTokens,
-              temperature: this.config.temperature
-            })
+            headers: { "Content-Type":"application/json", Authorization: `Bearer ${this.config.apiKey}` },
+            body: JSON.stringify({ model: this.config.model, messages, temperature: this.config.temperature, max_tokens: this.config.maxTokens })
           });
-
-          if (!res.ok) throw new Error("Erro ao obter resposta");
-
+          if (!res.ok) throw new Error("Falha ao obter resposta");
           const data = await res.json();
-          const reply = data.choices?.[0]?.message?.content?.trim();
-          if (!reply) throw new Error("Resposta vazia");
-
+          const bot = data.choices?.[0]?.message?.content?.trim();
+          if (!bot) throw new Error("Resposta vazia");
           this.DOM.chatbox.removeChild(this.DOM.typingIndicator);
-          this.addMessage(reply, "bot");
-          this.conversations[this.currentConversationId].push({ role: "bot", content: reply });
+          this.addMessage(bot, "bot");
+          this.conversations[this.currentConversationId].push({ role: "bot", content: bot });
           this.saveConversations();
-        } catch (error) {
+        } catch (e) {
           this.DOM.chatbox.removeChild(this.DOM.typingIndicator);
-          this.addMessage("Erro: " + error.message, "error");
-          this.conversations[this.currentConversationId].push({ role: "error", content: "Erro: " + error.message });
+          this.addMessage("Erro: " + e.message, "error");
+          this.conversations[this.currentConversationId].push({ role: "error", content: e.message });
           this.saveConversations();
-          console.error(error);
         } finally {
           this.DOM.sendBtn.disabled = false;
-          this.DOM.input.value = "";
-          this.DOM.input.focus();
+          this.DOM.userInput.value = "";
+          this.DOM.userInput.focus();
           this.renderConversationsList();
         }
       },
-
       getSystemPrompt(lang) {
-        const prompts = {
-          en: "You are a helpful assistant.",
-          es: "Eres un asistente útil.",
-          zh: "你是一个有帮助的助手。",
-          hi: "आप एक सहायक सहायक हैं।",
-          ar: "أنت مساعد مفيد.",
-          fr: "Vous êtes un assistant utile.",
-          ru: "Вы полезный помощник.",
-          pt: "Você é um assistente útil."
-        };
-        return prompts[lang] || prompts.pt;
+        return { en: "You are a helpful assistant.", es: "Eres un asistente útil.", zh: "你是一个有帮助的助手。",
+                 hi: "आप एक सहायक सहायक हैं।", ar: "أنت مساعد مفيد.", fr: "Vous êtes un assistant utile.",
+                 ru: "Вы полезный помощник.", pt: "Você é um assistente útil."
+               }[lang] || "Você é um assistente útil.";
       }
     };
-
     window.addEventListener("DOMContentLoaded", () => ViBot.init());
   </script>
 </body>
