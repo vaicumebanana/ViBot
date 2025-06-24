@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ViBot - Assistente Virtual</title>
   <style>
     :root {
@@ -16,7 +17,6 @@
     [data-theme="dark"] {
       --bg: #1f2937;
       --bot-bg: #374151;
-      --user-bg: #4f46e5;
       --text: #f9fafb;
     }
     body {
@@ -33,7 +33,14 @@
     [data-theme="dark"] header { background: #111827; }
     h1 { margin: 0; color: var(--primary); }
     header div { display: flex; align-items: center; gap: 8px; }
-    button, select { font-size: 14px; padding: 8px; border-radius: 8px; border: 1px solid #d1d5db; background: white; cursor: pointer; }
+    button, select {
+      font-size: 14px;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      background: white;
+      cursor: pointer;
+    }
     button:hover { opacity: 0.9; }
     main { display: flex; max-width: 1100px; margin: 20px auto; gap: 20px; padding: 0 20px; }
     #chat-container { flex: 1; display: flex; flex-direction: column; }
@@ -136,21 +143,23 @@
     const ViBot = {
       config: {
         apiUrl: "https://api.groq.com/openai/v1/chat/completions",
-        apiKey: "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",
+        apiKey: "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",
         model: "llama3-70b-8192",
         temperature: 0.7,
         maxTokens: 1024
       },
-      /* Elementos DOM e estado */
       init() {
-        const ids = ["chatbox","userInput","sendBtn","newConversationBtn","conversationList","languageSelector","toggleTheme","startSpeech","exportHistory"];
-        ids.forEach(id => this[id] = document.getElementById(id));
-        this.typingIndicator = Object.assign(document.createElement("div"), { className: "message bot typing", textContent: "ViBot está digitando..." });
+        ["chatbox","userInput","sendBtn","newConversationBtn","conversationList","languageSelector","toggleTheme","startSpeech","exportHistory"]
+          .forEach(id => this[id] = document.getElementById(id));
+        this.typingIndicator = Object.assign(document.createElement("div"), {
+          className: "message bot typing",
+          textContent: "ViBot está digitando..."
+        });
         this.loadTheme();
         this.loadConversations();
         if (!this.currentConversationId) this.createNewConversation();
         else this.renderConversationsList(), this.renderCurrentConversation();
-        /* Eventos */
+
         this.sendBtn.onclick = () => this.sendMessage();
         this.userInput.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); this.sendMessage(); }};
         this.newConversationBtn.onclick = () => this.createNewConversation();
@@ -158,7 +167,7 @@
         this.exportHistory.onclick = () => this.exportCurrent();
         this.startSpeech.onclick = () => this.toggleVoice();
       },
-      /* TEMAS */
+      /* Theme */
       loadTheme() {
         const t = localStorage.getItem('vibot_theme') || 'light';
         document.documentElement.setAttribute('data-theme', t);
@@ -169,11 +178,15 @@
         document.documentElement.setAttribute('data-theme', nxt);
         localStorage.setItem('vibot_theme', nxt);
       },
-      /* VOZ */
+      /* Voice */
       toggleVoice() {
-        if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) return alert('Reconhecimento de voz não suportado.');
+        if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+          return alert('Reconhecimento de voz não suportado.');
+        }
         if (this.recognizer) {
-          this.recognizer.stop(); this.recognizer = null; this.startSpeech.textContent = '🎙️ Voz';
+          this.recognizer.stop();
+          this.recognizer = null;
+          this.startSpeech.textContent = '🎙️ Voz';
         } else {
           const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
           this.recognizer = new SR();
@@ -181,8 +194,15 @@
           this.recognizer.interimResults = false;
           this.recognizer.start();
           this.startSpeech.textContent = '🛑 Parar';
-          this.recognizer.onresult = e => { this.userInput.value = e.results[0][0].transcript; this.sendMessage(); };
-          this.recognizer.onerror = () => { this.recognizer.stop(); this.recognizer = null; this.startSpeech.textContent = '🎙️ Voz'; };
+          this.recognizer.onresult = e => {
+            this.userInput.value = e.results[0][0].transcript;
+            this.sendMessage();
+          };
+          this.recognizer.onerror = () => {
+            this.recognizer.stop();
+            this.recognizer = null;
+            this.startSpeech.textContent = '🎙️ Voz';
+          };
         }
       },
       speak(text) {
@@ -192,7 +212,7 @@
           speechSynthesis.speak(ut);
         }
       },
-      /* HISTÓRICO */
+      /* Export history */
       exportCurrent() {
         const conv = this.conversations[this.currentConversationId] || [];
         const txt = conv.map(m => (m.role === 'user' ? 'Você: ' : 'ViBot: ') + m.content).join('\n');
@@ -203,7 +223,7 @@
         a.click();
         URL.revokeObjectURL(a.href);
       },
-      /* CONVERSAS */
+      /* Conversations storage */
       createNewConversation() {
         const id = "conv_" + Date.now();
         this.conversations[id] = [];
@@ -219,21 +239,26 @@
       },
       loadConversations() {
         const data = localStorage.getItem("vibot_conversations");
-        if (data) this.conversations = JSON.parse(data), this.currentConversationId = localStorage.getItem("vibot_current") || Object.keys(this.conversations)[0];
+        if (data) {
+          this.conversations = JSON.parse(data);
+          this.currentConversationId = localStorage.getItem("vibot_current") || Object.keys(this.conversations)[0];
+        }
       },
       renderConversationsList() {
         this.conversationList.innerHTML = "";
         Object.keys(this.conversations).reverse().forEach(id => {
           const btn = document.createElement('button');
           btn.className = "conversation-btn" + (id === this.currentConversationId ? " active" : "");
-          btn.textContent = this.getConversationTitle(this.conversations[id]) || "Nova Conversa";
-          btn.onclick = () => { this.currentConversationId = id; this.saveConversations(); this.renderConversationsList(); this.renderCurrentConversation(); };
+          const first = this.conversations[id].find(m => m.role === "user");
+          btn.textContent = first ? (first.content.length > 20 ? first.content.slice(0,20)+"…" : first.content) : "Nova Conversa";
+          btn.onclick = () => {
+            this.currentConversationId = id;
+            this.saveConversations();
+            this.renderConversationsList();
+            this.renderCurrentConversation();
+          };
           this.conversationList.appendChild(btn);
         });
-      },
-      getConversationTitle(msgs) {
-        const first = msgs.find(m => m.role === "user");
-        return first ? (first.content.length > 20 ? first.content.slice(0,20)+"…" : first.content) : "";
       },
       renderCurrentConversation() {
         this.chatbox.innerHTML = "";
@@ -247,7 +272,8 @@
         this.chatbox.scrollTop = this.chatbox.scrollHeight;
       },
       async sendMessage() {
-        const prompt = this.userInput.value.trim(); if (!prompt) return;
+        const prompt = this.userInput.value.trim();
+        if (!prompt) return;
         this.sendBtn.disabled = true;
         this.addMessage(prompt, "user");
         this.conversations[this.currentConversationId].push({ role: "user", content: prompt });
@@ -256,10 +282,27 @@
         this.chatbox.scrollTop = this.chatbox.scrollHeight;
         try {
           const sys = this.getSystemPrompt(this.languageSelector.value);
-          const body = { model: this.config.model, messages: [{role:"system",content:sys},...this.conversations[this.currentConversationId]], temperature:this.config.temperature, max_tokens:this.config.maxTokens };
-          const res = await fetch(this.config.apiUrl, { method:"POST", headers:{"Content-Type":"application/json", Authorization:`Bearer ${this.config.apiKey}`}, body: JSON.stringify(body) });
-          if (!res.ok) throw new Error("Falha na resposta");
-          const data = await res.json();
+          const body = { model: this.config.model, messages: [{role:"system",content:sys}, ...this.conversations[this.currentConversationId]], temperature: this.config.temperature, max_tokens: this.config.maxTokens };
+          const res = await fetch(this.config.apiUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type":"application/json",
+              Authorization:`Bearer ${this.config.apiKey}`
+            },
+            body: JSON.stringify(body)
+          });
+          console.log("HTTP status:", res.status, res.statusText);
+          const text = await res.text();
+          let data;
+          try { data = JSON.parse(text); }
+          catch {
+            console.error("Resposta não JSON:", text);
+            throw new Error(`API retornou texto inválido: ${text}`);
+          }
+          if (!res.ok) {
+            console.error("Erro da API:", data);
+            throw new Error(`Erro ${res.status}: ${data.error?.message || JSON.stringify(data)}`);
+          }
           const bot = data.choices?.[0]?.message?.content?.trim();
           if (!bot) throw new Error("Resposta vazia");
           this.chatbox.removeChild(this.typingIndicator);
@@ -272,6 +315,7 @@
           this.addMessage("Erro: "+e.message, "error");
           this.conversations[this.currentConversationId].push({ role:"error", content:e.message });
           this.saveConversations();
+          console.error(e);
         } finally {
           this.sendBtn.disabled = false;
           this.userInput.value = "";
@@ -280,11 +324,20 @@
         }
       },
       getSystemPrompt(lang) {
-        return { en:"You are a helpful assistant.", es:"Eres un asistente útil.", zh:"你是一个有帮助的助手。", hi:"आप एक सहायक सहायक हैं।", ar:"أنت مساعد مفيد.", fr:"Vous êtes un assistant utile.", ru:"Вы полезный помощник.", pt:"Você é um assistente útil." }[lang] || "Você é um assistente útil.";
+        return {
+          en: "You are a helpful assistant.",
+          es: "Eres un asistente útil.",
+          zh: "你是一个有帮助的助手。",
+          hi: "आप एक सहायक सहायक हैं।",
+          ar: "أنت مساعد مفيد.",
+          fr: "Vous êtes un assistant utile.",
+          ru: "Вы полезный помощник.",
+          pt: "Você é um assistente útil."
+        }[lang] || "Você é um assistente útil.";
       },
-      conversations: {},
-      currentConversationId: null
+      conversations: {}, currentConversationId: null
     };
+
     window.addEventListener('DOMContentLoaded', () => ViBot.init());
   </script>
 </body>
