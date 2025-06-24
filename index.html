@@ -28,9 +28,20 @@
       padding: 16px 32px;
       background-color: white;
       border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       color: var(--primary);
       font-size: 24px;
       font-weight: 700;
+    }
+
+    #languageSelector {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+      cursor: pointer;
     }
 
     main {
@@ -128,6 +139,7 @@
       flex-direction: column;
       gap: 12px;
       margin-bottom: 12px;
+      white-space: pre-wrap;
     }
 
     .message {
@@ -137,7 +149,6 @@
       line-height: 1.5;
       animation: fadeIn 0.3s ease-out;
       word-wrap: break-word;
-      white-space: pre-wrap;
     }
 
     .message.user {
@@ -213,7 +224,19 @@
   </style>
 </head>
 <body>
-  <header>ViBot</header>
+  <header>
+    <span>ViBot</span>
+    <select id="languageSelector">
+      <option value="pt">Português</option>
+      <option value="en">English</option>
+      <option value="es">Español</option>
+      <option value="zh">中文 (Chinese)</option>
+      <option value="hi">हिन्दी (Hindi)</option>
+      <option value="ar">العربية (Arabic)</option>
+      <option value="fr">Français (French)</option>
+      <option value="ru">Русский (Russian)</option>
+    </select>
+  </header>
 
   <main>
     <div id="chatContainer">
