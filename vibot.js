@@ -1,15 +1,14 @@
 const ViBot = {
   config: {
     apiUrl: "https://api.groq.com/openai/v1/chat/completions",
-    apiKey: "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",
+    apiKey: "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",
     model: "llama3-70b-8192",
     temperature: 0.7,
     maxTokens: 1024
   },
 
   language: 'pt',
-
-  conversations: {}, // id => array de mensagens { role: 'user'|'assistant', content: string }
+  conversations: {},
   currentConversationId: null,
 
   init() {
@@ -18,20 +17,21 @@ const ViBot = {
       input: document.getElementById('userInput'),
       sendBtn: document.getElementById('sendBtn'),
       langSelector: document.getElementById('languageSelector'),
-      newChatBtn: document.getElementById('newChatBtnSidebar'),
-      conversationsList: document.getElementById('conversationsList'),
+      conversationList: document.getElementById('conversationList'),
+      newConvBtn: document.getElementById('newConversationBtn'),
       typingIndicator: this.createTypingIndicator()
     };
 
-    this.setupEvents();
     this.loadConversations();
 
-    // Se não tiver conversa carregada, cria nova
-    if (!this.currentConversationId || !this.conversations[this.currentConversationId]) {
-      this.startNewConversation();
+    if (!this.currentConversationId) {
+      this.createNewConversation();
     } else {
-      this.loadConversation(this.currentConversationId);
+      this.renderConversation();
     }
+
+    this.setupEvents();
+    this.renderConversationsList();
   },
 
   setupEvents() {
@@ -39,83 +39,80 @@ const ViBot = {
     this.DOM.input.addEventListener('keypress', e => {
       if (e.key === 'Enter') this.sendMessage();
     });
-    this.DOM.newChatBtn.addEventListener('click', () => this.startNewConversation());
-
     this.DOM.langSelector.addEventListener('change', e => {
       this.language = e.target.value;
+      this.DOM.input.placeholder = {
+        pt: "Digite sua mensagem...",
+        en: "Type your message...",
+        es: "Escribe tu mensaje...",
+        zh: "输入你的信息...",
+        hi: "अपना संदेश टाइप करें...",
+        ar: "اكتب رسالتك...",
+        fr: "Tapez votre message...",
+        ru: "Введите ваше сообщение..."
+      }[this.language] || "Digite sua mensagem...";
+    });
+
+    this.DOM.newConvBtn.addEventListener('click', () => {
+      this.createNewConversation();
+      this.renderConversationsList();
     });
   },
 
-  startNewConversation() {
-    const newId = 'conv-' + Date.now();
-    this.currentConversationId = newId;
-    this.conversations[newId] = [];
-    this.renderConversationsList();
-    this.loadConversation(newId);
-  },
-
-  loadConversation(id) {
+  createNewConversation() {
+    const id = `conv_${Date.now()}`;
+    this.conversations[id] = [];
     this.currentConversationId = id;
+    this.renderConversation();
+    this.saveConversations();
+    this.renderConversationsList();
+  },
+
+  renderConversation() {
     this.DOM.chatbox.innerHTML = '';
-    const messages = this.conversations[id] || [];
-
-    messages.forEach(msg => {
-      this.addMessage(msg.content, msg.role === 'user' ? 'user' : 'bot', false);
-    });
-
-    this.DOM.input.value = '';
-    this.DOM.input.focus();
-
-    this.highlightCurrentConversation();
+    const msgs = this.conversations[this.currentConversationId] || [];
+    msgs.forEach(m => this.addMessage(m.content, m.role === 'user' ? 'user' : (m.role === 'assistant' ? 'bot' : 'error'), false));
+    this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
   },
 
   renderConversationsList() {
-    const list = this.DOM.conversationsList;
-    list.innerHTML = '';
+    if (!this.DOM.conversationList) return;
 
-    Object.entries(this.conversations).forEach(([id, msgs]) => {
+    this.DOM.conversationList.innerHTML = '';
+    Object.entries(this.conversations).forEach(([id, messages]) => {
       const btn = document.createElement('button');
-      btn.textContent = msgs.length > 0 ? msgs[0].content.slice(0, 30) + (msgs[0].content.length > 30 ? "..." : "") : "Nova conversa";
-      btn.title = btn.textContent;
-      btn.className = id === this.currentConversationId ? 'active' : '';
-      btn.addEventListener('click', () => this.loadConversation(id));
-      list.appendChild(btn);
-    });
-  },
+      btn.className = 'conversation-btn';
+      btn.textContent = messages.length > 0 ? messages[0].content.slice(0, 20) : 'Nova conversa';
+      if (id === this.currentConversationId) btn.classList.add('active');
 
-  highlightCurrentConversation() {
-    const buttons = this.DOM.conversationsList.querySelectorAll('button');
-    buttons.forEach(btn => {
-      btn.classList.toggle('active', btn === buttons[this.getCurrentConversationIndex()]);
-    });
-  },
+      btn.onclick = () => {
+        this.currentConversationId = id;
+        this.renderConversation();
+        this.renderConversationsList();
+      };
 
-  getCurrentConversationIndex() {
-    const keys = Object.keys(this.conversations);
-    return keys.indexOf(this.currentConversationId);
+      this.DOM.conversationList.appendChild(btn);
+    });
   },
 
   async sendMessage() {
     const message = this.DOM.input.value.trim();
     if (!message) return;
 
-    // Adiciona mensagem do usuário
     this.addMessage(message, 'user');
     this.conversations[this.currentConversationId].push({ role: 'user', content: message });
     this.DOM.input.value = '';
     this.DOM.sendBtn.disabled = true;
 
-    // Mostra "digitando..."
     this.DOM.chatbox.appendChild(this.DOM.typingIndicator);
     this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
 
     try {
-      const fullMessages = this.buildMessagesForAPI();
+      const messagesForAPI = this.buildMessagesForAPI();
 
-      const responseText = await this.callAPI(fullMessages);
+      const responseText = await this.callAPI(messagesForAPI);
       this.DOM.chatbox.removeChild(this.DOM.typingIndicator);
 
-      // Adiciona resposta bot
       this.addMessage(responseText, 'bot');
       this.conversations[this.currentConversationId].push({ role: 'assistant', content: responseText });
 
@@ -134,16 +131,14 @@ const ViBot = {
   },
 
   buildMessagesForAPI() {
-    // Adiciona sistema para idioma se não for português
-    const systemMsg = this.language !== 'pt' ? 
-      { role: 'system', content: `Responda em ${this.getLanguageName(this.language)}.` } :
-      { role: 'system', content: `Você é um assistente virtual que responde em português.` };
+    const systemMsg = this.language !== 'pt'
+      ? { role: 'system', content: `Responda em ${this.getLanguageName(this.language)}.` }
+      : { role: 'system', content: `Você é um assistente virtual que responde em português.` };
 
-    // pega as mensagens da conversa atual para contexto
-    const userAndAssistantMessages = this.conversations[this.currentConversationId].filter(m => m.role === 'user' || m.role === 'assistant');
+    const history = this.conversations[this.currentConversationId] || [];
+    const filtered = history.filter(m => m.role === 'user' || m.role === 'assistant');
 
-    // junta tudo
-    return [systemMsg, ...userAndAssistantMessages];
+    return [systemMsg, ...filtered];
   },
 
   async callAPI(messages) {
@@ -154,20 +149,25 @@ const ViBot = {
         'Authorization': `Bearer ${this.config.apiKey}`
       },
       body: JSON.stringify({
-        messages: messages,
         model: this.config.model,
+        messages: messages,
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens
       })
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'Erro na API');
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Erro na API');
     }
 
     const data = await response.json();
-    return data.choices[0].message.content;
+
+    if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+      return data.choices[0].message.content.trim();
+    } else {
+      throw new Error('Resposta inesperada da API');
+    }
   },
 
   addMessage(text, type, scroll = true) {
@@ -175,9 +175,7 @@ const ViBot = {
     msg.className = `message ${type}`;
     msg.textContent = text;
     this.DOM.chatbox.appendChild(msg);
-    if (scroll) {
-      this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
-    }
+    if (scroll) this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
   },
 
   createTypingIndicator() {
