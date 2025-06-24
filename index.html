@@ -50,7 +50,6 @@
       padding: 0 20px;
     }
 
-    /* Chat container */
     #chat-container {
       flex: 1;
       display: flex;
@@ -150,7 +149,6 @@
       cursor: not-allowed;
     }
 
-    /* Sidebar for conversations */
     aside {
       width: 250px;
       background: white;
@@ -212,6 +210,55 @@
       font-weight: 700;
     }
 
+    /* 🔽 RESPONSIVIDADE */
+    @media (max-width: 768px) {
+      main {
+        flex-direction: column;
+      }
+
+      aside {
+        width: 100%;
+        height: auto;
+        order: -1;
+        margin-bottom: 20px;
+      }
+
+      #chatbox {
+        height: 50vh;
+      }
+
+      #input-container {
+        flex-direction: column;
+      }
+
+      #sendBtn {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      #languageSelector {
+        width: 100%;
+      }
+
+      #userInput {
+        font-size: 14px;
+      }
+
+      .conversation-btn {
+        font-size: 12px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -282,7 +329,6 @@
         this.setupEvents();
         this.renderConversationsList();
 
-        // Set placeholder language on init
         this.DOM.input.placeholder = this.getPlaceholder(this.language);
       },
 
@@ -392,7 +438,6 @@
           : { role: 'system', content: `Você é um assistente virtual que responde em português.` };
 
         const history = this.conversations[this.currentConversationId] || [];
-        // Send only user and assistant messages to keep context clean
         const filtered = history.filter(m => m.role === 'user' || m.role === 'assistant');
 
         return [systemMsg, ...filtered];
