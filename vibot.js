@@ -9,7 +9,7 @@ const ViBot = {
 
   language: 'pt',
 
-  conversations: {}, // objeto que guarda todas as conversas: id => mensagens array
+  conversations: {}, // id => array de mensagens { role: 'user'|'assistant', content: string }
   currentConversationId: null,
 
   init() {
@@ -17,7 +17,7 @@ const ViBot = {
       chatbox: document.getElementById('chatbox'),
       input: document.getElementById('userInput'),
       sendBtn: document.getElementById('sendBtn'),
-      langSelector: document.getElementById('languageSelector'), // não existe no html atual, pode remover ou adicionar se quiser
+      langSelector: document.getElementById('languageSelector'),
       newChatBtn: document.getElementById('newChatBtnSidebar'),
       conversationsList: document.getElementById('conversationsList'),
       typingIndicator: this.createTypingIndicator()
@@ -25,7 +25,13 @@ const ViBot = {
 
     this.setupEvents();
     this.loadConversations();
-    this.startNewConversation();
+
+    // Se não tiver conversa carregada, cria nova
+    if (!this.currentConversationId || !this.conversations[this.currentConversationId]) {
+      this.startNewConversation();
+    } else {
+      this.loadConversation(this.currentConversationId);
+    }
   },
 
   setupEvents() {
@@ -33,16 +39,17 @@ const ViBot = {
     this.DOM.input.addEventListener('keypress', e => {
       if (e.key === 'Enter') this.sendMessage();
     });
-
     this.DOM.newChatBtn.addEventListener('click', () => this.startNewConversation());
+
+    this.DOM.langSelector.addEventListener('change', e => {
+      this.language = e.target.value;
+    });
   },
 
   startNewConversation() {
-    // cria um id para a conversa nova (timestamp simples)
     const newId = 'conv-' + Date.now();
     this.currentConversationId = newId;
-    this.conversations[newId] = []; // array vazio de mensagens
-
+    this.conversations[newId] = [];
     this.renderConversationsList();
     this.loadConversation(newId);
   },
@@ -50,11 +57,10 @@ const ViBot = {
   loadConversation(id) {
     this.currentConversationId = id;
     this.DOM.chatbox.innerHTML = '';
-
     const messages = this.conversations[id] || [];
 
     messages.forEach(msg => {
-      this.addMessage(msg.text, msg.type, false);
+      this.addMessage(msg.content, msg.role === 'user' ? 'user' : 'bot', false);
     });
 
     this.DOM.input.value = '';
@@ -69,7 +75,7 @@ const ViBot = {
 
     Object.entries(this.conversations).forEach(([id, msgs]) => {
       const btn = document.createElement('button');
-      btn.textContent = msgs.length > 0 ? msgs[0].text.slice(0, 30) + (msgs[0].text.length > 30 ? "..." : "") : "Nova conversa";
+      btn.textContent = msgs.length > 0 ? msgs[0].content.slice(0, 30) + (msgs[0].content.length > 30 ? "..." : "") : "Nova conversa";
       btn.title = btn.textContent;
       btn.className = id === this.currentConversationId ? 'active' : '';
       btn.addEventListener('click', () => this.loadConversation(id));
@@ -80,38 +86,44 @@ const ViBot = {
   highlightCurrentConversation() {
     const buttons = this.DOM.conversationsList.querySelectorAll('button');
     buttons.forEach(btn => {
-      btn.classList.toggle('active', btn.textContent === (this.conversations[this.currentConversationId]?.[0]?.text.slice(0,30) || "Nova conversa"));
+      btn.classList.toggle('active', btn === buttons[this.getCurrentConversationIndex()]);
     });
+  },
+
+  getCurrentConversationIndex() {
+    const keys = Object.keys(this.conversations);
+    return keys.indexOf(this.currentConversationId);
   },
 
   async sendMessage() {
     const message = this.DOM.input.value.trim();
     if (!message) return;
 
+    // Adiciona mensagem do usuário
     this.addMessage(message, 'user');
-    this.conversations[this.currentConversationId].push({ text: message, type: 'user' });
+    this.conversations[this.currentConversationId].push({ role: 'user', content: message });
     this.DOM.input.value = '';
     this.DOM.sendBtn.disabled = true;
 
+    // Mostra "digitando..."
     this.DOM.chatbox.appendChild(this.DOM.typingIndicator);
     this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
 
     try {
-      const response = await this.callAPI(message);
+      const fullMessages = this.buildMessagesForAPI();
+
+      const responseText = await this.callAPI(fullMessages);
       this.DOM.chatbox.removeChild(this.DOM.typingIndicator);
 
-      const translated = await this.translateIfNeeded(response);
-      this.addMessage(translated, 'bot');
-      this.conversations[this.currentConversationId].push({ text: translated, type: 'bot' });
+      // Adiciona resposta bot
+      this.addMessage(responseText, 'bot');
+      this.conversations[this.currentConversationId].push({ role: 'assistant', content: responseText });
 
       this.saveConversations();
-
-      // feedback opcional para a API (não afeta UI)
-      await this.sendFeedbackToGroq(translated);
     } catch (error) {
       this.DOM.chatbox.removeChild(this.DOM.typingIndicator);
       this.addMessage(`Erro: ${error.message}`, 'error');
-      this.conversations[this.currentConversationId].push({ text: `Erro: ${error.message}`, type: 'error' });
+      this.conversations[this.currentConversationId].push({ role: 'error', content: `Erro: ${error.message}` });
       this.saveConversations();
       console.error("ViBot Error:", error);
     } finally {
@@ -121,7 +133,20 @@ const ViBot = {
     }
   },
 
-  async callAPI(message) {
+  buildMessagesForAPI() {
+    // Adiciona sistema para idioma se não for português
+    const systemMsg = this.language !== 'pt' ? 
+      { role: 'system', content: `Responda em ${this.getLanguageName(this.language)}.` } :
+      { role: 'system', content: `Você é um assistente virtual que responde em português.` };
+
+    // pega as mensagens da conversa atual para contexto
+    const userAndAssistantMessages = this.conversations[this.currentConversationId].filter(m => m.role === 'user' || m.role === 'assistant');
+
+    // junta tudo
+    return [systemMsg, ...userAndAssistantMessages];
+  },
+
+  async callAPI(messages) {
     const response = await fetch(this.config.apiUrl, {
       method: 'POST',
       headers: {
@@ -129,7 +154,7 @@ const ViBot = {
         'Authorization': `Bearer ${this.config.apiKey}`
       },
       body: JSON.stringify({
-        messages: [{ role: "user", content: message }],
+        messages: messages,
         model: this.config.model,
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens
@@ -145,60 +170,12 @@ const ViBot = {
     return data.choices[0].message.content;
   },
 
-  async translateIfNeeded(text) {
-    if (this.language === 'pt') return text;
-
-    const targetLang = {
-      en: 'English',
-      es: 'Spanish'
-    }[this.language];
-
-    const prompt = `Traduza o seguinte texto para ${targetLang}, mantendo o tom natural e informal:\n\n"${text}"`;
-
-    try {
-      const response = await fetch(this.config.apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiKey}`
-        },
-        body: JSON.stringify({
-          messages: [{ role: "user", content: prompt }],
-          model: this.config.model,
-          temperature: 0.3,
-          max_tokens: this.config.maxTokens
-        })
-      });
-
-      const data = await response.json();
-      return data.choices[0].message.content;
-    } catch (err) {
-      console.error("Erro na tradução:", err);
-      return text;
-    }
-  },
-
-  async sendFeedbackToGroq(responseText) {
-    // opcional - mantem conforme seu código original
-    await fetch(this.config.apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.config.apiKey}`
-      },
-      body: JSON.stringify({
-        messages: [{ role: "system", content: `Última resposta: ${responseText}` }],
-        model: this.config.model
-      })
-    });
-  },
-
   addMessage(text, type, scroll = true) {
     const msg = document.createElement('div');
     msg.className = `message ${type}`;
     msg.textContent = text;
     this.DOM.chatbox.appendChild(msg);
-    if(scroll) {
+    if (scroll) {
       this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
     }
   },
@@ -221,11 +198,10 @@ const ViBot = {
   loadConversations() {
     try {
       const stored = localStorage.getItem('ViBotConversations');
-      if(stored) {
+      if (stored) {
         this.conversations = JSON.parse(stored);
-        // Usa a última conversa carregada se existir
         const keys = Object.keys(this.conversations);
-        if(keys.length > 0) {
+        if (keys.length > 0) {
           this.currentConversationId = keys[keys.length - 1];
         }
       }
@@ -233,6 +209,19 @@ const ViBot = {
       console.warn("Erro ao carregar conversas:", e);
       this.conversations = {};
     }
+  },
+
+  getLanguageName(code) {
+    return {
+      pt: "Português",
+      en: "Inglês",
+      es: "Espanhol",
+      zh: "Chinês",
+      hi: "Hindi",
+      ar: "Árabe",
+      fr: "Francês",
+      ru: "Russo"
+    }[code] || "Português";
   }
 };
 
