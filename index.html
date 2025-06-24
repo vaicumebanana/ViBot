@@ -167,7 +167,6 @@
         this.exportHistory.onclick = () => this.exportCurrent();
         this.startSpeech.onclick = () => this.toggleVoice();
       },
-      /* Theme */
       loadTheme() {
         const t = localStorage.getItem('vibot_theme') || 'light';
         document.documentElement.setAttribute('data-theme', t);
@@ -178,7 +177,6 @@
         document.documentElement.setAttribute('data-theme', nxt);
         localStorage.setItem('vibot_theme', nxt);
       },
-      /* Voice */
       toggleVoice() {
         if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
           return alert('Reconhecimento de voz não suportado.');
@@ -212,7 +210,6 @@
           speechSynthesis.speak(ut);
         }
       },
-      /* Export history */
       exportCurrent() {
         const conv = this.conversations[this.currentConversationId] || [];
         const txt = conv.map(m => (m.role === 'user' ? 'Você: ' : 'ViBot: ') + m.content).join('\n');
@@ -223,7 +220,83 @@
         a.click();
         URL.revokeObjectURL(a.href);
       },
-      /* Conversations storage */
+      async sendMessage() {
+        const prompt = this.userInput.value.trim();
+        if (!prompt) return;
+        this.sendBtn.disabled = true;
+        this.addMessage(prompt, "user");
+        this.conversations[this.currentConversationId].push({ role: "user", content: prompt });
+        this.saveConversations();
+        this.chatbox.appendChild(this.typingIndicator);
+        this.chatbox.scrollTop = this.chatbox.scrollHeight;
+
+        try {
+          const sys = this.getSystemPrompt(this.languageSelector.value);
+          const body = {
+            model: this.config.model,
+            messages: [{ role: "system", content: sys }, ...this.conversations[this.currentConversationId]],
+            temperature: this.config.temperature,
+            max_tokens: this.config.maxTokens
+          };
+
+          const res = await fetch(this.config.apiUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${this.config.apiKey}`
+            },
+            body: JSON.stringify(body)
+          });
+
+          const contentType = res.headers.get("content-type");
+          let data;
+
+          if (contentType && contentType.includes("application/json")) {
+            data = await res.json();
+          } else {
+            const text = await res.text();
+            console.error("Resposta não JSON:", text);
+            throw new Error(`A resposta da API não é JSON. Conteúdo recebido: ${text.slice(0, 200)}`);
+          }
+
+          if (!res.ok) {
+            console.error("Erro da API:", data);
+            throw new Error(`Erro ${res.status}: ${data.error?.message || JSON.stringify(data)}`);
+          }
+
+          const bot = data.choices?.[0]?.message?.content?.trim();
+          if (!bot) throw new Error("Resposta vazia");
+
+          this.chatbox.removeChild(this.typingIndicator);
+          this.addMessage(bot, "bot");
+          this.conversations[this.currentConversationId].push({ role: "bot", content: bot });
+          this.speak(bot);
+          this.saveConversations();
+        } catch (e) {
+          this.chatbox.removeChild(this.typingIndicator);
+          this.addMessage("Erro: " + e.message, "error");
+          this.conversations[this.currentConversationId].push({ role: "error", content: e.message });
+          this.saveConversations();
+          console.error(e);
+        } finally {
+          this.sendBtn.disabled = false;
+          this.userInput.value = "";
+          this.userInput.focus();
+          this.renderConversationsList();
+        }
+      },
+      getSystemPrompt(lang) {
+        return {
+          en: "You are a helpful assistant.",
+          es: "Eres un asistente útil.",
+          zh: "你是一个有帮助的助手。",
+          hi: "आप एक सहायक सहायक हैं।",
+          ar: "أنت مساعد مفيد.",
+          fr: "Vous êtes un assistant utile.",
+          ru: "Вы полезный помощник.",
+          pt: "Você é um assistente útil."
+        }[lang] || "Você é um assistente útil.";
+      },
       createNewConversation() {
         const id = "conv_" + Date.now();
         this.conversations[id] = [];
@@ -270,70 +343,6 @@
         d.textContent = text;
         this.chatbox.appendChild(d);
         this.chatbox.scrollTop = this.chatbox.scrollHeight;
-      },
-      async sendMessage() {
-        const prompt = this.userInput.value.trim();
-        if (!prompt) return;
-        this.sendBtn.disabled = true;
-        this.addMessage(prompt, "user");
-        this.conversations[this.currentConversationId].push({ role: "user", content: prompt });
-        this.saveConversations();
-        this.chatbox.appendChild(this.typingIndicator);
-        this.chatbox.scrollTop = this.chatbox.scrollHeight;
-        try {
-          const sys = this.getSystemPrompt(this.languageSelector.value);
-          const body = { model: this.config.model, messages: [{role:"system",content:sys}, ...this.conversations[this.currentConversationId]], temperature: this.config.temperature, max_tokens: this.config.maxTokens };
-          const res = await fetch(this.config.apiUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type":"application/json",
-              Authorization:`Bearer ${this.config.apiKey}`
-            },
-            body: JSON.stringify(body)
-          });
-          console.log("HTTP status:", res.status, res.statusText);
-          const text = await res.text();
-          let data;
-          try { data = JSON.parse(text); }
-          catch {
-            console.error("Resposta não JSON:", text);
-            throw new Error(`API retornou texto inválido: ${text}`);
-          }
-          if (!res.ok) {
-            console.error("Erro da API:", data);
-            throw new Error(`Erro ${res.status}: ${data.error?.message || JSON.stringify(data)}`);
-          }
-          const bot = data.choices?.[0]?.message?.content?.trim();
-          if (!bot) throw new Error("Resposta vazia");
-          this.chatbox.removeChild(this.typingIndicator);
-          this.addMessage(bot, "bot");
-          this.conversations[this.currentConversationId].push({ role: "bot", content: bot });
-          this.speak(bot);
-          this.saveConversations();
-        } catch (e) {
-          this.chatbox.removeChild(this.typingIndicator);
-          this.addMessage("Erro: "+e.message, "error");
-          this.conversations[this.currentConversationId].push({ role:"error", content:e.message });
-          this.saveConversations();
-          console.error(e);
-        } finally {
-          this.sendBtn.disabled = false;
-          this.userInput.value = "";
-          this.userInput.focus();
-          this.renderConversationsList();
-        }
-      },
-      getSystemPrompt(lang) {
-        return {
-          en: "You are a helpful assistant.",
-          es: "Eres un asistente útil.",
-          zh: "你是一个有帮助的助手。",
-          hi: "आप एक सहायक सहायक हैं।",
-          ar: "أنت مساعد مفيد.",
-          fr: "Vous êtes un assistant utile.",
-          ru: "Вы полезный помощник.",
-          pt: "Você é um assistente útil."
-        }[lang] || "Você é um assistente útil.";
       },
       conversations: {}, currentConversationId: null
     };
