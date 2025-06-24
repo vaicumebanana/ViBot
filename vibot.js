@@ -9,18 +9,23 @@ const ViBot = {
 
   language: 'pt',
 
+  conversations: {}, // objeto que guarda todas as conversas: id => mensagens array
+  currentConversationId: null,
+
   init() {
     this.DOM = {
       chatbox: document.getElementById('chatbox'),
       input: document.getElementById('userInput'),
       sendBtn: document.getElementById('sendBtn'),
-      langSelector: document.getElementById('languageSelector'),
-      newChatBtn: document.getElementById('newChatBtn'), // <-- AQUI
+      langSelector: document.getElementById('languageSelector'), // não existe no html atual, pode remover ou adicionar se quiser
+      newChatBtn: document.getElementById('newChatBtnSidebar'),
+      conversationsList: document.getElementById('conversationsList'),
       typingIndicator: this.createTypingIndicator()
     };
 
     this.setupEvents();
-    this.loadHistory();
+    this.loadConversations();
+    this.startNewConversation();
   },
 
   setupEvents() {
@@ -29,16 +34,54 @@ const ViBot = {
       if (e.key === 'Enter') this.sendMessage();
     });
 
-    this.DOM.langSelector.addEventListener('change', (e) => {
-      this.language = e.target.value;
-      this.DOM.input.placeholder = {
-        pt: "Digite sua mensagem...",
-        en: "Type your message...",
-        es: "Escribe tu mensaje..."
-      }[this.language];
+    this.DOM.newChatBtn.addEventListener('click', () => this.startNewConversation());
+  },
+
+  startNewConversation() {
+    // cria um id para a conversa nova (timestamp simples)
+    const newId = 'conv-' + Date.now();
+    this.currentConversationId = newId;
+    this.conversations[newId] = []; // array vazio de mensagens
+
+    this.renderConversationsList();
+    this.loadConversation(newId);
+  },
+
+  loadConversation(id) {
+    this.currentConversationId = id;
+    this.DOM.chatbox.innerHTML = '';
+
+    const messages = this.conversations[id] || [];
+
+    messages.forEach(msg => {
+      this.addMessage(msg.text, msg.type, false);
     });
 
-    this.DOM.newChatBtn.addEventListener('click', () => this.newChat()); // <-- AQUI
+    this.DOM.input.value = '';
+    this.DOM.input.focus();
+
+    this.highlightCurrentConversation();
+  },
+
+  renderConversationsList() {
+    const list = this.DOM.conversationsList;
+    list.innerHTML = '';
+
+    Object.entries(this.conversations).forEach(([id, msgs]) => {
+      const btn = document.createElement('button');
+      btn.textContent = msgs.length > 0 ? msgs[0].text.slice(0, 30) + (msgs[0].text.length > 30 ? "..." : "") : "Nova conversa";
+      btn.title = btn.textContent;
+      btn.className = id === this.currentConversationId ? 'active' : '';
+      btn.addEventListener('click', () => this.loadConversation(id));
+      list.appendChild(btn);
+    });
+  },
+
+  highlightCurrentConversation() {
+    const buttons = this.DOM.conversationsList.querySelectorAll('button');
+    buttons.forEach(btn => {
+      btn.classList.toggle('active', btn.textContent === (this.conversations[this.currentConversationId]?.[0]?.text.slice(0,30) || "Nova conversa"));
+    });
   },
 
   async sendMessage() {
@@ -46,8 +89,10 @@ const ViBot = {
     if (!message) return;
 
     this.addMessage(message, 'user');
+    this.conversations[this.currentConversationId].push({ text: message, type: 'user' });
     this.DOM.input.value = '';
     this.DOM.sendBtn.disabled = true;
+
     this.DOM.chatbox.appendChild(this.DOM.typingIndicator);
     this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
 
@@ -57,16 +102,22 @@ const ViBot = {
 
       const translated = await this.translateIfNeeded(response);
       this.addMessage(translated, 'bot');
+      this.conversations[this.currentConversationId].push({ text: translated, type: 'bot' });
 
+      this.saveConversations();
+
+      // feedback opcional para a API (não afeta UI)
       await this.sendFeedbackToGroq(translated);
     } catch (error) {
       this.DOM.chatbox.removeChild(this.DOM.typingIndicator);
       this.addMessage(`Erro: ${error.message}`, 'error');
+      this.conversations[this.currentConversationId].push({ text: `Erro: ${error.message}`, type: 'error' });
+      this.saveConversations();
       console.error("ViBot Error:", error);
     } finally {
       this.DOM.sendBtn.disabled = false;
       this.DOM.input.focus();
-      this.saveHistory();
+      this.renderConversationsList();
     }
   },
 
@@ -128,6 +179,7 @@ const ViBot = {
   },
 
   async sendFeedbackToGroq(responseText) {
+    // opcional - mantem conforme seu código original
     await fetch(this.config.apiUrl, {
       method: 'POST',
       headers: {
@@ -141,12 +193,14 @@ const ViBot = {
     });
   },
 
-  addMessage(text, type) {
+  addMessage(text, type, scroll = true) {
     const msg = document.createElement('div');
     msg.className = `message ${type}`;
     msg.textContent = text;
     this.DOM.chatbox.appendChild(msg);
-    this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
+    if(scroll) {
+      this.DOM.chatbox.scrollTop = this.DOM.chatbox.scrollHeight;
+    }
   },
 
   createTypingIndicator() {
@@ -156,30 +210,29 @@ const ViBot = {
     return indicator;
   },
 
-  saveHistory() {
-    const messages = Array.from(this.DOM.chatbox.querySelectorAll('.message'))
-      .filter(el => !el.classList.contains('typing'))
-      .map(el => ({
-        text: el.textContent,
-        type: el.classList.contains('user') ? 'user' :
-              el.classList.contains('error') ? 'error' : 'bot'
-      }));
-    localStorage.setItem('ViBotHistory', JSON.stringify(messages));
-  },
-
-  loadHistory() {
-    const history = localStorage.getItem('ViBotHistory');
-    if (history) {
-      JSON.parse(history).forEach(msg => this.addMessage(msg.text, msg.type));
+  saveConversations() {
+    try {
+      localStorage.setItem('ViBotConversations', JSON.stringify(this.conversations));
+    } catch (e) {
+      console.warn("Não foi possível salvar as conversas:", e);
     }
   },
 
-  // 👉 Função adicionada: limpa o chat e o histórico
-  newChat() {
-    this.DOM.chatbox.innerHTML = '';
-    localStorage.removeItem('ViBotHistory');
-    this.DOM.input.value = '';
-    this.DOM.input.focus();
+  loadConversations() {
+    try {
+      const stored = localStorage.getItem('ViBotConversations');
+      if(stored) {
+        this.conversations = JSON.parse(stored);
+        // Usa a última conversa carregada se existir
+        const keys = Object.keys(this.conversations);
+        if(keys.length > 0) {
+          this.currentConversationId = keys[keys.length - 1];
+        }
+      }
+    } catch (e) {
+      console.warn("Erro ao carregar conversas:", e);
+      this.conversations = {};
+    }
   }
 };
 
