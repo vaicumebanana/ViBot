@@ -15,6 +15,7 @@ const ViBot = {
       input: document.getElementById('userInput'),
       sendBtn: document.getElementById('sendBtn'),
       langSelector: document.getElementById('languageSelector'),
+      newChatBtn: document.getElementById('newChatBtn'), // <-- AQUI
       typingIndicator: this.createTypingIndicator()
     };
 
@@ -36,6 +37,8 @@ const ViBot = {
         es: "Escribe tu mensaje..."
       }[this.language];
     });
+
+    this.DOM.newChatBtn.addEventListener('click', () => this.newChat()); // <-- AQUI
   },
 
   async sendMessage() {
@@ -169,6 +172,14 @@ const ViBot = {
     if (history) {
       JSON.parse(history).forEach(msg => this.addMessage(msg.text, msg.type));
     }
+  },
+
+  // 👉 Função adicionada: limpa o chat e o histórico
+  newChat() {
+    this.DOM.chatbox.innerHTML = '';
+    localStorage.removeItem('ViBotHistory');
+    this.DOM.input.value = '';
+    this.DOM.input.focus();
   }
 };
 
