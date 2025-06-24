@@ -171,30 +171,90 @@
         this.startSpeech.onclick = () => this.toggleVoice();
         this.importHistory.onclick = () => this.importFile.click();
         this.importFile.onchange = e => this.importConversation(e.target.files[0]);
+
+        this.speaking = false; // estado do TTS
       },
-      loadTheme() { /* igual */ localStorage.getItem('vibot_theme') ? document.documentElement.setAttribute('data-theme', localStorage.getItem('vibot_theme')) : null; },
-      toggleTheme() { /* igual */ },
-      toggleVoice() { /* igual */ },
-      speak(text) { /* igual */ },
-      exportCurrent() { /* igual */ },
+      loadTheme() {
+        const saved = localStorage.getItem('vibot_theme');
+        if (saved) document.documentElement.setAttribute('data-theme', saved);
+      },
+      toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? '' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('vibot_theme', newTheme);
+      },
+      toggleVoice() {
+        if (!window.speechSynthesis) {
+          alert("Seu navegador não suporta síntese de voz.");
+          return;
+        }
+        if (this.speaking) {
+          window.speechSynthesis.cancel();
+          this.speaking = false;
+          this.startSpeech.textContent = "🎙️ Voz";
+        } else {
+          const lastMsg = this.conversations[this.currentConversationId]
+            .slice().reverse().find(m => m.role === 'bot' || m.role === 'assistant');
+          if (!lastMsg) {
+            alert("Nenhuma mensagem do ViBot para falar.");
+            return;
+          }
+          this.speaking = true;
+          this.startSpeech.textContent = "🔇 Parar";
+          this.speak(lastMsg.content);
+        }
+      },
+      speak(text) {
+        if (!window.speechSynthesis) return;
+        const utterance = new SpeechSynthesisUtterance(text);
+        const lang = this.languageSelector.value;
+        utterance.lang = lang === 'pt' ? 'pt-BR' : lang;
+        utterance.onend = () => {
+          this.speaking = false;
+          this.startSpeech.textContent = "🎙️ Voz";
+        };
+        window.speechSynthesis.speak(utterance);
+      },
+      exportCurrent() {
+        const conv = this.conversations[this.currentConversationId];
+        if (!conv || conv.length === 0) {
+          alert("Nenhuma conversa para exportar.");
+          return;
+        }
+        let text = "";
+        conv.forEach(m => {
+          if (m.role === "user") text += "Você: " + m.content + "\n";
+          else if (m.role === "bot" || m.role === "assistant") text += "ViBot: " + m.content + "\n";
+        });
+        const blob = new Blob([text], {type: "text/plain;charset=utf-8"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "conversa_vibot.txt";
+        a.click();
+        URL.revokeObjectURL(url);
+      },
       importConversation(file) {
         if (!file) return;
         const reader = new FileReader();
         reader.onload = () => {
-          const lines = reader.result.split(/\r?\n/).filter(l=>l.trim());
-          const msgs = lines.map(l=>{
-            if (l.startsWith("Você: ")) return { role:"user", content:l.substring(6).trim() };
-            if (l.startsWith("ViBot: ")) return { role:"assistant", content:l.substring(7).trim() };
+          const lines = reader.result.split(/\r?\n/).filter(l => l.trim());
+          const msgs = lines.map(l => {
+            if (l.startsWith("Você: ")) return { role: "user", content: l.substring(6).trim() };
+            if (l.startsWith("ViBot: ")) return { role: "assistant", content: l.substring(7).trim() };
           }).filter(Boolean);
           if (msgs.length) {
-            const id = "conv_"+Date.now();
-            this.conversations[id]=msgs;
-            this.currentConversationId=id;
+            const id = "conv_" + Date.now();
+            this.conversations[id] = msgs;
+            this.currentConversationId = id;
             this.saveConversations();
             this.renderConversationsList();
             this.renderCurrentConversation();
             alert("Conversa importada!");
-          } else alert("Formato inválido.");
+          } else {
+            alert("Formato inválido.");
+          }
         };
         reader.readAsText(file);
       },
@@ -203,61 +263,121 @@
         if (!prompt) return;
         this.sendBtn.disabled = true;
         this.addMessage(prompt, "user");
-        this.conversations[this.currentConversationId].push({ role:"user", content:prompt });
+        this.conversations[this.currentConversationId].push({ role: "user", content: prompt });
         this.saveConversations();
         this.chatbox.appendChild(this.typingIndicator);
         this.chatbox.scrollTop = this.chatbox.scrollHeight;
+
         try {
           const sys = this.getSystemPrompt(this.languageSelector.value);
-          const msgs = [{role:"system",content:sys}].concat(this.conversations[this.currentConversationId].map(m=>({
-            role:m.role==="bot"||m.role==="assistant"?"assistant":m.role,
-            content:m.content
-          })));
-          const res = await fetch(this.config.apiUrl,{
-            method:"POST",
-            headers:{"Content-Type":"application/json",Authorization:`Bearer ${this.config.apiKey}`},
-            body:JSON.stringify({model:this.config.model,messages:msgs,temperature:this.config.temperature,max_tokens:this.config.maxTokens})
+          const msgs = [{ role: "system", content: sys }].concat(
+            this.conversations[this.currentConversationId].map(m => ({
+              role: (m.role === "bot" || m.role === "assistant") ? "assistant" : m.role,
+              content: m.content
+            }))
+          );
+
+          const res = await fetch(this.config.apiUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${this.config.apiKey}`
+            },
+            body: JSON.stringify({
+              model: this.config.model,
+              messages: msgs,
+              temperature: this.config.temperature,
+              max_tokens: this.config.maxTokens
+            })
           });
+
           const ct = res.headers.get("content-type");
-          const data = ct?.includes("application/json")?await res.json():null;
+          const data = ct?.includes("application/json") ? await res.json() : null;
           if (!ct?.includes("application/json")) throw new Error(await res.text());
-          if (!res.ok) throw new Error(data.error?.message||data);
+          if (!res.ok) throw new Error(data.error?.message || data);
+
           const bot = data.choices[0]?.message?.content?.trim();
           if (!bot) throw new Error("Resposta vazia");
+
           this.chatbox.removeChild(this.typingIndicator);
           this.addMessage(bot, "bot");
-          this.conversations[this.currentConversationId].push({ role:"bot", content:bot });
+          this.conversations[this.currentConversationId].push({ role: "bot", content: bot });
           this.speak(bot);
           this.saveConversations();
         } catch (e) {
           this.chatbox.removeChild(this.typingIndicator);
-          this.addMessage("Erro: "+e.message,"error");
-          this.conversations[this.currentConversationId].push({ role:"error", content:e.message });
+          this.addMessage("Erro: " + e.message, "error");
+          this.conversations[this.currentConversationId].push({ role: "error", content: e.message });
           this.saveConversations();
         } finally {
-          this.sendBtn.disabled=false;
-          this.userInput.value="";
+          this.sendBtn.disabled = false;
+          this.userInput.value = "";
           this.userInput.focus();
           this.renderConversationsList();
         }
       },
-      getSystemPrompt(lang){ /* igual */ },
-      createNewConversation(){ /* igual */ },
-      saveConversations(){ /* igual */ },
-      loadConversations(){ /* igual */ },
-      renderConversationsList(){ /* igual */ },
-      renderCurrentConversation(){ /* igual */ },
-      addMessage(text,role){
-        const d=document.createElement("div");
-        d.className="message "+(role==="user"||role==="bot"||role==="error"?role:"bot");
-        d.textContent=text;
-        this.chatbox.appendChild(d);
-        this.chatbox.scrollTop=this.chatbox.scrollHeight;
+      getSystemPrompt(lang) {
+        const prompts = {
+          pt: "Você é o ViBot, um assistente virtual útil, educado e direto, que responde com clareza e precisão.",
+          en: "You are ViBot, a helpful, polite and straightforward virtual assistant that answers clearly and precisely.",
+          es: "Eres ViBot, un asistente virtual útil, educado y directo que responde con claridad y precisión.",
+          zh: "你是 ViBot，一位有帮助、有礼貌、直接的虚拟助手，回答清晰准确。",
+          hi: "आप ViBot हैं, एक सहायक, विनम्र और स्पष्ट आभासी सहायक, जो स्पष्टता और सटीकता के साथ उत्तर देता है।",
+          ar: "أنت ViBot، مساعد افتراضي مفيد ومهذب ومباشر يجيب بوضوح ودقة.",
+          fr: "Vous êtes ViBot, un assistant virtuel utile, poli et direct, qui répond avec clarté et précision.",
+          ru: "Вы — ViBot, полезный, вежливый и прямолинейный виртуальный помощник, отвечающий ясно и точно."
+        };
+        return prompts[lang] || prompts.pt;
       },
-      conversations:{},currentConversationId:null
+      createNewConversation() {
+        const id = "conv_" + Date.now();
+        this.conversations[id] = [];
+        this.currentConversationId = id;
+        this.saveConversations();
+        this.renderConversationsList();
+        this.renderCurrentConversation();
+      },
+      saveConversations() {
+        localStorage.setItem("vibot_conversations", JSON.stringify(this.conversations));
+        localStorage.setItem("vibot_current", this.currentConversationId);
+      },
+      loadConversations() {
+        this.conversations = JSON.parse(localStorage.getItem("vibot_conversations") || "{}");
+        this.currentConversationId = localStorage.getItem("vibot_current");
+      },
+      renderConversationsList() {
+        this.conversationList.innerHTML = "";
+        Object.entries(this.conversations).forEach(([id, conv]) => {
+          const btn = document.createElement("button");
+          btn.className = "conversation-btn" + (id === this.currentConversationId ? " active" : "");
+          const firstUserMsg = conv.find(m => m.role === "user")?.content;
+          btn.textContent = firstUserMsg ? firstUserMsg.slice(0, 30) : "Nova conversa";
+          btn.title = btn.textContent;
+          btn.onclick = () => {
+            this.currentConversationId = id;
+            this.saveConversations();
+            this.renderConversationsList();
+            this.renderCurrentConversation();
+          };
+          this.conversationList.appendChild(btn);
+        });
+      },
+      renderCurrentConversation() {
+        this.chatbox.innerHTML = "";
+        const msgs = this.conversations[this.currentConversationId] || [];
+        msgs.forEach(m => this.addMessage(m.content, m.role));
+        this.chatbox.scrollTop = this.chatbox.scrollHeight;
+      },
+      addMessage(text, role) {
+        const div = document.createElement("div");
+        div.className = "message " + (role === "user" ? "user" : role === "bot" || role === "assistant" ? "bot" : "error");
+        div.textContent = text;
+        this.chatbox.appendChild(div);
+        this.chatbox.scrollTop = this.chatbox.scrollHeight;
+      }
     };
 
-    window.addEventListener('DOMContentLoaded',()=>ViBot.init());
+    window.onload = () => ViBot.init();
   </script>
 </body>
 </html>
