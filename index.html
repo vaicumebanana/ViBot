@@ -71,6 +71,7 @@
     border-radius: 12px; font-size: 16px;
     resize: none;
     min-height: 40px;
+    font-family: inherit;
   }
   #sendBtn {
     background: var(--primary); color: white; border: none;
@@ -161,7 +162,6 @@
     },
 
     init() {
-      // Elementos
       this.chatbox = document.getElementById("chatbox");
       this.userInput = document.getElementById("userInput");
       this.sendBtn = document.getElementById("sendBtn");
@@ -193,88 +193,74 @@
       }
 
       // Eventos
-      this.sendBtn.onclick = () => this.sendMessage();
-
-      // Habilita/desabilita botão enviar conforme o input
       this.userInput.addEventListener("input", () => {
         this.sendBtn.disabled = this.userInput.value.trim().length === 0;
         this.adjustTextareaHeight();
       });
 
-      // Enviar com Enter (shift + enter insere nova linha)
-      this.userInput.addEventListener("keydown", e => {
+      // Enter envia (sem shift)
+      this.userInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
           if (!this.sendBtn.disabled) this.sendMessage();
         }
       });
 
-      this.newConversationBtn.onclick = () => this.createNewConversation();
-      this.toggleThemeBtn.onclick = () => this.toggleTheme();
-      this.startSpeechBtn.onclick = () => this.toggleSpeech();
-      this.exportHistoryBtn.onclick = () => this.exportHistory();
-      this.importHistoryBtn.onclick = () => this.importFileInput.click();
-      this.importFileInput.onchange = e => this.importHistory(e);
-      this.languageSelector.onchange = e => this.changeLanguage(e.target.value);
-
-      this.adjustTextareaHeight();
-    },
-
-    conversations: {},
-    currentConversationId: null,
-
-    loadConversations() {
-      const data = localStorage.getItem("vibot_conversations");
-      if (data) {
-        try {
-          this.conversations = JSON.parse(data);
-          this.currentConversationId = localStorage.getItem("vibot_current");
-        } catch {
-          this.conversations = {};
-          this.currentConversationId = null;
-        }
-      }
-    },
-
-    saveConversations() {
-      localStorage.setItem("vibot_conversations", JSON.stringify(this.conversations));
-      localStorage.setItem("vibot_current", this.currentConversationId);
+      this.sendBtn.addEventListener("click", () => this.sendMessage());
+      this.newConversationBtn.addEventListener("click", () => this.createNewConversation());
+      this.toggleThemeBtn.addEventListener("click", () => this.toggleTheme());
+      this.startSpeechBtn.addEventListener("click", () => this.toggleSpeech());
+      this.exportHistoryBtn.addEventListener("click", () => this.exportHistory());
+      this.importHistoryBtn.addEventListener("click", () => this.importFileInput.click());
+      this.importFileInput.addEventListener("change", (e) => this.importHistory(e));
+      this.languageSelector.addEventListener("change", () => this.changeLanguage(this.languageSelector.value));
     },
 
     createNewConversation() {
       const id = "conv_" + Date.now();
-      this.conversations[id] = {
-        id,
-        messages: []
-      };
+      this.conversations[id] = { id, messages: [] };
       this.currentConversationId = id;
       this.saveConversations();
       this.renderConversationsList();
       this.renderCurrentConversation();
-      this.userInput.focus();
+      this.userInput.value = "";
       this.sendBtn.disabled = true;
+      this.adjustTextareaHeight();
+      this.userInput.focus();
+    },
+
+    loadConversations() {
+      const conv = localStorage.getItem("vibot_conversations");
+      this.conversations = conv ? JSON.parse(conv) : {};
+      this.currentConversationId = localStorage.getItem("vibot_current_conversation");
+    },
+
+    saveConversations() {
+      localStorage.setItem("vibot_conversations", JSON.stringify(this.conversations));
+      localStorage.setItem("vibot_current_conversation", this.currentConversationId);
     },
 
     renderConversationsList() {
       this.conversationList.innerHTML = "";
       for (const id in this.conversations) {
         const conv = this.conversations[id];
-        const firstMsg = conv.messages.find(m => m.role === "user" || m.role === "assistant");
-        const previewText = firstMsg
-          ? firstMsg.content.substring(0, 30).replace(/\n/g, " ") + (firstMsg.content.length > 30 ? "..." : "")
-          : "Nova conversa";
         const btn = document.createElement("button");
-        btn.textContent = previewText;
-        btn.className = "conversation-btn" + (id === this.currentConversationId ? " active" : "");
-        btn.title = previewText;
-        btn.onclick = () => {
-          this.currentConversationId = id;
-          this.saveConversations();
-          this.renderConversationsList();
-          this.renderCurrentConversation();
-          this.userInput.focus();
-          this.sendBtn.disabled = this.userInput.value.trim().length === 0;
-        };
+        btn.className = "conversation-btn";
+        btn.textContent = conv.messages.length > 0 ? conv.messages[0].content.substring(0, 25) : "Conversa vazia";
+        if (id === this.currentConversationId) btn.classList.add("active");
+        btn.title = "Abrir conversa";
+        btn.addEventListener("click", () => {
+          if (this.currentConversationId !== id) {
+            this.currentConversationId = id;
+            this.saveConversations();
+            this.renderConversationsList();
+            this.renderCurrentConversation();
+            this.userInput.value = "";
+            this.sendBtn.disabled = true;
+            this.adjustTextareaHeight();
+            this.userInput.focus();
+          }
+        });
         this.conversationList.appendChild(btn);
       }
     },
@@ -284,52 +270,50 @@
       const conv = this.conversations[this.currentConversationId];
       if (!conv) return;
       for (const msg of conv.messages) {
-        this.addMessageToChatbox(msg.role, msg.content);
+        this.appendMessage(msg.role, msg.content);
       }
-      this.scrollChatToBottom();
+      this.chatbox.scrollTop = this.chatbox.scrollHeight;
     },
 
-    addMessageToChatbox(role, content) {
+    appendMessage(role, content) {
       const div = document.createElement("div");
       div.className = "message " + (role === "user" ? "user" : "bot");
       div.textContent = content;
       this.chatbox.appendChild(div);
+      this.chatbox.scrollTop = this.chatbox.scrollHeight;
     },
 
-    addErrorMessage(error) {
+    addErrorMessage(text) {
       const div = document.createElement("div");
       div.className = "message error";
-      div.textContent = "Erro: " + error;
+      div.textContent = text;
       this.chatbox.appendChild(div);
-      this.scrollChatToBottom();
-    },
-
-    scrollChatToBottom() {
       this.chatbox.scrollTop = this.chatbox.scrollHeight;
     },
 
     async sendMessage() {
-      let text = this.userInput.value.trim();
-      if (!text) return;
+      const userText = this.userInput.value.trim();
+      if (userText.length === 0) return;
 
-      this.userInput.value = "";
       this.sendBtn.disabled = true;
       this.userInput.disabled = true;
 
-      this.addMessageToChatbox("user", text);
-      this.conversations[this.currentConversationId].messages.push({ role: "user", content: text });
-      this.saveConversations();
+      this.appendMessage("user", userText);
 
+      const conv = this.conversations[this.currentConversationId];
+      conv.messages.push({ role: "user", content: userText });
+
+      // Mostrar digitando
       this.chatbox.appendChild(this.typingIndicator);
-      this.scrollChatToBottom();
+      this.chatbox.scrollTop = this.chatbox.scrollHeight;
 
       try {
-        const responseText = await this.callApi(this.conversations[this.currentConversationId].messages);
+        const responseText = await this.callApi(conv.messages);
         this.chatbox.removeChild(this.typingIndicator);
-        this.addMessageToChatbox("assistant", responseText);
-        this.conversations[this.currentConversationId].messages.push({ role: "assistant", content: responseText });
+
+        this.appendMessage("assistant", responseText);
+        conv.messages.push({ role: "assistant", content: responseText });
         this.saveConversations();
-        this.scrollChatToBottom();
 
         if (this.speaking) this.speakText(responseText);
 
@@ -338,13 +322,14 @@
         this.addErrorMessage(error.message || "Erro desconhecido");
       } finally {
         this.userInput.disabled = false;
+        this.userInput.value = "";
+        this.sendBtn.disabled = true;
+        this.adjustTextareaHeight();
         this.userInput.focus();
-        this.sendBtn.disabled = this.userInput.value.trim().length === 0;
       }
     },
 
     async callApi(messages) {
-      // Para compatibilidade, uso fetch e envio a conversa completa.
       const payload = {
         model: this.config.model,
         messages: messages,
@@ -429,12 +414,9 @@
       }
 
       const utterance = new SpeechSynthesisUtterance(text);
-
-      // Tenta ajustar voz para o idioma selecionado
       const lang = this.languageSelector.value || "pt-BR";
       utterance.lang = lang;
 
-      // Ajuste voz: tentar escolher uma voz que combine com o idioma
       const voices = this.speechSynthesis.getVoices();
       const voice = voices.find(v => v.lang.toLowerCase().startsWith(lang.toLowerCase()));
       if (voice) utterance.voice = voice;
@@ -443,7 +425,6 @@
       utterance.pitch = 1;
 
       this.currentUtterance = utterance;
-
       this.speechSynthesis.speak(utterance);
     },
 
@@ -474,12 +455,9 @@
       const reader = new FileReader();
       reader.onload = e => {
         const content = e.target.result;
-        // Cria nova conversa com o conteúdo
         const id = "conv_" + Date.now();
         const messages = [];
 
-        // Tenta parsear o texto simples para mensagens
-        // Exemplo: "Usuário: texto\n\nViBot: texto\n\n..."
         const lines = content.split(/\r?\n/);
         let role = null;
         let buffer = "";
@@ -522,14 +500,13 @@
 
         this.userInput.value = "";
         this.sendBtn.disabled = true;
+        this.adjustTextareaHeight();
       };
       reader.readAsText(file);
-      // Limpar input para permitir importar mesmo arquivo novamente
       event.target.value = "";
     },
 
     changeLanguage(lang) {
-      // Atualiza idioma para voz e placeholders
       this.userInput.placeholder = {
         "pt-BR": "Digite sua mensagem...",
         "en-US": "Type your message...",
@@ -549,9 +526,7 @@
     }
   };
 
-  window.addEventListener("DOMContentLoaded", () => {
-    ViBot.init();
-  });
+  window.addEventListener("DOMContentLoaded", () => ViBot.init());
 </script>
 
 </body>
