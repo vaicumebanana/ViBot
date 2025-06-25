@@ -6,140 +6,114 @@
   <title>ViBot - Assistente Virtual</title>
   <style>
     :root {
+      --bg-light: #f9fafb;
+      --bg-dark: #1f2937;
+      --text-light: #111827;
+      --text-dark: #f9fafb;
       --primary: #4f46e5;
-      --user-bg: #4f46e5;
-      --bot-bg: #f3f4f6;
-      --error-bg: #fee2e2;
-      --text: #111827;
-      --bg: #f9fafb;
     }
-    [data-theme="dark"] {
-      --bg: #1f2937;
-      --bot-bg: #374151;
-      --text: #f9fafb;
-    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0; padding: 0;
-      transition: background 0.3s, color 0.3s;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg-light);
+      color: var(--text-light);
+      transition: all 0.3s ease;
     }
+
+    [data-theme="dark"] {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
     header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 16px; background: white; border-bottom: 1px solid #e5e7eb;
-    }
-    [data-theme="dark"] header { background: #111827; }
-    h1 { margin: 0; color: var(--primary); }
-    header button, header select {
-      margin-left: 8px;
-      padding: 8px;
-      border-radius: 8px;
-      border: 1px solid #d1d5db;
-      cursor: pointer;
       background: white;
+      padding: 16px;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    [data-theme="dark"] header {
+      background: #111827;
+      color: white;
+    }
+
+    h1 {
+      color: var(--primary);
+      margin: 0;
+    }
+
+    button, select, input {
+      margin: 4px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
       font-size: 14px;
     }
-    main {
-      display: flex; flex-wrap: wrap;
-      max-width: 1100px;
-      margin: 20px auto;
-      gap: 20px;
-      padding: 0 16px;
+
+    button {
+      background: #f3f4f6;
+      cursor: pointer;
     }
-    #chat-container {
-      flex: 1; display: flex; flex-direction: column;
-      min-width: 300px;
+
+    button:hover {
+      background: #e5e7eb;
     }
+
     #chatbox {
-      flex: 1;
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
       padding: 16px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      max-width: 800px;
+      margin: 20px auto;
+      background: white;
       min-height: 300px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      overflow-y: auto;
     }
+
+    [data-theme="dark"] #chatbox {
+      background: #2d3748;
+    }
+
     .message {
-      padding: 12px;
+      padding: 10px;
+      margin: 6px 0;
       border-radius: 8px;
-      max-width: 80%;
-      word-wrap: break-word;
+      max-width: 70%;
     }
-    .user { background: var(--user-bg); color: white; align-self: flex-end; }
-    .bot { background: var(--bot-bg); color: var(--text); align-self: flex-start; }
-    .error { background: var(--error-bg); color: var(--text); align-self: center; }
-    .typing { font-style: italic; color: #555; }
-    #input-container {
+
+    .user {
+      background: var(--primary);
+      color: white;
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .bot {
+      background: #e0e7ff;
+      color: #111827;
+      margin-right: auto;
+    }
+
+    [data-theme="dark"] .bot {
+      background: #4b5563;
+      color: white;
+    }
+
+    #inputRow {
       display: flex;
-      margin-top: 12px;
-      gap: 8px;
+      gap: 10px;
+      margin-top: 10px;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 16px 20px;
     }
+
     #userInput {
       flex: 1;
-      padding: 12px;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      font-size: 16px;
-      resize: none;
-    }
-    #sendBtn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 0 16px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    #sendBtn:hover { background: #4338ca; }
-    aside {
-      width: 250px;
-      min-width: 200px;
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    #newConversationBtn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px;
-      cursor: pointer;
-    }
-    #conversationList {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .conversation-btn {
-      background: #f3f4f6;
-      border: none;
-      border-radius: 6px;
-      padding: 8px;
-      font-size: 14px;
-      text-align: left;
-      cursor: pointer;
-    }
-    .conversation-btn.active {
-      background: var(--primary);
-      color: white;
-      font-weight: bold;
-    }
-    @media(max-width:768px) {
-      main { flex-direction: column; }
-      aside { width: 100%; order: -1; }
-      #chatbox { height: 50vh; }
     }
   </style>
 </head>
@@ -152,248 +126,157 @@
       <button id="exportHistory">📂 Exportar</button>
       <button id="importHistory">📁 Importar</button>
       <select id="languageSelector">
-        <option value="pt-BR" selected>Português</option>
+        <option value="pt-BR">Português</option>
         <option value="en-US">English</option>
         <option value="es-ES">Español</option>
-        <option value="fr-FR">Français</option>
-        <option value="ru-RU">Русский</option>
       </select>
     </div>
   </header>
 
-  <main>
-    <div id="chat-container">
-      <div id="chatbox" role="log" aria-live="polite"></div>
-      <div id="input-container">
-        <textarea id="userInput" placeholder="Digite sua mensagem..." rows="2"></textarea>
-        <button id="sendBtn">📩 Enviar</button>
-      </div>
-    </div>
-    <aside>
-      <button id="newConversationBtn">➕ Nova Conversa</button>
-      <div id="conversationList"></div>
-    </aside>
-  </main>
+  <div id="chatbox" role="log" aria-live="polite"></div>
 
-  <input type="file" id="importFile" accept=".txt" style="display:none" />
+  <div id="inputRow">
+    <input id="userInput" placeholder="Digite sua mensagem..." autocomplete="off" />
+    <button id="sendBtn">📩 Enviar</button>
+  </div>
+
+  <input type="file" id="importFile" accept=".txt" style="display:none;" />
 
   <script>
-    const ViBot = {
-      config: {
-        apiUrl: "https://api.groq.com/openai/v1/chat/completions",
-        apiKey: "gsk_GAB1Wl5zqbp30qPDeMObWGdyb3FY0g7KiTlGt5aWhUnkD495Bi3T",
-        model: "llama3-70b-8192",
-        temperature: 0.7,
-        max_tokens: 1024
-      },
-      conversations: {},
-      currentId: null,
-      speaking: false,
-      currentUtterance: null,
+    const API_URL = "https://api.groq.com/openai/v1/chat/completions";
+    const API_KEY = "gsk_GAB1Wl5zqbp30qPDeMObWGdyb3FY0g7KiTlGt5aWhUnkD495Bi3T";
+    const MODEL = "llama3-70b-8192";
 
-      init() {
-        // elementos
-        this.chatbox = document.getElementById("chatbox");
-        this.userInput = document.getElementById("userInput");
-        this.sendBtn = document.getElementById("sendBtn");
-        this.newConvBtn = document.getElementById("newConversationBtn");
-        this.convList = document.getElementById("conversationList");
-        this.togTheme = document.getElementById("toggleTheme");
-        this.startSpeech = document.getElementById("startSpeech");
-        this.exportBtn = document.getElementById("exportHistory");
-        this.importBtn = document.getElementById("importHistory");
-        this.fileInput = document.getElementById("importFile");
-        this.langSelect = document.getElementById("languageSelector");
+    window.addEventListener("DOMContentLoaded", () => {
+      const chatbox = document.getElementById("chatbox");
+      const userInput = document.getElementById("userInput");
+      const sendBtn = document.getElementById("sendBtn");
+      const toggleThemeBtn = document.getElementById("toggleTheme");
+      const startSpeechBtn = document.getElementById("startSpeech");
+      const exportBtn = document.getElementById("exportHistory");
+      const importBtn = document.getElementById("importHistory");
+      const importFile = document.getElementById("importFile");
+      const languageSelector = document.getElementById("languageSelector");
 
-        this.typing = document.createElement("div");
-        this.typing.className = "message typing";
-        this.typing.textContent = "ViBot está digitando…";
+      let speaking = false;
 
-        // carregar histórico
-        const saved = localStorage.getItem("vibot_conversations");
-        if (saved) {
-          this.conversations = JSON.parse(saved);
-          this.currentId = localStorage.getItem("vibot_current");
-        }
-        if (!this.currentId || !this.conversations[this.currentId]) {
-          this.createNew();
-        } else {
-          this.renderList();
-          this.loadConv();
-        }
+      const speak = (text) => {
+        if (!speaking || !window.speechSynthesis) return;
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = languageSelector.value;
+        speechSynthesis.cancel();
+        speechSynthesis.speak(utter);
+      };
 
-        // eventos
-        this.sendBtn.addEventListener("click", () => this.send());
-        this.userInput.addEventListener("keydown", e => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            this.send();
+      const addMessage = (role, content) => {
+        const div = document.createElement("div");
+        div.className = "message " + (role === "user" ? "user" : "bot");
+        div.textContent = content;
+        chatbox.appendChild(div);
+        chatbox.scrollTop = chatbox.scrollHeight;
+      };
+
+      sendBtn.addEventListener("click", async () => {
+        const text = userInput.value.trim();
+        if (!text) return;
+        addMessage("user", text);
+        userInput.value = "";
+        sendBtn.disabled = true;
+        userInput.disabled = true;
+
+        const typing = document.createElement("div");
+        typing.className = "message bot";
+        typing.textContent = "ViBot está digitando...";
+        chatbox.appendChild(typing);
+        chatbox.scrollTop = chatbox.scrollHeight;
+
+        try {
+          const res = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${API_KEY}`
+            },
+            body: JSON.stringify({
+              model: MODEL,
+              messages: [
+                { role: "system", content: "Você é um assistente útil chamado ViBot." },
+                { role: "user", content: text }
+              ],
+              temperature: 0.7,
+              max_tokens: 1024
+            })
+          });
+
+          const data = await res.json();
+          typing.remove();
+
+          if (!data.choices || !data.choices[0]) {
+            throw new Error("Resposta inválida.");
           }
-        });
-        this.newConvBtn.addEventListener("click", () => this.createNew());
-        this.togTheme.addEventListener("click", () => this.toggleTheme());
-        this.startSpeech.addEventListener("click", () => this.toggleVoice());
-        this.exportBtn.addEventListener("click", () => this.exportHist());
-        this.importBtn.addEventListener("click", () => this.fileInput.click());
-        this.fileInput.addEventListener("change", e => this.importHist(e));
-        this.langSelect.addEventListener("change", () => {});
 
-        this.userInput.focus();
-      },
+          const reply = data.choices[0].message.content.trim();
+          addMessage("bot", reply);
+          speak(reply);
 
-      toggleTheme() {
-        const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-        if (isDark) {
+        } catch (err) {
+          typing.remove();
+          addMessage("bot", "❌ Erro: " + (err.message || "Falha ao se comunicar com a API."));
+        }
+
+        sendBtn.disabled = false;
+        userInput.disabled = false;
+        userInput.focus();
+      });
+
+      toggleThemeBtn.addEventListener("click", () => {
+        const current = document.documentElement.getAttribute("data-theme");
+        if (current === "dark") {
           document.documentElement.removeAttribute("data-theme");
-          localStorage.removeItem("vibot_theme");
         } else {
           document.documentElement.setAttribute("data-theme", "dark");
-          localStorage.setItem("vibot_theme", "dark");
         }
-      },
+      });
 
-      toggleVoice() {
-        if (!("speechSynthesis" in window)) return alert("Sem suporte a voz.");
-        this.speaking = !this.speaking;
-        if (!this.speaking && this.currentUtterance) {
-          speechSynthesis.cancel();
-          this.currentUtterance = null;
-        }
-      },
+      startSpeechBtn.addEventListener("click", () => {
+        speaking = !speaking;
+        alert("Voz " + (speaking ? "ativada" : "desativada"));
+        startSpeechBtn.style.opacity = speaking ? "1" : "0.5";
+      });
 
-      speak(text) {
-        if (!this.speaking) return;
-        const utt = new SpeechSynthesisUtterance(text);
-        utt.lang = this.langSelect.value;
-        this.currentUtterance = utt;
-        speechSynthesis.speak(utt);
-      },
-
-      save() {
-        localStorage.setItem("vibot_conversations", JSON.stringify(this.conversations));
-        localStorage.setItem("vibot_current", this.currentId);
-      },
-
-      renderList() {
-        this.convList.innerHTML = "";
-        for (const id in this.conversations) {
-          const btn = document.createElement("button");
-          btn.textContent = this.conversations[id].messages[0]?.content.slice(0, 30) || "Nova conversa";
-          btn.className = id === this.currentId ? "conversation-btn active" : "conversation-btn";
-          btn.addEventListener("click", () => {
-            this.currentId = id;
-            this.save();
-            this.renderList();
-            this.loadConv();
-          });
-          this.convList.appendChild(btn);
-        }
-      },
-
-      createNew() {
-        const id = "conv_" + Date.now();
-        this.conversations[id] = { id, messages: [] };
-        this.currentId = id;
-        this.save();
-        this.renderList();
-        this.loadConv();
-      },
-
-      loadConv() {
-        this.chatbox.innerHTML = "";
-        for (const m of this.conversations[this.currentId].messages) {
-          const div = document.createElement("div");
-          div.textContent = m.content;
-          div.className = "message " + (m.role === "user" ? "user" : m.role === "assistant" ? "bot" : "error");
-          this.chatbox.appendChild(div);
-        }
-        this.chatbox.scrollTop = this.chatbox.scrollHeight;
-      },
-
-      send() {
-        const txt = this.userInput.value.trim();
-        if (!txt) return;
-        this.userInput.value = "";
-        this.addMsg("user", txt);
-        this.conversations[this.currentId].messages.push({ role: "user", content: txt });
-        this.save();
-
-        this.chatbox.appendChild(this.typing);
-        this.chatbox.scrollTop = this.chatbox.scrollHeight;
-
-        this.callApi(this.conversations[this.currentId].messages)
-          .then(res => {
-            this.chatbox.removeChild(this.typing);
-            this.addMsg("assistant", res);
-            this.conversations[this.currentId].messages.push({ role: "assistant", content: res });
-            this.save();
-            this.speak(res);
-          })
-          .catch(err => {
-            this.chatbox.removeChild(this.typing);
-            this.addMsg("error", err.message);
-          });
-      },
-
-      addMsg(role, content) {
-        const div = document.createElement("div");
-        div.className = "message " + (role === "user" ? "user" : role === "assistant" ? "bot" : "error");
-        div.textContent = content;
-        this.chatbox.appendChild(div);
-        this.chatbox.scrollTop = this.chatbox.scrollHeight;
-      },
-
-      async callApi(messages) {
-        const res = await fetch(this.config.apiUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${this.config.apiKey}`
-          },
-          body: JSON.stringify({ model: this.config.model, messages, temperature: this.config.temperature, max_tokens: this.config.max_tokens })
-        });
-        if (!res.ok) {
-          let err = `Erro ${res.status}`;
-          try {
-            const j = await res.json();
-            if (j.error?.message) err = j.error.message;
-          } catch {}
-          throw new Error(err);
-        }
-        const j = await res.json();
-        return j.choices?.[0]?.message?.content?.trim() || "";
-      },
-
-      exportHist() {
-        const conv = this.conversations[this.currentId];
-        const txt = conv.messages.map(m => (m.role === "user" ? "Você: " : "ViBot: ") + m.content).join("\n\n");
-        const blob = new Blob([txt], { type: "text/plain" });
+      exportBtn.addEventListener("click", () => {
+        const text = Array.from(chatbox.querySelectorAll(".message")).map(div => div.textContent).join("\n\n");
+        const blob = new Blob([text], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `vibot_${this.currentId}.txt`;
+        a.download = "vibot_conversa.txt";
+        document.body.appendChild(a);
         a.click();
-        setTimeout(() => URL.revokeObjectURL(url), 0);
-      },
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      });
 
-      importHist(e) {
+      importBtn.addEventListener("click", () => importFile.click());
+
+      importFile.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const fr = new FileReader();
-        fr.onload = () => {
-          const id = "conv_" + Date.now();
-          this.conversations[id] = { id, messages: [{ role: "user", content: fr.result }] };
-          this.currentId = id;
-          this.save();
-          this.renderList();
-          this.loadConv();
+        const reader = new FileReader();
+        reader.onload = () => {
+          const text = reader.result;
+          addMessage("user", text);
         };
-        fr.readAsText(file);
-        e.target.value = "";
-      }
-    };
+        reader.readAsText(file);
+      });
 
-    window.addEventListener("DOMContentLoaded", () => ViBot.init());
+      userInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendBtn.click();
+        }
+      });
+    });
   </script>
 </body>
 </html>
