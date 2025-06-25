@@ -553,9 +553,9 @@
                 <div class="slider-container">
                     <div class="slider-label">
                         <span>Tamanho da Resposta</span>
-                        <span class="slider-value" id="maxTokensValue">1024</span>
+                        <span class="slider-value" id="maxTokensValue">512</span>
                     </div>
-                    <input type="range" id="maxTokensSlider" min="256" max="4096" step="128" value="1024" />
+                    <input type="range" id="maxTokensSlider" min="128" max="1024" step="128" value="512" />
                 </div>
             </div>
         </div>
@@ -677,7 +677,7 @@
                     apiKey: "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",
                     model: "llama3-70b-8192",
                     temperature: 0.7,
-                    maxTokens: 1024,
+                    maxTokens: 512,
                     systemPrompt: "Você é um assistente útil chamado ViBot. Responda de forma clara e concisa no idioma do usuário."
                 },
 
@@ -804,16 +804,15 @@
 
                 updateTemperature(value) {
                     this.config.temperature = parseFloat(value);
-                    this.updateUI();
+                    this.elements.temperatureValue.textContent = this.config.temperature;
                 },
 
                 updateMaxTokens(value) {
                     this.config.maxTokens = parseInt(value);
-                    this.updateUI();
+                    this.elements.maxTokensValue.textContent = this.config.maxTokens;
                 },
 
                 showTab(tabName) {
-                    // For mobile, we'll just scroll to the relevant section
                     if (tabName === 'tools') {
                         document.querySelector('.toolbar').scrollIntoView({ behavior: 'smooth' });
                     } else if (tabName === 'settings') {
@@ -903,6 +902,10 @@
                             }))
                         ];
                         
+                        // Validação reforçada dos parâmetros
+                        const safeMaxTokens = Math.max(128, Math.min(parseInt(this.config.maxTokens), 512));
+                        const safeTemperature = Math.max(0.1, Math.min(parseFloat(this.config.temperature), 1.0));
+                        
                         const response = await fetch(this.config.apiUrl, {
                             method: "POST",
                             headers: {
@@ -911,14 +914,17 @@
                             },
                             body: JSON.stringify({
                                 model: this.config.model,
-                                messages,
-                                temperature: this.config.temperature,
-                                max_tokens: this.config.maxTokens
+                                messages: messages,
+                                temperature: safeTemperature,
+                                max_tokens: safeMaxTokens,
+                                stream: false
                             })
                         });
                         
                         if (!response.ok) {
-                            throw new Error(`Erro na API: ${response.status}`);
+                            const errorData = await response.json();
+                            console.error("Detalhes do erro:", errorData);
+                            throw new Error(`Erro na API: ${response.status} - ${errorData.error?.message || 'Sem detalhes'}`);
                         }
                         
                         const data = await response.json();
@@ -930,7 +936,8 @@
                         this.totalTokens += data.usage?.total_tokens || 0;
                     } catch (error) {
                         this.typingIndicator.remove();
-                        this.addMessage("bot", `⚠️ Desculpe, ocorreu um erro: ${error.message}`, "error");
+                        this.addMessage("bot", `⚠️ Erro: ${error.message}`, "error");
+                        console.error("Erro completo:", error);
                     }
                 },
 
@@ -980,7 +987,6 @@
                     return temp.textContent || temp.innerText || '';
                 },
                 
-                // Tool handling
                 handleToolClick(toolId) {
                     const toolPrompts = {
                         generateEmailBtn: `Por favor, gere um e-mail profissional com base nas informações que eu fornecer.`,
@@ -1016,6 +1022,9 @@
                             { role: "user", content: prompt }
                         ];
                         
+                        const safeMaxTokens = Math.max(128, Math.min(parseInt(this.config.maxTokens), 512));
+                        const safeTemperature = Math.max(0.1, Math.min(parseFloat(this.config.temperature), 1.0));
+                        
                         const response = await fetch(this.config.apiUrl, {
                             method: "POST",
                             headers: {
@@ -1024,14 +1033,16 @@
                             },
                             body: JSON.stringify({
                                 model: this.config.model,
-                                messages,
-                                temperature: this.config.temperature,
-                                max_tokens: this.config.maxTokens
+                                messages: messages,
+                                temperature: safeTemperature,
+                                max_tokens: safeMaxTokens,
+                                stream: false
                             })
                         });
                         
                         if (!response.ok) {
-                            throw new Error(`Erro na API: ${response.status}`);
+                            const errorData = await response.json();
+                            throw new Error(`Erro na API: ${response.status} - ${errorData.error?.message || 'Sem detalhes'}`);
                         }
                         
                         const data = await response.json();
@@ -1039,9 +1050,12 @@
                         
                         this.typingIndicator.remove();
                         this.addMessage("bot", botMessage);
+                        
+                        this.totalTokens += data.usage?.total_tokens || 0;
                     } catch (error) {
                         this.typingIndicator.remove();
-                        this.addMessage("bot", `⚠️ Desculpe, ocorreu um erro: ${error.message}`, "error");
+                        this.addMessage("bot", `⚠️ Erro: ${error.message}`, "error");
+                        console.error("Erro completo:", error);
                     }
                 }
             };
