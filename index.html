@@ -14,6 +14,7 @@
     --error-text: #dc2626;
     --bg: #f9fafb;
     --copy-bg: #e5e7eb;
+    --toolbar-bg: #e5e7eb;
   }
   [data-theme="dark"] {
     --primary: #6366f1;
@@ -22,6 +23,7 @@
     --text: #f9fafb;
     --user-bg: #6366f1;
     --copy-bg: #4b5563;
+    --toolbar-bg: #374151;
   }
   body {
     font-family: 'Inter', sans-serif;
@@ -223,6 +225,31 @@
     color: white;
     border-color: #4b5563;
   }
+  /* Barra de ferramentas */
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: var(--toolbar-bg);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .toolbar-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .toolbar-btn:hover {
+    opacity: 0.9;
+  }
   @media(max-width:768px) {
     main { flex-direction: column; }
     aside { width:100%; margin-bottom:20px; order:-1; }
@@ -238,6 +265,9 @@
     button, select {
       padding: 6px;
       font-size: 12px;
+    }
+    .toolbar {
+      justify-content: center;
     }
   }
 </style>
@@ -255,6 +285,13 @@
 
 <main>
   <div id="chat-container">
+    <div class="toolbar">
+      <button class="toolbar-btn" id="generateEmailBtn">📧 Gerar E-mail</button>
+      <button class="toolbar-btn" id="summarizeTextBtn">📝 Resumir Texto</button>
+      <button class="toolbar-btn" id="translateTextBtn">🌐 Traduzir</button>
+      <button class="toolbar-btn" id="improveTextBtn">✍️ Melhorar Texto</button>
+      <button class="toolbar-btn" id="generateCodeBtn">💻 Gerar Código</button>
+    </div>
     <div id="chatbox" role="log" aria-live="polite" aria-atomic="false"></div>
     <div id="input-container">
       <input id="userInput" placeholder="Digite sua mensagem..." autocomplete="off" />
@@ -349,6 +386,13 @@
       this.maxTokensValue = document.getElementById("maxTokensValue");
       this.tokenCount = document.getElementById("tokenCount");
       this.systemPrompt = document.getElementById("systemPrompt");
+      
+      // Botões da barra de ferramentas
+      this.generateEmailBtn = document.getElementById("generateEmailBtn");
+      this.summarizeTextBtn = document.getElementById("summarizeTextBtn");
+      this.translateTextBtn = document.getElementById("translateTextBtn");
+      this.improveTextBtn = document.getElementById("improveTextBtn");
+      this.generateCodeBtn = document.getElementById("generateCodeBtn");
 
       // Variáveis de estado
       this.conversations = {};
@@ -388,6 +432,13 @@
       this.temperatureSlider.oninput = e => this.updateTemperature(e.target.value);
       this.maxTokensSlider.oninput = e => this.updateMaxTokens(e.target.value);
       this.systemPrompt.onchange = () => this.saveSettings();
+      
+      // Eventos da barra de ferramentas
+      this.generateEmailBtn.onclick = () => this.generateEmail();
+      this.summarizeTextBtn.onclick = () => this.summarizeText();
+      this.translateTextBtn.onclick = () => this.translateText();
+      this.improveTextBtn.onclick = () => this.improveText();
+      this.generateCodeBtn.onclick = () => this.generateCode();
 
       this.userInput.focus();
     },
@@ -760,6 +811,112 @@
         }
       };
       reader.readAsText(file);
+    },
+    
+    // Funções da barra de ferramentas
+    generateEmail() {
+      const prompt = `Por favor, gere um e-mail profissional com base nas seguintes informações:
+      
+      - Assunto: 
+      - Destinatário: 
+      - Mensagem principal: 
+      - Tom (formal, informal, etc.): 
+      
+      Por favor, peça ao usuário para fornecer esses detalhes antes de gerar o e-mail.`;
+      
+      this.addMessage("user", "Quero gerar um e-mail profissional");
+      this.sendMessageWithPrompt(prompt);
+    },
+    
+    summarizeText() {
+      const prompt = `Por favor, resuma o seguinte texto mantendo os pontos principais. 
+      O resumo deve ser conciso e claro. Aguardo o texto que você deseja resumir:`;
+      
+      this.addMessage("user", "Quero resumir um texto");
+      this.sendMessageWithPrompt(prompt);
+    },
+    
+    translateText() {
+      const prompt = `Por favor, traduza o seguinte texto. 
+      Informe o idioma de origem e o idioma de destino, seguido pelo texto a ser traduzido:`;
+      
+      this.addMessage("user", "Quero traduzir um texto");
+      this.sendMessageWithPrompt(prompt);
+    },
+    
+    improveText() {
+      const prompt = `Por favor, revise e melhore o seguinte texto, tornando-o mais claro, conciso e profissional. 
+      Aguardo o texto que você deseja melhorar:`;
+      
+      this.addMessage("user", "Quero melhorar um texto");
+      this.sendMessageWithPrompt(prompt);
+    },
+    
+    generateCode() {
+      const prompt = `Por favor, gere código com base nas seguintes especificações:
+      
+      - Linguagem de programação: 
+      - Funcionalidade desejada: 
+      - Requisitos específicos: 
+      
+      Por favor, peça ao usuário para fornecer esses detalhes antes de gerar o código.`;
+      
+      this.addMessage("user", "Quero gerar um código");
+      this.sendMessageWithPrompt(prompt);
+    },
+    
+    async sendMessageWithPrompt(prompt) {
+      const conversation = this.conversations[this.currentConversationId];
+      
+      // Mostra indicador de digitação
+      this.chatbox.appendChild(this.typingIndicator);
+      this.chatbox.scrollTop = this.chatbox.scrollHeight;
+      
+      try {
+        // Prepara as mensagens para a API
+        const messages = [
+          { role: "system", content: this.config.systemPrompt },
+          ...conversation.messages.map(msg => ({
+            role: msg.role,
+            content: this.getTextContent(msg.content)
+          })),
+          { role: "user", content: prompt }
+        ];
+        
+        // Faz a requisição para a API do Groq
+        const response = await fetch(this.config.apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${this.config.apiKey}`
+          },
+          body: JSON.stringify({
+            model: this.config.model,
+            messages,
+            temperature: this.config.temperature,
+            max_tokens: this.config.maxTokens
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Erro na API: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const botMessage = data.choices[0].message.content;
+        
+        // Remove o indicador de digitação e adiciona a resposta
+        this.typingIndicator.remove();
+        this.addMessage("bot", botMessage);
+        
+        // Atualiza contagem de tokens
+        this.totalTokens += data.usage.total_tokens;
+        this.tokenCount.textContent = `Tokens usados: ${this.totalTokens}`;
+      } catch (error) {
+        this.typingIndicator.remove();
+        this.addMessage("bot", `Desculpe, ocorreu um erro: ${error.message}`, "error");
+        console.error("Erro ao enviar mensagem:", error);
+      }
     }
   };
 
