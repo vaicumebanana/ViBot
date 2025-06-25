@@ -881,76 +881,83 @@
                 },
 
                 async sendMessage() {
-                    const message = this.elements.userInput.value.trim();
-                    if (!message) return;
-                    
-                    const conversation = this.conversations[this.currentConversationId];
-                    
-                    this.addMessage("user", message);
-                    this.elements.userInput.value = "";
-                    this.elements.userInput.style.height = 'auto';
-                    
-                    this.elements.chatbox.appendChild(this.typingIndicator);
-                    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
-                    
-                    try {
-                        const messages = [
-                            { role: "system", content: this.config.systemPrompt },
-                            ...conversation.messages.map(msg => ({
-                                role: msg.role,
-                                content: this.getTextContent(msg.content)
-                            }))
-                        ];
-                        
-                        // Validação reforçada dos parâmetros
-                        const safeMaxTokens = Math.max(128, Math.min(parseInt(this.config.maxTokens), 512));
-                        const safeTemperature = Math.max(0.1, Math.min(parseFloat(this.config.temperature), 1.0));
-                        
-                        const response = await fetch(this.config.apiUrl, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${this.config.apiKey}`
-                            },
-                            body: JSON.stringify({
-                                model: this.config.model,
-                                messages: messages,
-                                temperature: safeTemperature,
-                                max_tokens: safeMaxTokens,
-                                stream: false
-                            })
-                        });
-                        
-                        if (!response.ok) {
-                            const errorData = await response.json();
-                            console.error("Detalhes do erro:", errorData);
-                            throw new Error(`Erro na API: ${response.status} - ${errorData.error?.message || 'Sem detalhes'}`);
-                        }
-                        
-                        const data = await response.json();
-                        const botMessage = data.choices[0].message.content;
-                        
-                        this.typingIndicator.remove();
-                        this.addMessage("bot", botMessage);
-                        
-                        this.totalTokens += data.usage?.total_tokens || 0;
-                    } catch (error) {
-                        this.typingIndicator.remove();
-                        this.addMessage("bot", `⚠️ Erro: ${error.message}`, "error");
-                        console.error("Erro completo:", error);
-                    }
-                },
+    const message = this.elements.userInput.value.trim();
+    if (!message) return;
+    
+    const conversation = this.conversations[this.currentConversationId];
+    
+    this.addMessage("user", message);
+    this.elements.userInput.value = "";
+    this.elements.userInput.style.height = 'auto';
+    
+    this.elements.chatbox.appendChild(this.typingIndicator);
+    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
+    
+    try {
+        // Preparar mensagens no formato correto
+        const messages = [
+            { role: "system", content: this.config.systemPrompt },
+            ...conversation.messages.map(msg => ({
+                role: msg.role === "user" ? "user" : "assistant", // Garantir roles válidos
+                content: this.getTextContent(msg.content)
+            }))
+        ];
+        
+        // Validação reforçada dos parâmetros
+        const safeMaxTokens = Math.max(128, Math.min(parseInt(this.config.maxTokens), 1024));
+        const safeTemperature = Math.max(0.1, Math.min(parseFloat(this.config.temperature), 2.0));
+        
+        const response = await fetch(this.config.apiUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.config.apiKey}`
+            },
+            body: JSON.stringify({
+                model: this.config.model,
+                messages: messages,
+                temperature: safeTemperature,
+                max_tokens: safeMaxTokens,
+                stream: false
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Detalhes do erro:", errorData);
+            throw new Error(`Erro na API: ${response.status} - ${errorData.error?.message || 'Sem detalhes'}`);
+        }
+        
+        const data = await response.json();
+        const botMessage = data.choices[0].message.content;
+        
+        this.typingIndicator.remove();
+        this.addMessage("bot", botMessage);
+        
+        this.totalTokens += data.usage?.total_tokens || 0;
+    } catch (error) {
+        this.typingIndicator.remove();
+        this.addMessage("bot", `⚠️ Erro: ${error.message}`, "error");
+        console.error("Erro completo:", error);
+    }
+}, 
 
                 addMessage(role, content, type = null) {
-                    const conversation = this.conversations[this.currentConversationId];
-                    const message = { role, content, type, timestamp: Date.now() };
-                    
-                    conversation.messages.push(message);
-                    
-                    if (role === "user" && conversation.messages.length === 1) {
-                        conversation.title = content.length > 30 ? content.substring(0, 30) + "..." : content;
-                        this.renderConversationsList();
-                    }
+    const apiRole = role === "user" ? "user" : "assistant"; // Converter para o formato da API
+    const conversation = this.conversations[this.currentConversationId];
+    const message = { role: apiRole, content, type, timestamp: Date.now() };
+    
+    conversation.messages.push(message);
+    
+    if (role === "user" && conversation.messages.length === 1) {
+        conversation.title = content.length > 30 ? content.substring(0, 30) + "..." : content;
+        this.renderConversationsList();
+    }
+    
+    // Manter "bot" na interface para melhor legibilidade
+    this.addMessageToChatbox(role, content, type);
+    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
+}
                     
                     this.addMessageToChatbox(role, content, type);
                     this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
