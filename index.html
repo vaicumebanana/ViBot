@@ -136,6 +136,27 @@
         [data-theme="dark"] #sidebar {
             background: #111827;
         }
+        #tools-sidebar {
+            position: fixed;
+            top: var(--mobile-header-height);
+            right: 0;
+            bottom: var(--mobile-footer-height);
+            width: 100%;
+            background: white;
+            z-index: 90;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        #tools-sidebar.active {
+            transform: translateX(0);
+        }
+        [data-theme="dark"] #tools-sidebar {
+            background: #111827;
+        }
         #chat-container {
             flex: 1;
             display: flex;
@@ -351,6 +372,30 @@
             border-radius: 16px;
             margin: 20px;
         }
+        .tools-panel {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            padding: 10px;
+        }
+        .tools-panel-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 100px;
+        }
+        .tools-panel-icon {
+            font-size: 24px;
+        }
         .settings-title {
             font-weight: 700;
             margin-bottom: 16px;
@@ -501,6 +546,9 @@
             .features {
                 grid-template-columns: repeat(4, 1fr);
             }
+            .tools-panel {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
     </style>
 </head>
@@ -516,6 +564,9 @@
             </button>
             <button class="header-btn" id="menuBtn">
                 <i class="fas fa-bars"></i>
+            </button>
+            <button class="header-btn" id="toolsBtn">
+                <i class="fas fa-tools"></i>
             </button>
         </div>
     </header>
@@ -535,10 +586,15 @@
                         <span>Modelo:</span>
                     </div>
                     <select id="modelSelector" class="model-selector">
-                        <option value="llama3-70b-8192">ViBot Pro (Alta Performance)</option>
-                        <option value="llama3-8b-8192">ViBot Standard (Balanço)</option>
-                        <option value="mixtral-8x7b-32768">ViBot Expert (Conhecimento)</option>
-                        <option value="gemma-7b-it">ViBot Lite (Rápido)</option>
+                        <option value="llama3-70b-8192">ViBot Pro (Alta Performance, 8K)</option>
+                        <option value="llama3-8b-8192">ViBot Standard (Balanço, 8K)</option>
+                        <option value="llama-3.1-8b-instant">ViBot Instant (8B, 131K)</option>
+                        <option value="llama-3.3-70b-versatile">ViBot Versátil (70B, 32K)</option>
+                        <option value="gemma2-9b-it">ViBot Gemma (9B, 8K)</option>
+                        <option value="meta-llama/llama-guard-4-12b">ViBot Guard (Segurança, 1K)</option>
+                        <option value="distil-whisper-large-v3-en">ViBot Voice EN (Transcrição)</option>
+                        <option value="whisper-large-v3">ViBot Voice (Multilíngue)</option>
+                        <option value="whisper-large-v3-turbo">ViBot Turbo (Transcrição Rápida)</option>
                     </select>
                 </div>
                 
@@ -557,6 +613,91 @@
                     </div>
                     <input type="range" id="maxTokensSlider" min="128" max="1024" step="128" value="512" />
                 </div>
+            </div>
+        </div>
+
+        <div id="tools-sidebar">
+            <div class="tools-panel">
+                <button class="tools-panel-btn" id="generateEmailBtn">
+                    <i class="fas fa-envelope tools-panel-icon"></i>
+                    <span>E-mail</span>
+                </button>
+                <button class="tools-panel-btn" id="summarizeTextBtn">
+                    <i class="fas fa-file-alt tools-panel-icon"></i>
+                    <span>Resumir</span>
+                </button>
+                <button class="tools-panel-btn" id="translateTextBtn">
+                    <i class="fas fa-globe tools-panel-icon"></i>
+                    <span>Traduzir</span>
+                </button>
+                <button class="tools-panel-btn" id="improveTextBtn">
+                    <i class="fas fa-edit tools-panel-icon"></i>
+                    <span>Melhorar</span>
+                </button>
+                <button class="tools-panel-btn" id="generateCodeBtn">
+                    <i class="fas fa-code tools-panel-icon"></i>
+                    <span>Código</span>
+                </button>
+                <button class="tools-panel-btn" id="generateIdeasBtn">
+                    <i class="fas fa-lightbulb tools-panel-icon"></i>
+                    <span>Ideias</span>
+                </button>
+                <button class="tools-panel-btn" id="analyzeDataBtn">
+                    <i class="fas fa-chart-bar tools-panel-icon"></i>
+                    <span>Analisar</span>
+                </button>
+                <button class="tools-panel-btn" id="createContentBtn">
+                    <i class="fas fa-pencil-alt tools-panel-icon"></i>
+                    <span>Conteúdo</span>
+                </button>
+                <button class="tools-panel-btn" id="explainConceptBtn">
+                    <i class="fas fa-book tools-panel-icon"></i>
+                    <span>Explicar</span>
+                </button>
+                <button class="tools-panel-btn" id="solveProblemBtn">
+                    <i class="fas fa-search tools-panel-icon"></i>
+                    <span>Solucionar</span>
+                </button>
+                <button class="tools-panel-btn" id="generatePoemBtn">
+                    <i class="fas fa-pen-fancy tools-panel-icon"></i>
+                    <span>Poema</span>
+                </button>
+                <button class="tools-panel-btn" id="generateStoryBtn">
+                    <i class="fas fa-book-open tools-panel-icon"></i>
+                    <span>História</span>
+                </button>
+                <button class="tools-panel-btn" id="generateJokeBtn">
+                    <i class="fas fa-laugh tools-panel-icon"></i>
+                    <span>Piada</span>
+                </button>
+                <button class="tools-panel-btn" id="generateRecipeBtn">
+                    <i class="fas fa-utensils tools-panel-icon"></i>
+                    <span>Receita</span>
+                </button>
+                <button class="tools-panel-btn" id="generateWorkoutBtn">
+                    <i class="fas fa-dumbbell tools-panel-icon"></i>
+                    <span>Treino</span>
+                </button>
+                <button class="tools-panel-btn" id="generateAdviceBtn">
+                    <i class="fas fa-hand-holding-heart tools-panel-icon"></i>
+                    <span>Conselho</span>
+                </button>
+                <button class="tools-panel-btn" id="generateQuizBtn">
+                    <i class="fas fa-question-circle tools-panel-icon"></i>
+                    <span>Quiz</span>
+                </button>
+                <button class="tools-panel-btn" id="generateScriptBtn">
+                    <i class="fas fa-film tools-panel-icon"></i>
+                    <span>Roteiro</span>
+                </button>
+                <button class="tools-panel-btn" id="generateBusinessBtn">
+                    <i class="fas fa-briefcase tools-panel-icon"></i>
+                    <span>Negócios</span>
+                </button>
+                <button class="tools-panel-btn" id="generateTravelBtn">
+                    <i class="fas fa-plane tools-panel-icon"></i>
+                    <span>Viagem</span>
+                </button>
             </div>
         </div>
 
@@ -607,7 +748,7 @@
             <div id="chatbox">
                 <div class="welcome-message">
                     <div class="welcome-title">Bem-vindo ao ViBot Plus!</div>
-                    <div class="welcome-text">Seu assistente de IA com 10 ferramentas poderosas</div>
+                    <div class="welcome-text">Seu assistente de IA com 20 ferramentas poderosas</div>
                     
                     <div class="features">
                         <div class="feature-card">
@@ -641,6 +782,14 @@
                         <div class="feature-card">
                             <div class="feature-icon"><i class="fas fa-pencil-alt"></i></div>
                             <div class="feature-title">Criação de Conteúdo</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon"><i class="fas fa-book"></i></div>
+                            <div class="feature-title">Explicação de Conceitos</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon"><i class="fas fa-search"></i></div>
+                            <div class="feature-title">Solução de Problemas</div>
                         </div>
                     </div>
                 </div>
@@ -684,8 +833,13 @@
                 modelNames: {
                     "llama3-70b-8192": "ViBot Pro",
                     "llama3-8b-8192": "ViBot Standard",
-                    "mixtral-8x7b-32768": "ViBot Expert",
-                    "gemma-7b-it": "ViBot Lite"
+                    "llama-3.1-8b-instant": "ViBot Instant",
+                    "llama-3.3-70b-versatile": "ViBot Versátil",
+                    "gemma2-9b-it": "ViBot Gemma",
+                    "meta-llama/llama-guard-4-12b": "ViBot Guard",
+                    "distil-whisper-large-v3-en": "ViBot Voice EN",
+                    "whisper-large-v3": "ViBot Voice",
+                    "whisper-large-v3-turbo": "ViBot Turbo"
                 },
 
                 init() {
@@ -704,7 +858,9 @@
                         conversationList: document.getElementById("conversationList"),
                         toggleThemeBtn: document.getElementById("toggleTheme"),
                         menuBtn: document.getElementById("menuBtn"),
+                        toolsBtn: document.getElementById("toolsBtn"),
                         sidebar: document.getElementById("sidebar"),
+                        toolsSidebar: document.getElementById("tools-sidebar"),
                         modelSelector: document.getElementById("modelSelector"),
                         temperatureSlider: document.getElementById("temperatureSlider"),
                         temperatureValue: document.getElementById("temperatureValue"),
@@ -716,12 +872,15 @@
                         settingsTabBtn: document.getElementById("settingsTabBtn")
                     };
 
-                    // Tool buttons
+                    // Tool buttons (20 tools)
                     this.tools = [
                         'generateEmailBtn', 'summarizeTextBtn', 'translateTextBtn', 
                         'improveTextBtn', 'generateCodeBtn', 'generateIdeasBtn', 
                         'analyzeDataBtn', 'createContentBtn', 'explainConceptBtn', 
-                        'solveProblemBtn'
+                        'solveProblemBtn', 'generatePoemBtn', 'generateStoryBtn',
+                        'generateJokeBtn', 'generateRecipeBtn', 'generateWorkoutBtn',
+                        'generateAdviceBtn', 'generateQuizBtn', 'generateScriptBtn',
+                        'generateBusinessBtn', 'generateTravelBtn'
                     ];
                     
                     this.tools.forEach(tool => {
@@ -753,6 +912,7 @@
                     this.elements.newConversationBtn.addEventListener('click', () => this.createNewConversation());
                     this.elements.toggleThemeBtn.addEventListener('click', () => this.toggleTheme());
                     this.elements.menuBtn.addEventListener('click', () => this.toggleSidebar());
+                    this.elements.toolsBtn.addEventListener('click', () => this.toggleToolsSidebar());
                     this.elements.modelSelector.addEventListener('change', e => this.updateModel(e.target.value));
                     this.elements.temperatureSlider.addEventListener('input', e => this.updateTemperature(e.target.value));
                     this.elements.maxTokensSlider.addEventListener('input', e => this.updateMaxTokens(e.target.value));
@@ -762,7 +922,7 @@
                     this.elements.toolsTabBtn.addEventListener('click', () => this.showTab('tools'));
                     this.elements.settingsTabBtn.addEventListener('click', () => this.showTab('settings'));
 
-                    // Tool buttons
+                    // Tool buttons (20 tools)
                     this.tools.forEach(tool => {
                         this.elements[tool].addEventListener('click', () => this.handleToolClick(tool));
                     });
@@ -796,6 +956,12 @@
 
                 toggleSidebar() {
                     this.elements.sidebar.classList.toggle('active');
+                    this.elements.toolsSidebar.classList.remove('active');
+                },
+
+                toggleToolsSidebar() {
+                    this.elements.toolsSidebar.classList.toggle('active');
+                    this.elements.sidebar.classList.remove('active');
                 },
 
                 updateModel(model) {
@@ -814,9 +980,9 @@
 
                 showTab(tabName) {
                     if (tabName === 'tools') {
-                        document.querySelector('.toolbar').scrollIntoView({ behavior: 'smooth' });
+                        this.toggleToolsSidebar();
                     } else if (tabName === 'settings') {
-                        this.elements.sidebar.classList.add('active');
+                        this.toggleSidebar();
                     } else {
                         this.elements.userInput.focus();
                     }
@@ -999,7 +1165,17 @@
                         analyzeDataBtn: `Por favor, analise os dados que eu fornecer e extraia insights relevantes.`,
                         createContentBtn: `Por favor, crie conteúdo de qualidade com base no tópico que eu fornecer.`,
                         explainConceptBtn: `Por favor, explique este conceito de forma clara e didática.`,
-                        solveProblemBtn: `Por favor, me ajude a solucionar este problema com uma abordagem passo a passo.`
+                        solveProblemBtn: `Por favor, me ajude a solucionar este problema com uma abordagem passo a passo.`,
+                        generatePoemBtn: `Por favor, escreva um poema sobre o tema que eu fornecer.`,
+                        generateStoryBtn: `Por favor, crie uma história interessante com base no tema que eu fornecer.`,
+                        generateJokeBtn: `Por favor, conte uma piada sobre o assunto que eu mencionar.`,
+                        generateRecipeBtn: `Por favor, sugira uma receita com os ingredientes que eu mencionar.`,
+                        generateWorkoutBtn: `Por favor, crie um plano de treino para o objetivo que eu especificar.`,
+                        generateAdviceBtn: `Por favor, dê um conselho útil sobre a situação que eu descrever.`,
+                        generateQuizBtn: `Por favor, crie um quiz sobre o tópico que eu mencionar.`,
+                        generateScriptBtn: `Por favor, escreva um roteiro para o cenário que eu descrever.`,
+                        generateBusinessBtn: `Por favor, sugira ideias de negócios para o nicho que eu mencionar.`,
+                        generateTravelBtn: `Por favor, planeje um roteiro de viagem para o destino que eu especificar.`
                     };
                     
                     const toolName = toolId.replace('Btn', '').replace(/([A-Z])/g, ' $1').trim();
