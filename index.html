@@ -343,7 +343,7 @@
   const ViBot = {
     config: {
       apiUrl: "https://api.groq.com/openai/v1/chat/completions",
-      apiKey: "gsk_GAB1Wl5zqbp30qPDeMObWGdyb3FY0g7KiTlGt5aWhUnkD495Bi3T",
+      apiKey: "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",
       model: "llama3-70b-8192",
       temperature: 0.7,
       maxTokens: 1024,
@@ -825,7 +825,7 @@
       Por favor, peça ao usuário para fornecer esses detalhes antes de gerar o e-mail.`;
       
       this.addMessage("user", "Quero gerar um e-mail profissional");
-      this.sendMessageWithPrompt(prompt);
+      this.sendToolMessage(prompt);
     },
     
     summarizeText() {
@@ -833,7 +833,7 @@
       O resumo deve ser conciso e claro. Aguardo o texto que você deseja resumir:`;
       
       this.addMessage("user", "Quero resumir um texto");
-      this.sendMessageWithPrompt(prompt);
+      this.sendToolMessage(prompt);
     },
     
     translateText() {
@@ -841,7 +841,7 @@
       Informe o idioma de origem e o idioma de destino, seguido pelo texto a ser traduzido:`;
       
       this.addMessage("user", "Quero traduzir um texto");
-      this.sendMessageWithPrompt(prompt);
+      this.sendToolMessage(prompt);
     },
     
     improveText() {
@@ -849,7 +849,7 @@
       Aguardo o texto que você deseja melhorar:`;
       
       this.addMessage("user", "Quero melhorar um texto");
-      this.sendMessageWithPrompt(prompt);
+      this.sendToolMessage(prompt);
     },
     
     generateCode() {
@@ -862,10 +862,10 @@
       Por favor, peça ao usuário para fornecer esses detalhes antes de gerar o código.`;
       
       this.addMessage("user", "Quero gerar um código");
-      this.sendMessageWithPrompt(prompt);
+      this.sendToolMessage(prompt);
     },
     
-    async sendMessageWithPrompt(prompt) {
+    async sendToolMessage(prompt) {
       const conversation = this.conversations[this.currentConversationId];
       
       // Mostra indicador de digitação
@@ -879,9 +879,11 @@
           ...conversation.messages.map(msg => ({
             role: msg.role,
             content: this.getTextContent(msg.content)
-          })),
-          { role: "user", content: prompt }
+          }))
         ];
+        
+        // Adiciona o prompt específico da ferramenta
+        messages.push({ role: "user", content: prompt });
         
         // Faz a requisição para a API do Groq
         const response = await fetch(this.config.apiUrl, {
