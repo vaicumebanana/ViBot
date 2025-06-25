@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ViBot - Assistente Virtual</title>
+  <title>ViBot 2.0 - Assistente Virtual Multilíngue com Voz</title>
   <style>
     :root {
       --bg-light: #f9fafb;
@@ -14,12 +14,15 @@
     }
 
     body {
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
       background: var(--bg-light);
       color: var(--text-light);
       transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
 
     [data-theme="dark"] {
@@ -34,48 +37,72 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-shrink: 0;
     }
 
     [data-theme="dark"] header {
       background: #111827;
       color: white;
+      border-color: #444;
     }
 
     h1 {
       color: var(--primary);
       margin: 0;
+      font-weight: 700;
+      font-size: 1.5rem;
     }
 
-    button, select, input {
-      margin: 4px;
-      padding: 10px;
+    #controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button, select, input[type="file"] {
+      margin: 4px 0;
+      padding: 10px 14px;
       border: 1px solid #ccc;
       border-radius: 6px;
       font-size: 14px;
-    }
-
-    button {
       background: #f3f4f6;
       cursor: pointer;
+      transition: background 0.2s ease;
     }
 
-    button:hover {
+    button:hover, select:hover {
       background: #e5e7eb;
+    }
+
+    [data-theme="dark"] button, [data-theme="dark"] select {
+      background: #374151;
+      border-color: #555;
+      color: var(--text-dark);
+    }
+
+    [data-theme="dark"] button:hover, [data-theme="dark"] select:hover {
+      background: #4b5563;
     }
 
     #chatbox {
       padding: 16px;
+      flex-grow: 1;
       max-width: 800px;
-      margin: 20px auto;
+      margin: 10px auto;
       background: white;
       min-height: 300px;
       border: 1px solid #ddd;
       border-radius: 10px;
       overflow-y: auto;
+      box-sizing: border-box;
+      width: 90%;
+      scroll-behavior: smooth;
     }
 
     [data-theme="dark"] #chatbox {
       background: #2d3748;
+      border-color: #444;
     }
 
     .message {
@@ -83,6 +110,10 @@
       margin: 6px 0;
       border-radius: 8px;
       max-width: 70%;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      line-height: 1.3em;
+      font-size: 1rem;
     }
 
     .user {
@@ -106,177 +137,376 @@
     #inputRow {
       display: flex;
       gap: 10px;
-      margin-top: 10px;
       max-width: 800px;
-      margin: 0 auto;
-      padding: 0 16px 20px;
+      margin: 0 auto 20px;
+      padding: 0 16px;
+      flex-shrink: 0;
+      width: 90%;
     }
 
     #userInput {
       flex: 1;
+      padding: 10px 14px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      resize: vertical;
+      min-height: 48px;
+    }
+
+    [data-theme="dark"] #userInput {
+      background: #1f2937;
+      border-color: #555;
+      color: var(--text-dark);
+    }
+
+    #sendBtn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      font-weight: 600;
+      min-width: 90px;
+    }
+
+    #sendBtn:hover {
+      background: #4338ca;
+    }
+
+    #sendBtn:disabled {
+      background: #a5b4fc;
+      cursor: not-allowed;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>ViBot</h1>
-    <div>
-      <button id="toggleTheme">🌓 Tema</button>
-      <button id="startSpeech">🎙️ Voz</button>
-      <button id="exportHistory">📂 Exportar</button>
-      <button id="importHistory">📁 Importar</button>
-      <select id="languageSelector">
-        <option value="pt-BR">Português</option>
-        <option value="en-US">English</option>
-        <option value="es-ES">Español</option>
+    <h1>ViBot 2.0</h1>
+    <div id="controls">
+      <button id="toggleTheme" aria-label="Alternar tema claro/escuro">🌓 Tema</button>
+      <button id="voiceInputBtn" aria-label="Ativar entrada de voz">🎙️ Falar</button>
+      <button id="exportHistory" aria-label="Exportar histórico">📂 Exportar</button>
+      <button id="importHistory" aria-label="Importar histórico">📁 Importar</button>
+      <select id="languageSelector" aria-label="Selecionar idioma da conversa" title="Selecionar idioma da conversa">
+        <option value="pt">Português</option>
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="it">Italiano</option>
+        <option value="ja">日本語</option>
+        <option value="zh">中文</option>
       </select>
+      <input type="file" id="importFile" accept=".txt" style="display:none;" />
     </div>
   </header>
 
-  <div id="chatbox" role="log" aria-live="polite"></div>
+  <main>
+    <div id="chatbox" role="log" aria-live="polite" aria-label="Área de conversa do ViBot"></div>
 
-  <div id="inputRow">
-    <input id="userInput" placeholder="Digite sua mensagem..." autocomplete="off" />
-    <button id="sendBtn">📩 Enviar</button>
-  </div>
-
-  <input type="file" id="importFile" accept=".txt" style="display:none;" />
+    <div id="inputRow">
+      <textarea id="userInput" rows="2" placeholder="Digite sua mensagem..." autocomplete="off" aria-label="Campo para digitar mensagem"></textarea>
+      <button id="sendBtn" aria-label="Enviar mensagem">📩 Enviar</button>
+    </div>
+  </main>
 
   <script>
-    const API_URL = "https://api.groq.com/openai/v1/chat/completions";
-    const API_KEY = "gsk_GAB1Wl5zqbp30qPDeMObWGdyb3FY0g7KiTlGt5aWhUnkD495Bi3T";
-    const MODEL = "llama3-70b-8192";
+    // --- Variáveis e referências ---
+    const chatbox = document.getElementById('chatbox');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const toggleThemeBtn = document.getElementById('toggleTheme');
+    const voiceInputBtn = document.getElementById('voiceInputBtn');
+    const exportHistoryBtn = document.getElementById('exportHistory');
+    const importHistoryBtn = document.getElementById('importHistory');
+    const importFileInput = document.getElementById('importFile');
+    const languageSelector = document.getElementById('languageSelector');
 
-    window.addEventListener("DOMContentLoaded", () => {
-      const chatbox = document.getElementById("chatbox");
-      const userInput = document.getElementById("userInput");
-      const sendBtn = document.getElementById("sendBtn");
-      const toggleThemeBtn = document.getElementById("toggleTheme");
-      const startSpeechBtn = document.getElementById("startSpeech");
-      const exportBtn = document.getElementById("exportHistory");
-      const importBtn = document.getElementById("importHistory");
-      const importFile = document.getElementById("importFile");
-      const languageSelector = document.getElementById("languageSelector");
+    let recognition = null;
+    let recognizing = false;
+    let synth = window.speechSynthesis;
+    let isSpeaking = false;
 
-      let speaking = false;
+    // Histórico de conversa: array de objetos {role:'user'|'bot', text:string}
+    let history = [];
 
-      const speak = (text) => {
-        if (!speaking || !window.speechSynthesis) return;
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = languageSelector.value;
-        speechSynthesis.cancel();
-        speechSynthesis.speak(utter);
-      };
+    // Tema inicial do sistema
+    const savedTheme = localStorage.getItem('vibot-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
 
-      const addMessage = (role, content) => {
-        const div = document.createElement("div");
-        div.className = "message " + (role === "user" ? "user" : "bot");
-        div.textContent = content;
-        chatbox.appendChild(div);
-        chatbox.scrollTop = chatbox.scrollHeight;
-      };
+    // Idioma inicial
+    const savedLang = localStorage.getItem('vibot-lang') || 'pt';
+    languageSelector.value = savedLang;
 
-      sendBtn.addEventListener("click", async () => {
-        const text = userInput.value.trim();
-        if (!text) return;
-        addMessage("user", text);
-        userInput.value = "";
-        sendBtn.disabled = true;
-        userInput.disabled = true;
+    // Atualizar botões e estado
+    function updateSendBtnState() {
+      sendBtn.disabled = userInput.value.trim() === '';
+    }
 
-        const typing = document.createElement("div");
-        typing.className = "message bot";
-        typing.textContent = "ViBot está digitando...";
-        chatbox.appendChild(typing);
-        chatbox.scrollTop = chatbox.scrollHeight;
+    // Renderizar mensagem no chat
+    function addMessage(role, text) {
+      const div = document.createElement('div');
+      div.className = 'message ' + (role === 'user' ? 'user' : 'bot');
+      div.textContent = text;
+      chatbox.appendChild(div);
+      chatbox.scrollTop = chatbox.scrollHeight;
+      history.push({ role, text });
+      saveHistory();
+    }
 
+    // Salvar histórico no localStorage
+    function saveHistory() {
+      localStorage.setItem('vibot-history', JSON.stringify(history));
+    }
+
+    // Carregar histórico do localStorage
+    function loadHistory() {
+      const saved = localStorage.getItem('vibot-history');
+      if (saved) {
         try {
-          const res = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${API_KEY}`
-            },
-            body: JSON.stringify({
-              model: MODEL,
-              messages: [
-                { role: "system", content: "Você é um assistente útil chamado ViBot." },
-                { role: "user", content: text }
-              ],
-              temperature: 0.7,
-              max_tokens: 1024
-            })
-          });
-
-          const data = await res.json();
-          typing.remove();
-
-          if (!data.choices || !data.choices[0]) {
-            throw new Error("Resposta inválida.");
-          }
-
-          const reply = data.choices[0].message.content.trim();
-          addMessage("bot", reply);
-          speak(reply);
-
-        } catch (err) {
-          typing.remove();
-          addMessage("bot", "❌ Erro: " + (err.message || "Falha ao se comunicar com a API."));
+          history = JSON.parse(saved);
+          history.forEach(m => addMessage(m.role, m.text));
+        } catch {
+          history = [];
         }
+      }
+    }
 
-        sendBtn.disabled = false;
-        userInput.disabled = false;
-        userInput.focus();
+    // Limpar histórico na tela (sem apagar localStorage)
+    function clearChat() {
+      chatbox.innerHTML = '';
+    }
+
+    // Traduz texto de sourceLang para targetLang usando API pública LibreTranslate
+    async function translateText(text, sourceLang, targetLang) {
+      if (!text.trim() || sourceLang === targetLang) return text;
+
+      try {
+        const response = await fetch('https://libretranslate.de/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            q: text,
+            source: sourceLang,
+            target: targetLang,
+            format: "text"
+          })
+        });
+        const data = await response.json();
+        return data.translatedText || text;
+      } catch (e) {
+        console.warn('Falha na tradução, enviando texto original:', e);
+        return text;
+      }
+    }
+
+    // Simula envio para API Groq (ou substitua aqui sua chamada real)
+    // Exemplo básico: resposta bot = "Você disse: " + texto em português
+    async function sendToGroqAPI(textInPortuguese) {
+      // Aqui você colocaria seu fetch para a API Groq real, por enquanto simulo delay + resposta
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve('Resposta da API (simulada): Você disse "' + textInPortuguese + '"');
+        }, 1200);
       });
+    }
 
-      toggleThemeBtn.addEventListener("click", () => {
-        const current = document.documentElement.getAttribute("data-theme");
-        if (current === "dark") {
-          document.documentElement.removeAttribute("data-theme");
-        } else {
-          document.documentElement.setAttribute("data-theme", "dark");
+    // Função principal de envio da mensagem
+    async function handleSend() {
+      let text = userInput.value.trim();
+      if (!text) return;
+
+      // Adiciona a mensagem do usuário direto no chat (no idioma selecionado)
+      addMessage('user', text);
+      userInput.value = '';
+      updateSendBtnState();
+
+      const selectedLang = languageSelector.value;
+      try {
+        // 1) Traduz do idioma selecionado para português para a API
+        const textInPortuguese = await translateText(text, selectedLang, 'pt');
+
+        // 2) Envia texto em português para a API Groq
+        const botResponseInPortuguese = await sendToGroqAPI(textInPortuguese);
+
+        // 3) Traduz resposta da API para o idioma do usuário
+        const botResponse = await translateText(botResponseInPortuguese, 'pt', selectedLang);
+
+        // 4) Exibe resposta do bot
+        addMessage('bot', botResponse);
+
+        // 5) Se voz estiver ativada, fala a resposta
+        if (voiceEnabled) speakText(botResponse, selectedLang);
+      } catch (error) {
+        addMessage('bot', 'Erro ao processar a mensagem. Tente novamente.');
+        console.error(error);
+      }
+    }
+
+    // Ativar/desativar tema
+    toggleThemeBtn.onclick = () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('vibot-theme', newTheme);
+    };
+
+    // Habilitar/desabilitar botão enviar com base no input
+    userInput.addEventListener('input', updateSendBtnState);
+
+    sendBtn.addEventListener('click', handleSend);
+
+    userInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (!sendBtn.disabled) {
+          handleSend();
         }
-      });
-
-      startSpeechBtn.addEventListener("click", () => {
-        speaking = !speaking;
-        alert("Voz " + (speaking ? "ativada" : "desativada"));
-        startSpeechBtn.style.opacity = speaking ? "1" : "0.5";
-      });
-
-      exportBtn.addEventListener("click", () => {
-        const text = Array.from(chatbox.querySelectorAll(".message")).map(div => div.textContent).join("\n\n");
-        const blob = new Blob([text], { type: "text/plain" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "vibot_conversa.txt";
-        document.body.appendChild(a);
-        a.click();
-        URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      });
-
-      importBtn.addEventListener("click", () => importFile.click());
-
-      importFile.addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-          const text = reader.result;
-          addMessage("user", text);
-        };
-        reader.readAsText(file);
-      });
-
-      userInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          sendBtn.click();
-        }
-      });
+      }
     });
+
+    // --- Entrada por voz ---
+    let voiceEnabled = false;
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.lang = languageSelector.value;
+      recognition.interimResults = false;
+      recognition.continuous = false;
+
+      recognition.onstart = () => {
+        recognizing = true;
+        voiceInputBtn.textContent = '🛑 Parar';
+        voiceInputBtn.style.backgroundColor = '#ef4444'; // vermelho
+      };
+
+      recognition.onend = () => {
+        recognizing = false;
+        voiceInputBtn.textContent = '🎙️ Falar';
+        voiceInputBtn.style.backgroundColor = '';
+      };
+
+      recognition.onerror = event => {
+        recognizing = false;
+        voiceInputBtn.textContent = '🎙️ Falar';
+        voiceInputBtn.style.backgroundColor = '';
+        console.error('Erro no reconhecimento de voz:', event.error);
+      };
+
+      recognition.onresult = event => {
+        const transcript = event.results[0][0].transcript;
+        userInput.value += (userInput.value ? ' ' : '') + transcript;
+        updateSendBtnState();
+      };
+
+      voiceInputBtn.addEventListener('click', () => {
+        if (recognizing) {
+          recognition.stop();
+          recognizing = false;
+        } else {
+          recognition.lang = languageSelector.value;
+          recognition.start();
+        }
+      });
+    } else {
+      voiceInputBtn.disabled = true;
+      voiceInputBtn.title = 'Reconhecimento de voz não suportado neste navegador.';
+    }
+
+    // --- Saída de voz ---
+    function speakText(text, lang) {
+      if (!('speechSynthesis' in window)) return;
+
+      if (synth.speaking) {
+        synth.cancel();
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = langMapToBcp47(lang);
+      synth.speak(utterance);
+    }
+
+    // Mapear código do seletor para BCP47 usado no SpeechSynthesis
+    function langMapToBcp47(lang) {
+      const map = {
+        pt: 'pt-BR',
+        en: 'en-US',
+        es: 'es-ES',
+        fr: 'fr-FR',
+        de: 'de-DE',
+        it: 'it-IT',
+        ja: 'ja-JP',
+        zh: 'zh-CN'
+      };
+      return map[lang] || 'pt-BR';
+    }
+
+    // Ativar/desativar voz com toggle (clicar no microfone ativa voz)
+    // No momento, botão só ativa input por voz
+
+    // --- Exportar histórico ---
+    exportHistoryBtn.addEventListener('click', () => {
+      if (!history.length) {
+        alert('Histórico vazio para exportar.');
+        return;
+      }
+      const textToExport = history.map(m => (m.role === 'user' ? 'Usuário: ' : 'Bot: ') + m.text).join('\n\n');
+      const blob = new Blob([textToExport], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'vibot-historico.txt';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    // --- Importar histórico ---
+    importHistoryBtn.addEventListener('click', () => {
+      importFileInput.click();
+    });
+
+    importFileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        const content = e.target.result;
+        // Simples parse: linha iniciando com "Usuário: " ou "Bot: "
+        const lines = content.split(/\r?\n/);
+        clearChat();
+        history = [];
+        for (let line of lines) {
+          if (line.startsWith('Usuário: ')) {
+            addMessage('user', line.replace('Usuário: ', '').trim());
+          } else if (line.startsWith('Bot: ')) {
+            addMessage('bot', line.replace('Bot: ', '').trim());
+          }
+        }
+        saveHistory();
+      };
+      reader.readAsText(file, 'UTF-8');
+      importFileInput.value = ''; // reset input
+    });
+
+    // Ao mudar idioma, atualiza reconhecimento de voz
+    languageSelector.addEventListener('change', () => {
+      localStorage.setItem('vibot-lang', languageSelector.value);
+      if (recognition && recognizing) {
+        recognition.stop();
+      }
+    });
+
+    // Inicializações
+    function init() {
+      updateSendBtnState();
+      loadHistory();
+    }
+
+    init();
+
   </script>
 </body>
 </html>
