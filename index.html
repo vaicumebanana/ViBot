@@ -396,6 +396,47 @@
         .tools-panel-icon {
             font-size: 24px;
         }
+        .chess-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            width: 100%;
+            max-width: 300px;
+            margin: 10px auto;
+            border: 2px solid #333;
+        }
+        .chess-square {
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .chess-square.light {
+            background-color: #f0d9b5;
+        }
+        .chess-square.dark {
+            background-color: #b58863;
+        }
+        .chess-move-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .chess-move-input input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .chess-move-input button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
         .settings-title {
             font-weight: 700;
             margin-bottom: 16px;
@@ -698,6 +739,26 @@
                     <i class="fas fa-plane tools-panel-icon"></i>
                     <span>Viagem</span>
                 </button>
+                <button class="tools-panel-btn" id="chessHelperBtn">
+                    <i class="fas fa-chess tools-panel-icon"></i>
+                    <span>Xadrez</span>
+                </button>
+                <button class="tools-panel-btn" id="generateSongBtn">
+                    <i class="fas fa-music tools-panel-icon"></i>
+                    <span>Música</span>
+                </button>
+                <button class="tools-panel-btn" id="generateSpeechBtn">
+                    <i class="fas fa-microphone tools-panel-icon"></i>
+                    <span>Discurso</span>
+                </button>
+                <button class="tools-panel-btn" id="generateInterviewBtn">
+                    <i class="fas fa-comments tools-panel-icon"></i>
+                    <span>Entrevista</span>
+                </button>
+                <button class="tools-panel-btn" id="generateDebateBtn">
+                    <i class="fas fa-gavel tools-panel-icon"></i>
+                    <span>Debate</span>
+                </button>
             </div>
         </div>
 
@@ -748,7 +809,7 @@
             <div id="chatbox">
                 <div class="welcome-message">
                     <div class="welcome-title">Bem-vindo ao ViBot Plus!</div>
-                    <div class="welcome-text">Seu assistente de IA com 20 ferramentas poderosas</div>
+                    <div class="welcome-text">Seu assistente de IA com 25 ferramentas poderosas</div>
                     
                     <div class="features">
                         <div class="feature-card">
@@ -869,10 +930,15 @@
                         settingsPanel: document.getElementById("settingsPanel"),
                         chatTabBtn: document.getElementById("chatTabBtn"),
                         toolsTabBtn: document.getElementById("toolsTabBtn"),
-                        settingsTabBtn: document.getElementById("settingsTabBtn")
+                        settingsTabBtn: document.getElementById("settingsTabBtn"),
+                        chessHelperBtn: document.getElementById("chessHelperBtn"),
+                        generateSongBtn: document.getElementById("generateSongBtn"),
+                        generateSpeechBtn: document.getElementById("generateSpeechBtn"),
+                        generateInterviewBtn: document.getElementById("generateInterviewBtn"),
+                        generateDebateBtn: document.getElementById("generateDebateBtn")
                     };
 
-                    // Tool buttons (20 tools)
+                    // Tool buttons (25 tools)
                     this.tools = [
                         'generateEmailBtn', 'summarizeTextBtn', 'translateTextBtn', 
                         'improveTextBtn', 'generateCodeBtn', 'generateIdeasBtn', 
@@ -880,7 +946,9 @@
                         'solveProblemBtn', 'generatePoemBtn', 'generateStoryBtn',
                         'generateJokeBtn', 'generateRecipeBtn', 'generateWorkoutBtn',
                         'generateAdviceBtn', 'generateQuizBtn', 'generateScriptBtn',
-                        'generateBusinessBtn', 'generateTravelBtn'
+                        'generateBusinessBtn', 'generateTravelBtn', 'chessHelperBtn',
+                        'generateSongBtn', 'generateSpeechBtn', 'generateInterviewBtn',
+                        'generateDebateBtn'
                     ];
                     
                     this.tools.forEach(tool => {
@@ -922,7 +990,7 @@
                     this.elements.toolsTabBtn.addEventListener('click', () => this.showTab('tools'));
                     this.elements.settingsTabBtn.addEventListener('click', () => this.showTab('settings'));
 
-                    // Tool buttons (20 tools)
+                    // Tool buttons (25 tools)
                     this.tools.forEach(tool => {
                         this.elements[tool].addEventListener('click', () => this.handleToolClick(tool));
                     });
@@ -1175,14 +1243,144 @@
                         generateQuizBtn: `Por favor, crie um quiz sobre o tópico que eu mencionar.`,
                         generateScriptBtn: `Por favor, escreva um roteiro para o cenário que eu descrever.`,
                         generateBusinessBtn: `Por favor, sugira ideias de negócios para o nicho que eu mencionar.`,
-                        generateTravelBtn: `Por favor, planeje um roteiro de viagem para o destino que eu especificar.`
+                        generateTravelBtn: `Por favor, planeje um roteiro de viagem para o destino que eu especificar.`,
+                        chessHelperBtn: `Por favor, ajude-me com esta posição de xadrez. Analise jogadas, estratégias ou responda perguntas sobre o jogo.`,
+                        generateSongBtn: `Por favor, componha uma letra de música no estilo que eu especificar.`,
+                        generateSpeechBtn: `Por favor, escreva um discurso sobre o tema que eu mencionar.`,
+                        generateInterviewBtn: `Por favor, prepare perguntas para uma entrevista sobre o tópico que eu fornecer.`,
+                        generateDebateBtn: `Por favor, ajude a estruturar argumentos para um debate sobre o tema que eu mencionar.`
                     };
                     
                     const toolName = toolId.replace('Btn', '').replace(/([A-Z])/g, ' $1').trim();
-                    this.addMessage("user", `Quero usar a ferramenta: ${toolName}`);
-                    this.sendToolMessage(toolPrompts[toolId]);
+                    
+                    if (toolId === 'chessHelperBtn') {
+                        this.startChessHelper();
+                    } else {
+                        this.addMessage("user", `Quero usar a ferramenta: ${toolName}`);
+                        this.sendToolMessage(toolPrompts[toolId]);
+                    }
                 },
                 
+                startChessHelper() {
+                    const conversation = this.conversations[this.currentConversationId];
+                    this.addMessage("user", "Quero usar a ferramenta: Ajudante de Xadrez");
+                    
+                    // Criar interface de xadrez
+                    const chessInterface = `
+                        <div class="chess-helper">
+                            <h3>Ajudante de Xadrez</h3>
+                            <p>Descreva a posição atual ou faça uma pergunta sobre xadrez:</p>
+                            
+                            <div class="chess-board" id="chessBoard">
+                                ${this.generateChessBoard()}
+                            </div>
+                            
+                            <div class="chess-move-input">
+                                <input type="text" id="chessMoveInput" placeholder="Ex: e4, xe5, roque pequeno...">
+                                <button id="submitChessMove">Enviar</button>
+                            </div>
+                            
+                            <p>Ou peça análise de posição, aberturas, finais de jogo, etc.</p>
+                        </div>
+                    `;
+                    
+                    this.addMessage("bot", chessInterface);
+                    
+                    // Configurar evento para enviar jogada
+                    document.getElementById("submitChessMove").addEventListener('click', () => {
+                        const move = document.getElementById("chessMoveInput").value.trim();
+                        if (move) {
+                            this.addMessage("user", `Jogada: ${move}`);
+                            this.sendChessQuestion(`Analise esta jogada: ${move}. Qual seria a melhor resposta?`);
+                            document.getElementById("chessMoveInput").value = "";
+                        }
+                    });
+                },
+
+                generateChessBoard() {
+                    let boardHTML = '';
+                    const pieces = [
+                        '♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜',
+                        '♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟',
+                        '', '', '', '', '', '', '', '',
+                        '', '', '', '', '', '', '', '',
+                        '', '', '', '', '', '', '', '',
+                        '', '', '', '', '', '', '', '',
+                        '♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙',
+                        '♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖'
+                    ];
+                    
+                    for (let i = 0; i < 64; i++) {
+                        const row = Math.floor(i / 8);
+                        const col = i % 8;
+                        const isLight = (row + col) % 2 === 0;
+                        
+                        boardHTML += `
+                            <div class="chess-square ${isLight ? 'light' : 'dark'}" data-pos="${String.fromCharCode(97 + col)}${8 - row}">
+                                ${pieces[i]}
+                            </div>
+                        `;
+                    }
+                    
+                    return boardHTML;
+                },
+
+                sendChessQuestion(question) {
+                    const conversation = this.conversations[this.currentConversationId];
+                    
+                    this.elements.chatbox.appendChild(this.typingIndicator);
+                    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
+                    
+                    try {
+                        const messages = [
+                            { 
+                                role: "system", 
+                                content: `Você é um especialista em xadrez chamado ViBot Chess. 
+                                Responda com análises precisas em português. 
+                                Use notação algébrica (ex: e4, xe5, 0-0). 
+                                Seja claro e dê explicações para jogadores intermediários.`
+                            },
+                            ...conversation.messages.map(msg => ({
+                                role: msg.role === "bot" ? "assistant" : msg.role,
+                                content: this.getTextContent(msg.content)
+                            })),
+                            { role: "user", content: question }
+                        ];
+                        
+                        const response = await fetch(this.config.apiUrl, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${this.config.apiKey}`
+                            },
+                            body: JSON.stringify({
+                                model: this.config.model,
+                                messages: messages,
+                                temperature: 0.3, // Menor temperatura para análises mais precisas
+                                max_tokens: 512,
+                                stream: false
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(`Erro na API: ${response.status} - ${errorData.error?.message || 'Sem detalhes'}`);
+                        }
+                        
+                        const data = await response.json();
+                        const botMessage = data.choices[0].message.content;
+                        
+                        this.typingIndicator.remove();
+                        this.addMessage("bot", botMessage);
+                        
+                        this.totalTokens += data.usage?.total_tokens || 0;
+                    } catch (error) {
+                        this.typingIndicator.remove();
+                        this.addMessage("bot", `⚠️ Erro: ${error.message}`, "error");
+                        console.error("Erro completo:", error);
+                    }
+                },
+
                 async sendToolMessage(prompt) {
                     const conversation = this.conversations[this.currentConversationId];
                     
