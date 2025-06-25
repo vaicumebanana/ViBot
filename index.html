@@ -65,6 +65,7 @@
     padding: 12px 16px; border-radius: 12px; max-width: 85%;
     line-height: 1.5; animation: fadeIn 0.3s ease-out;
     word-wrap: break-word; white-space: pre-wrap;
+    position: relative;
   }
   .user { background: var(--user-bg); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
   .bot { background: var(--bot-bg); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
@@ -114,18 +115,63 @@
     text-align: left; white-space: nowrap; overflow: hidden;
     text-overflow: ellipsis; cursor: pointer;
     transition: background-color 0.2s;
+    position: relative;
   }
   [data-theme="dark"] .conversation-btn {
     background: #374151;
   }
   .conversation-btn:hover { background: var(--primary); color: white; }
   .conversation-btn.active { background: var(--primary); color: white; font-weight: 700; }
+  .conversation-actions {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 4px;
+  }
+  .conversation-btn:hover .conversation-actions {
+    display: flex;
+  }
+  .message-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+    gap: 8px;
+  }
+  .action-btn {
+    background: rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .user .action-btn {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  [data-theme="dark"] .action-btn {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  [data-theme="dark"] .user .action-btn {
+    background: rgba(0, 0, 0, 0.2);
+  }
+  .action-btn:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+  .user .action-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
   @media(max-width:768px) {
     main { flex-direction: column; }
     aside { width:100%; margin-bottom:20px; order:-1; }
     #chatbox { height:50vh; }
     #input-container { flex-direction:column; }
     #sendBtn { width:100%; }
+    .conversation-actions {
+      display: flex;
+    }
   }
 </style>
 </head>
@@ -262,14 +308,54 @@
       this.userInput.focus();
     },
 
+    deleteConversation(id) {
+      if (!confirm("Tem certeza que deseja excluir esta conversa?")) return;
+      
+      delete this.conversations[id];
+      
+      if (this.currentConversationId === id) {
+        if (Object.keys(this.conversations).length > 0) {
+          this.currentConversationId = Object.keys(this.conversations)[0];
+        } else {
+          this.createNewConversation();
+          return;
+        }
+      }
+      
+      this.saveConversations();
+      this.renderConversationsList();
+      this.renderCurrentConversation();
+    },
+
     renderConversationsList() {
       this.conversationList.innerHTML = "";
       Object.entries(this.conversations).forEach(([id, messages]) => {
         const btn = document.createElement("button");
         btn.className = "conversation-btn";
-        btn.textContent = messages.length
+        
+        const btnText = document.createElement("span");
+        btnText.textContent = messages.length
           ? messages[messages.length - 1].content.slice(0, 30) + (messages[messages.length - 1].content.length > 30 ? "..." : "")
           : "(vazio)";
+        
+        btn.appendChild(btnText);
+        
+        // Adiciona ações (botão de excluir)
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "conversation-actions";
+        
+        const deleteBtn = document.createElement("button");
+        deleteBtn.innerHTML = "🗑️";
+        deleteBtn.title = "Excluir conversa";
+        deleteBtn.className = "action-btn";
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          this.deleteConversation(id);
+        };
+        
+        actionsDiv.appendChild(deleteBtn);
+        btn.appendChild(actionsDiv);
+        
         if (id === this.currentConversationId) btn.classList.add("active");
         btn.onclick = () => {
           this.currentConversationId = id;
@@ -292,10 +378,25 @@
     },
 
     addMessageToChatbox(role, content) {
-      const div = document.createElement("div");
-      div.className = "message " + role;
-      div.textContent = content;
-      this.chatbox.appendChild(div);
+      const messageDiv = document.createElement("div");
+      messageDiv.className = "message " + role;
+      messageDiv.textContent = content;
+      
+      // Adiciona botão de TTS apenas para mensagens do bot
+      if (role === "bot") {
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "message-actions";
+        
+        const ttsBtn = document.createElement("button");
+        ttsBtn.className = "action-btn";
+        ttsBtn.innerHTML = "🔊 Ouvir";
+        ttsBtn.onclick = () => this.speakText(content, this.languageSelector.value);
+        
+        actionsDiv.appendChild(ttsBtn);
+        messageDiv.appendChild(actionsDiv);
+      }
+      
+      this.chatbox.appendChild(messageDiv);
     },
 
     addMessage(role, content) {
@@ -399,8 +500,14 @@
     },
 
     speakText(text, lang) {
-      if (!this.speaking) return;
-      if (this.speechSynthesis.speaking) this.speechSynthesis.cancel();
+      if (!("speechSynthesis" in window)) {
+        alert("Síntese de voz não suportada neste navegador.");
+        return;
+      }
+      
+      if (this.speechSynthesis.speaking) {
+        this.speechSynthesis.cancel();
+      }
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = lang;
