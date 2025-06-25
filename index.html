@@ -174,7 +174,7 @@
   <div id="chat-container">
     <div id="chatbox" role="log" aria-live="polite" aria-atomic="false"></div>
     <div id="input-container">
-      <input id="userInput" placeholder="Digite sua mensagem…" autocomplete="off" />
+      <input id="userInput" placeholder="Digite sua mensagem..." autocomplete="off" />
       <button id="sendBtn">📩 Enviar</button>
     </div>
   </div>
@@ -200,7 +200,7 @@
       </div>
       <div class="system-prompt-container">
         <div class="settings-title">Prompt do Sistema</div>
-        <textarea id="systemPrompt" placeholder="Como o assistente deve se comportar…"></textarea>
+        <textarea id="systemPrompt" placeholder="Como o assistente deve se comportar..."></textarea>
       </div>
     </div>
   </aside>
@@ -311,11 +311,22 @@ const ViBot = {
     if(s.maxTokens){this.config.maxTokens=parseInt(s.maxTokens); this.maxTokensSlider.value=this.config.maxTokens; this.maxTokensValue.textContent=this.config.maxTokens;}
     if(s.systemPrompt){this.config.systemPrompt=s.systemPrompt; this.systemPrompt.value=this.config.systemPrompt;}
   },
-  saveSettings(){ const s={model:this.config.model,temperature=this.config.temperature,maxTokens=this.config.maxTokens,systemPrompt:this.systemPrompt.value}; localStorage.setItem("vibot_settings",JSON.stringify(s)); this.config.systemPrompt=this.systemPrompt.value;},
+  saveSettings(){ 
+    const s={
+      model: this.config.model,
+      temperature: this.config.temperature,
+      maxTokens: this.config.maxTokens,
+      systemPrompt: this.systemPrompt.value
+    }; 
+    localStorage.setItem("vibot_settings", JSON.stringify(s)); 
+    this.config.systemPrompt = this.systemPrompt.value;
+  },
   updateModel(m){ this.config.model=m; this.saveSettings(); },
   updateTemperature(v){ this.config.temperature=parseFloat(v); this.temperatureValue.textContent=v; this.saveSettings(); },
   updateMaxTokens(v){ this.config.maxTokens=parseInt(v); this.maxTokensValue.textContent=v; this.saveSettings(); },
-  toggleSettings(){ this.settingsPanel.style.display=(this.settingsPanel.style.display==="none"?"block":"none"); },
+  toggleSettings(){ 
+    this.settingsPanel.style.display = this.settingsPanel.style.display === "none" ? "block" : "none";
+  },
   loadConversations(){ const s=localStorage.getItem("vibot_conversations"); try { if(s) this.conversations=JSON.parse(s); this.currentConversationId=localStorage.getItem("vibot_currentConversation"); } catch { this.conversations={}; } },
   saveConversations(){ localStorage.setItem("vibot_conversations",JSON.stringify(this.conversations)); localStorage.setItem("vibot_currentConversation",this.currentConversationId); },
   createNewConversation(){ const id="conv_"+Date.now(); this.conversations[id]={id, title:"Nova Conversa", messages:[], createdAt:Date.now()}; this.currentConversationId=id; this.saveConversations(); this.renderConversationsList(); this.renderCurrentConversation(); this.userInput.focus(); },
