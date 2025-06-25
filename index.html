@@ -13,6 +13,7 @@
     --text: #111827;
     --error-text: #dc2626;
     --bg: #f9fafb;
+    --copy-bg: #e5e7eb;
   }
   [data-theme="dark"] {
     --primary: #6366f1;
@@ -20,6 +21,7 @@
     --bot-bg: #374151;
     --text: #f9fafb;
     --user-bg: #6366f1;
+    --copy-bg: #4b5563;
   }
   body {
     font-family: 'Inter', sans-serif;
@@ -34,7 +36,7 @@
   }
   [data-theme="dark"] header { background: #111827; border-color: #374151; }
   h1 { margin: 0; color: var(--primary); }
-  header div { display: flex; align-items: center; gap: 8px; }
+  header div { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   button, select {
     font-size: 14px;
     padding: 8px;
@@ -140,13 +142,16 @@
     gap: 8px;
   }
   .action-btn {
-    background: rgba(0, 0, 0, 0.1);
+    background: var(--copy-bg);
     border: none;
     border-radius: 4px;
-    padding: 2px 6px;
+    padding: 4px 8px;
     font-size: 12px;
     cursor: pointer;
     transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
   .user .action-btn {
     background: rgba(255, 255, 255, 0.2);
@@ -163,6 +168,61 @@
   .user .action-btn:hover {
     background: rgba(255, 255, 255, 0.3);
   }
+  .model-selector {
+    margin-top: 12px;
+    width: 100%;
+  }
+  .settings-panel {
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--bot-bg);
+    border-radius: 8px;
+  }
+  .settings-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  .slider-container {
+    margin: 12px 0;
+  }
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .slider-value {
+    font-weight: bold;
+  }
+  input[type="range"] {
+    width: 100%;
+  }
+  .token-count {
+    font-size: 12px;
+    color: #6b7280;
+    text-align: right;
+    margin-top: 4px;
+  }
+  [data-theme="dark"] .token-count {
+    color: #9ca3af;
+  }
+  .system-prompt-container {
+    margin-top: 12px;
+  }
+  #systemPrompt {
+    width: 100%;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: white;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 60px;
+  }
+  [data-theme="dark"] #systemPrompt {
+    background: #1f2937;
+    color: white;
+    border-color: #4b5563;
+  }
   @media(max-width:768px) {
     main { flex-direction: column; }
     aside { width:100%; margin-bottom:20px; order:-1; }
@@ -171,6 +231,13 @@
     #sendBtn { width:100%; }
     .conversation-actions {
       display: flex;
+    }
+    header div {
+      gap: 4px;
+    }
+    button, select {
+      padding: 6px;
+      font-size: 12px;
     }
   }
 </style>
@@ -183,6 +250,7 @@
     <button id="startSpeech" aria-label="Ativar/desativar voz">🎙️ Voz</button>
     <button id="exportHistory" aria-label="Exportar histórico">📂 Exportar</button>
     <button id="importHistory" aria-label="Importar histórico">📁 Importar</button>
+    <button id="settingsBtn" aria-label="Configurações">⚙️ Config</button>
     <select id="languageSelector" aria-label="Selecionar idioma">
       <option value="pt-BR" selected>Português</option>
       <option value="en-US">English</option>
@@ -207,6 +275,39 @@
   <aside>
     <button id="newConversationBtn" aria-label="Nova conversa">➕ Nova Conversa</button>
     <div id="conversationList" aria-label="Lista de conversas"></div>
+    
+    <div class="settings-panel" id="settingsPanel" style="display: none;">
+      <div class="settings-title">Configurações do Modelo</div>
+      
+      <select id="modelSelector" class="model-selector">
+        <option value="llama3-70b-8192">ViBot Pro (Alta Performance)</option>
+        <option value="llama3-8b-8192">ViBot Standard (Balanço)</option>
+        <option value="mixtral-8x7b-32768">ViBot Expert (Conhecimento Avançado)</option>
+        <option value="gemma-7b-it">ViBot Lite (Rápido e Leve)</option>
+      </select>
+      
+      <div class="slider-container">
+        <div class="slider-label">
+          <span>Criatividade</span>
+          <span class="slider-value" id="temperatureValue">0.7</span>
+        </div>
+        <input type="range" id="temperatureSlider" min="0" max="2" step="0.1" value="0.7" />
+      </div>
+      
+      <div class="slider-container">
+        <div class="slider-label">
+          <span>Tamanho da Resposta</span>
+          <span class="slider-value" id="maxTokensValue">1024</span>
+        </div>
+        <input type="range" id="maxTokensSlider" min="256" max="4096" step="128" value="1024" />
+        <div class="token-count" id="tokenCount">Tokens usados: 0</div>
+      </div>
+      
+      <div class="system-prompt-container">
+        <div class="settings-title">Instruções do Sistema</div>
+        <textarea id="systemPrompt" placeholder="Como o assistente deve se comportar..."></textarea>
+      </div>
+    </div>
   </aside>
 </main>
 
@@ -219,7 +320,24 @@
       apiKey: "gsk_GAB1Wl5zqbp30qPDeMObWGdyb3FY0g7KiTlGt5aWhUnkD495Bi3T",
       model: "llama3-70b-8192",
       temperature: 0.7,
-      maxTokens: 1024
+      maxTokens: 1024,
+      systemPrompt: "Você é um assistente útil chamado ViBot. Responda de forma clara e concisa no idioma do usuário."
+    },
+
+    // Mapeamento dos modelos para nomes amigáveis
+    modelNames: {
+      "llama3-70b-8192": "ViBot Pro (Alta Performance)",
+      "llama3-8b-8192": "ViBot Standard (Balanço)",
+      "mixtral-8x7b-32768": "ViBot Expert (Conhecimento Avançado)",
+      "gemma-7b-it": "ViBot Lite (Rápido e Leve)"
+    },
+
+    // Mapeamento reverso para obter o ID do modelo a partir do nome
+    getModelIdByName(name) {
+      for (const [id, modelName] of Object.entries(this.modelNames)) {
+        if (modelName === name) return id;
+      }
+      return "llama3-70b-8192"; // padrão
     },
 
     init() {
@@ -235,16 +353,27 @@
       this.exportHistoryBtn = document.getElementById("exportHistory");
       this.importHistoryBtn = document.getElementById("importHistory");
       this.importFileInput = document.getElementById("importFile");
+      this.settingsBtn = document.getElementById("settingsBtn");
+      this.settingsPanel = document.getElementById("settingsPanel");
+      this.modelSelector = document.getElementById("modelSelector");
+      this.temperatureSlider = document.getElementById("temperatureSlider");
+      this.temperatureValue = document.getElementById("temperatureValue");
+      this.maxTokensSlider = document.getElementById("maxTokensSlider");
+      this.maxTokensValue = document.getElementById("maxTokensValue");
+      this.tokenCount = document.getElementById("tokenCount");
+      this.systemPrompt = document.getElementById("systemPrompt");
 
       this.speaking = false;
       this.speechSynthesis = window.speechSynthesis;
       this.currentUtterance = null;
+      this.totalTokens = 0;
 
       this.typingIndicator = document.createElement("div");
       this.typingIndicator.className = "message bot typing";
       this.typingIndicator.textContent = "ViBot está digitando...";
 
       this.loadTheme();
+      this.loadSettings();
       this.loadConversations();
 
       if (!this.currentConversationId || !this.conversations[this.currentConversationId]) {
@@ -269,12 +398,79 @@
       this.importHistoryBtn.onclick = () => this.importFileInput.click();
       this.importFileInput.onchange = e => this.importHistory(e);
       this.languageSelector.onchange = e => this.changeLanguage(e.target.value);
+      this.settingsBtn.onclick = () => this.toggleSettings();
+      this.modelSelector.onchange = e => this.updateModel(this.getModelIdByName(e.target.value));
+      this.temperatureSlider.oninput = e => this.updateTemperature(e.target.value);
+      this.maxTokensSlider.oninput = e => this.updateMaxTokens(e.target.value);
+      this.systemPrompt.onchange = () => this.saveSettings();
 
       this.userInput.focus();
     },
 
     conversations: {},
     currentConversationId: null,
+
+    loadSettings() {
+      const settings = localStorage.getItem("vibot_settings");
+      if (settings) {
+        try {
+          const savedSettings = JSON.parse(settings);
+          this.config.model = savedSettings.model || this.config.model;
+          this.config.temperature = savedSettings.temperature || this.config.temperature;
+          this.config.maxTokens = savedSettings.maxTokens || this.config.maxTokens;
+          this.config.systemPrompt = savedSettings.systemPrompt || this.config.systemPrompt;
+          
+          // Atualiza UI
+          this.modelSelector.value = this.modelNames[this.config.model] || this.modelNames["llama3-70b-8192"];
+          this.temperatureSlider.value = this.config.temperature;
+          this.temperatureValue.textContent = this.config.temperature;
+          this.maxTokensSlider.value = this.config.maxTokens;
+          this.maxTokensValue.textContent = this.config.maxTokens;
+          this.systemPrompt.value = this.config.systemPrompt;
+        } catch {
+          // Usa valores padrão
+        }
+      }
+    },
+
+    saveSettings() {
+      this.config.temperature = parseFloat(this.temperatureSlider.value);
+      this.config.maxTokens = parseInt(this.maxTokensSlider.value);
+      this.config.systemPrompt = this.systemPrompt.value;
+      
+      localStorage.setItem("vibot_settings", JSON.stringify({
+        model: this.config.model,
+        temperature: this.config.temperature,
+        maxTokens: this.config.maxTokens,
+        systemPrompt: this.config.systemPrompt
+      }));
+    },
+
+    updateModel(modelId) {
+      this.config.model = modelId;
+      this.saveSettings();
+    },
+
+    updateTemperature(value) {
+      this.config.temperature = parseFloat(value);
+      this.temperatureValue.textContent = value;
+      this.saveSettings();
+    },
+
+    updateMaxTokens(value) {
+      this.config.maxTokens = parseInt(value);
+      this.maxTokensValue.textContent = value;
+      this.saveSettings();
+    },
+
+    updateTokenCount(tokens) {
+      this.totalTokens += tokens;
+      this.tokenCount.textContent = `Tokens usados: ${this.totalTokens}`;
+    },
+
+    toggleSettings() {
+      this.settingsPanel.style.display = this.settingsPanel.style.display === "none" ? "block" : "none";
+    },
 
     loadConversations() {
       const data = localStorage.getItem("vibot_conversations");
@@ -382,20 +578,33 @@
       messageDiv.className = "message " + role;
       messageDiv.textContent = content;
       
-      // Adiciona botão de TTS apenas para mensagens do bot
+      // Adiciona botões de ação
+      const actionsDiv = document.createElement("div");
+      actionsDiv.className = "message-actions";
+      
+      // Botão de TTS apenas para mensagens do bot
       if (role === "bot") {
-        const actionsDiv = document.createElement("div");
-        actionsDiv.className = "message-actions";
-        
         const ttsBtn = document.createElement("button");
         ttsBtn.className = "action-btn";
         ttsBtn.innerHTML = "🔊 Ouvir";
         ttsBtn.onclick = () => this.speakText(content, this.languageSelector.value);
-        
         actionsDiv.appendChild(ttsBtn);
-        messageDiv.appendChild(actionsDiv);
       }
       
+      // Botão de copiar para todas as mensagens
+      const copyBtn = document.createElement("button");
+      copyBtn.className = "action-btn";
+      copyBtn.innerHTML = "📋 Copiar";
+      copyBtn.onclick = () => {
+        navigator.clipboard.writeText(content);
+        copyBtn.innerHTML = "✓ Copiado!";
+        setTimeout(() => {
+          copyBtn.innerHTML = "📋 Copiar";
+        }, 2000);
+      };
+      actionsDiv.appendChild(copyBtn);
+      
+      messageDiv.appendChild(actionsDiv);
       this.chatbox.appendChild(messageDiv);
     },
 
@@ -441,11 +650,21 @@
     },
 
     async callChatAPI(prompt) {
+      // Prepara o histórico da conversa para enviar à API
+      const messages = [
+        { role: "system", content: this.config.systemPrompt },
+        ...this.conversations[this.currentConversationId].map(msg => ({
+          role: msg.role,
+          content: msg.content
+        })),
+        { role: "user", content: prompt }
+      ];
+
       const body = {
         model: this.config.model,
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens,
-        messages: [{ role: "user", content: prompt }]
+        messages: messages
       };
 
       const res = await fetch(this.config.apiUrl, {
@@ -462,6 +681,10 @@
       }
       
       const data = await res.json();
+      
+      if (data.usage && data.usage.total_tokens) {
+        this.updateTokenCount(data.usage.total_tokens);
+      }
       
       if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
         return data.choices[0].message.content.trim();
@@ -516,7 +739,15 @@
 
     exportHistory() {
       if (!this.currentConversationId || !this.conversations[this.currentConversationId]) return;
-      const dataStr = JSON.stringify(this.conversations[this.currentConversationId], null, 2);
+      const dataStr = JSON.stringify({
+        conversation: this.conversations[this.currentConversationId],
+        settings: {
+          model: this.config.model,
+          temperature: this.config.temperature,
+          maxTokens: this.config.maxTokens,
+          systemPrompt: this.config.systemPrompt
+        }
+      }, null, 2);
       const blob = new Blob([dataStr], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -533,11 +764,33 @@
       const reader = new FileReader();
       reader.onload = e => {
         try {
-          const imported = JSON.parse(e.target.result);
-          if (!Array.isArray(imported)) throw new Error("Formato inválido");
+          const importedData = JSON.parse(e.target.result);
+          
+          // Verifica se é o novo formato com settings ou o antigo apenas com conversa
+          let importedConversation, importedSettings;
+          if (importedData.conversation && Array.isArray(importedData.conversation)) {
+            importedConversation = importedData.conversation;
+            importedSettings = importedData.settings;
+          } else if (Array.isArray(importedData)) {
+            importedConversation = importedData;
+          } else {
+            throw new Error("Formato inválido");
+          }
+          
           const id = "conv_" + Date.now();
-          this.conversations[id] = imported;
+          this.conversations[id] = importedConversation;
           this.currentConversationId = id;
+          
+          // Aplica configurações se existirem no arquivo
+          if (importedSettings) {
+            this.config.model = importedSettings.model || this.config.model;
+            this.config.temperature = importedSettings.temperature || this.config.temperature;
+            this.config.maxTokens = importedSettings.maxTokens || this.config.maxTokens;
+            this.config.systemPrompt = importedSettings.systemPrompt || this.config.systemPrompt;
+            this.saveSettings();
+            this.loadSettings(); // Atualiza a UI
+          }
+          
           this.saveConversations();
           this.renderConversationsList();
           this.renderCurrentConversation();
