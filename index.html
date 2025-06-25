@@ -32,7 +32,7 @@
   }
   [data-theme="dark"] header { background: #111827; }
   h1 { margin: 0; color: var(--primary); }
-  header div { display: flex; align-items: center; gap: 8px; }
+  header div { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   button, select {
     font-size: 14px;
     padding: 8px;
@@ -41,13 +41,18 @@
     background: white;
     cursor: pointer;
   }
-  button:hover { opacity: 0.9; }
+  button:hover:not(:disabled) { opacity: 0.9; }
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
   main { display: flex; max-width: 1100px; margin: 20px auto; gap: 20px; padding: 0 20px; }
   #chat-container { flex: 1; display: flex; flex-direction: column; }
   #chatbox {
     background: white; border: 1px solid #e5e7eb; border-radius: 12px;
     flex: 1; padding: 16px; overflow-y: auto;
     display: flex; flex-direction: column; gap: 12px;
+    min-height: 300px;
   }
   .message {
     padding: 12px 16px; border-radius: 12px; max-width: 85%;
@@ -64,11 +69,14 @@
   #userInput {
     flex: 1; padding: 12px 16px; border: 1px solid #e5e7eb;
     border-radius: 12px; font-size: 16px;
+    resize: none;
+    min-height: 40px;
   }
   #sendBtn {
     background: var(--primary); color: white; border: none;
     border-radius: 12px; padding: 0 24px; font-weight: 500;
     cursor: pointer; transition: background-color 0.2s;
+    white-space: nowrap;
   }
   #sendBtn:hover:not(:disabled) { background: #4338ca; }
   #sendBtn:disabled { background: #9ca3af; cursor: not-allowed; }
@@ -110,18 +118,18 @@
   <h1>ViBot</h1>
   <div>
     <button id="toggleTheme" aria-label="Alternar tema">🌓 Tema</button>
-    <button id="startSpeech" aria-label="Ativar/desativar voz">🎙️ Voz</button>
+    <button id="startSpeech" aria-label="Ativar/desativar voz" style="opacity: 0.5;">🎙️ Voz</button>
     <button id="exportHistory" aria-label="Exportar histórico">📂 Exportar</button>
     <button id="importHistory" aria-label="Importar histórico">📁 Importar</button>
     <select id="languageSelector" aria-label="Selecionar idioma">
-      <option value="pt" selected>Português</option>
-      <option value="en">English</option>
-      <option value="es">Español</option>
-      <option value="zh">中文</option>
-      <option value="hi">हिन्दी</option>
-      <option value="ar">العربية</option>
-      <option value="fr">Français</option>
-      <option value="ru">Русский</option>
+      <option value="pt-BR" selected>Português</option>
+      <option value="en-US">English</option>
+      <option value="es-ES">Español</option>
+      <option value="zh-CN">中文</option>
+      <option value="hi-IN">हिन्दी</option>
+      <option value="ar-SA">العربية</option>
+      <option value="fr-FR">Français</option>
+      <option value="ru-RU">Русский</option>
     </select>
   </div>
 </header>
@@ -130,8 +138,8 @@
   <div id="chat-container">
     <div id="chatbox" role="log" aria-live="polite" aria-atomic="false"></div>
     <div id="input-container">
-      <input id="userInput" placeholder="Digite sua mensagem..." autocomplete="off" />
-      <button id="sendBtn" aria-label="Enviar mensagem">📩 Enviar</button>
+      <textarea id="userInput" placeholder="Digite sua mensagem..." autocomplete="off" rows="1"></textarea>
+      <button id="sendBtn" aria-label="Enviar mensagem" disabled>📩 Enviar</button>
     </div>
   </div>
   <aside>
@@ -186,12 +194,21 @@
 
       // Eventos
       this.sendBtn.onclick = () => this.sendMessage();
+
+      // Habilita/desabilita botão enviar conforme o input
+      this.userInput.addEventListener("input", () => {
+        this.sendBtn.disabled = this.userInput.value.trim().length === 0;
+        this.adjustTextareaHeight();
+      });
+
+      // Enviar com Enter (shift + enter insere nova linha)
       this.userInput.addEventListener("keydown", e => {
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
-          this.sendMessage();
+          if (!this.sendBtn.disabled) this.sendMessage();
         }
       });
+
       this.newConversationBtn.onclick = () => this.createNewConversation();
       this.toggleThemeBtn.onclick = () => this.toggleTheme();
       this.startSpeechBtn.onclick = () => this.toggleSpeech();
@@ -199,6 +216,8 @@
       this.importHistoryBtn.onclick = () => this.importFileInput.click();
       this.importFileInput.onchange = e => this.importHistory(e);
       this.languageSelector.onchange = e => this.changeLanguage(e.target.value);
+
+      this.adjustTextareaHeight();
     },
 
     conversations: {},
@@ -232,22 +251,29 @@
       this.saveConversations();
       this.renderConversationsList();
       this.renderCurrentConversation();
+      this.userInput.focus();
+      this.sendBtn.disabled = true;
     },
 
     renderConversationsList() {
       this.conversationList.innerHTML = "";
       for (const id in this.conversations) {
         const conv = this.conversations[id];
-        const btn = document.createElement("button");
-        btn.textContent = conv.messages.length
-          ? conv.messages[0].content.substring(0, 30) + "..."
+        const firstMsg = conv.messages.find(m => m.role === "user" || m.role === "assistant");
+        const previewText = firstMsg
+          ? firstMsg.content.substring(0, 30).replace(/\n/g, " ") + (firstMsg.content.length > 30 ? "..." : "")
           : "Nova conversa";
+        const btn = document.createElement("button");
+        btn.textContent = previewText;
         btn.className = "conversation-btn" + (id === this.currentConversationId ? " active" : "");
+        btn.title = previewText;
         btn.onclick = () => {
           this.currentConversationId = id;
           this.saveConversations();
           this.renderConversationsList();
           this.renderCurrentConversation();
+          this.userInput.focus();
+          this.sendBtn.disabled = this.userInput.value.trim().length === 0;
         };
         this.conversationList.appendChild(btn);
       }
@@ -287,8 +313,8 @@
       if (!text) return;
 
       this.userInput.value = "";
-      this.userInput.disabled = true;
       this.sendBtn.disabled = true;
+      this.userInput.disabled = true;
 
       this.addMessageToChatbox("user", text);
       this.conversations[this.currentConversationId].messages.push({ role: "user", content: text });
@@ -303,26 +329,25 @@
         this.addMessageToChatbox("assistant", responseText);
         this.conversations[this.currentConversationId].messages.push({ role: "assistant", content: responseText });
         this.saveConversations();
+        this.scrollChatToBottom();
 
-        if (this.speaking) this.speak(responseText);
+        if (this.speaking) this.speakText(responseText);
 
       } catch (error) {
         this.chatbox.removeChild(this.typingIndicator);
         this.addErrorMessage(error.message || "Erro desconhecido");
+      } finally {
+        this.userInput.disabled = false;
+        this.userInput.focus();
+        this.sendBtn.disabled = this.userInput.value.trim().length === 0;
       }
-
-      this.userInput.disabled = false;
-      this.sendBtn.disabled = false;
-      this.userInput.focus();
-      this.scrollChatToBottom();
     },
 
     async callApi(messages) {
-      // Ajusta o payload para sua API Groq
-      // A Groq espera: model, messages (array com role+content), temperature, max_tokens
+      // Para compatibilidade, uso fetch e envio a conversa completa.
       const payload = {
         model: this.config.model,
-        messages,
+        messages: messages,
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens
       };
@@ -331,38 +356,35 @@
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${this.config.apiKey}`
+          Authorization: "Bearer " + this.config.apiKey
         },
         body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
-        let errorMsg = `Status ${response.status}`;
+        let errMsg = `HTTP ${response.status}`;
         try {
           const errJson = await response.json();
-          if (errJson.error && errJson.error.message) {
-            errorMsg = errJson.error.message;
-          }
+          if (errJson.error) errMsg = errJson.error.message || errMsg;
         } catch {}
-        throw new Error(errorMsg);
+        throw new Error(errMsg);
       }
 
       const data = await response.json();
 
-      // A resposta pode variar, aqui assumo que
-      // a resposta está em data.choices[0].message.content
-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      if (!data.choices || !data.choices.length) {
         throw new Error("Resposta inválida da API");
       }
 
-      return data.choices[0].message.content.trim();
+      const text = data.choices[0].message.content.trim();
+      return text;
     },
 
     toggleTheme() {
       const current = document.documentElement.getAttribute("data-theme");
       if (current === "dark") {
         document.documentElement.removeAttribute("data-theme");
-        localStorage.removeItem("vibot_theme");
+        localStorage.setItem("vibot_theme", "light");
       } else {
         document.documentElement.setAttribute("data-theme", "dark");
         localStorage.setItem("vibot_theme", "dark");
@@ -373,6 +395,8 @@
       const theme = localStorage.getItem("vibot_theme");
       if (theme === "dark") {
         document.documentElement.setAttribute("data-theme", "dark");
+      } else {
+        document.documentElement.removeAttribute("data-theme");
       }
     },
 
@@ -381,79 +405,154 @@
         alert("Seu navegador não suporta síntese de voz.");
         return;
       }
+
       this.speaking = !this.speaking;
-      if (!this.speaking && this.currentUtterance) {
+
+      if (this.speaking) {
+        this.startSpeechBtn.style.opacity = "1";
+      } else {
+        this.startSpeechBtn.style.opacity = "0.5";
+        if (this.currentUtterance) {
+          this.speechSynthesis.cancel();
+          this.currentUtterance = null;
+        }
+      }
+    },
+
+    speakText(text) {
+      if (!this.speaking) return;
+      if (!("speechSynthesis" in window)) return;
+
+      if (this.currentUtterance) {
         this.speechSynthesis.cancel();
         this.currentUtterance = null;
       }
-      this.startSpeechBtn.style.opacity = this.speaking ? "1" : "0.5";
-    },
 
-    speak(text) {
-      if (!this.speaking) return;
-      if (this.speechSynthesis.speaking) {
-        this.speechSynthesis.cancel();
-      }
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = this.languageSelector.value || "pt-BR";
+
+      // Tenta ajustar voz para o idioma selecionado
+      const lang = this.languageSelector.value || "pt-BR";
+      utterance.lang = lang;
+
+      // Ajuste voz: tentar escolher uma voz que combine com o idioma
+      const voices = this.speechSynthesis.getVoices();
+      const voice = voices.find(v => v.lang.toLowerCase().startsWith(lang.toLowerCase()));
+      if (voice) utterance.voice = voice;
+
+      utterance.rate = 1;
+      utterance.pitch = 1;
+
       this.currentUtterance = utterance;
+
       this.speechSynthesis.speak(utterance);
     },
 
     exportHistory() {
+      if (!this.currentConversationId) return;
       const conv = this.conversations[this.currentConversationId];
-      if (!conv) return alert("Nenhuma conversa para exportar.");
+      if (!conv) return;
 
-      const content = conv.messages.map(m => `${m.role === "user" ? "Usuário" : "ViBot"}: ${m.content}`).join("\n\n");
-      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      let text = "";
+      for (const msg of conv.messages) {
+        text += (msg.role === "user" ? "Usuário: " : "ViBot: ") + msg.content + "\n\n";
+      }
+
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
       const url = URL.createObjectURL(blob);
-
       const a = document.createElement("a");
       a.href = url;
-      a.download = `vibot_conversation_${this.currentConversationId}.txt`;
+      a.download = `vibot_conversa_${this.currentConversationId}.txt`;
       document.body.appendChild(a);
       a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 0);
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     },
 
     importHistory(event) {
       const file = event.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
-      reader.onload = () => {
-        const text = reader.result;
-        // Simples import: cria nova conversa com todo texto do arquivo como mensagem do usuário
+      reader.onload = e => {
+        const content = e.target.result;
+        // Cria nova conversa com o conteúdo
         const id = "conv_" + Date.now();
-        this.conversations[id] = {
-          id,
-          messages: [{ role: "user", content: text }]
-        };
+        const messages = [];
+
+        // Tenta parsear o texto simples para mensagens
+        // Exemplo: "Usuário: texto\n\nViBot: texto\n\n..."
+        const lines = content.split(/\r?\n/);
+        let role = null;
+        let buffer = "";
+
+        for (const line of lines) {
+          if (line.startsWith("Usuário:")) {
+            if (buffer && role) {
+              messages.push({ role, content: buffer.trim() });
+              buffer = "";
+            }
+            role = "user";
+            buffer = line.replace("Usuário:", "").trim();
+          } else if (line.startsWith("ViBot:")) {
+            if (buffer && role) {
+              messages.push({ role, content: buffer.trim() });
+              buffer = "";
+            }
+            role = "assistant";
+            buffer = line.replace("ViBot:", "").trim();
+          } else if (line.trim() === "") {
+            if (buffer && role) {
+              messages.push({ role, content: buffer.trim() });
+              buffer = "";
+              role = null;
+            }
+          } else {
+            if (buffer !== "") buffer += "\n" + line;
+            else buffer = line;
+          }
+        }
+        if (buffer && role) {
+          messages.push({ role, content: buffer.trim() });
+        }
+
+        this.conversations[id] = { id, messages };
         this.currentConversationId = id;
         this.saveConversations();
         this.renderConversationsList();
         this.renderCurrentConversation();
-        this.userInput.focus();
+
+        this.userInput.value = "";
+        this.sendBtn.disabled = true;
       };
       reader.readAsText(file);
-      // Limpa input para poder importar o mesmo arquivo de novo, se quiser
+      // Limpar input para permitir importar mesmo arquivo novamente
       event.target.value = "";
     },
 
     changeLanguage(lang) {
-      // Apenas muda a seleção da linguagem para voz. Você pode expandir para traduções.
-      if (this.speaking && this.currentUtterance) {
-        this.speechSynthesis.cancel();
-        this.currentUtterance.lang = lang;
-        this.speechSynthesis.speak(this.currentUtterance);
-      }
+      // Atualiza idioma para voz e placeholders
+      this.userInput.placeholder = {
+        "pt-BR": "Digite sua mensagem...",
+        "en-US": "Type your message...",
+        "es-ES": "Escribe tu mensaje...",
+        "zh-CN": "请输入您的消息...",
+        "hi-IN": "अपना संदेश लिखें...",
+        "ar-SA": "اكتب رسالتك...",
+        "fr-FR": "Tapez votre message...",
+        "ru-RU": "Введите ваше сообщение..."
+      }[lang] || "Digite sua mensagem...";
+    },
+
+    adjustTextareaHeight() {
+      const ta = this.userInput;
+      ta.style.height = "auto";
+      ta.style.height = ta.scrollHeight + "px";
     }
   };
 
-  window.onload = () => ViBot.init();
+  window.addEventListener("DOMContentLoaded", () => {
+    ViBot.init();
+  });
 </script>
+
 </body>
 </html>
