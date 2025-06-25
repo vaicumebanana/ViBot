@@ -32,7 +32,7 @@
   }
   [data-theme="dark"] header { background: #111827; }
   h1 { margin: 0; color: var(--primary); }
-  header div { display: flex; align-items: center; gap: 8px; }
+  header div { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   button, select {
     font-size: 14px;
     padding: 8px;
@@ -112,8 +112,6 @@
   <div>
     <button id="toggleTheme" aria-label="Alternar tema">🌓 Tema</button>
     <button id="startSpeech" aria-label="Ativar/desativar voz">🎙️ Voz</button>
-    <button id="exportHistory" aria-label="Exportar histórico">📂 Exportar</button>
-    <button id="importHistory" aria-label="Importar histórico">📁 Importar</button>
     <button id="clearConversation" aria-label="Apagar conversa atual">🗑️ Apagar</button>
     <select id="languageSelector" aria-label="Selecionar idioma">
       <option value="pt-BR" selected>Português</option>
@@ -132,7 +130,7 @@
   <div id="chat-container">
     <div id="chatbox" role="log" aria-live="polite" aria-atomic="false"></div>
     <div id="input-container">
-      <input id="userInput" placeholder="Digite sua mensagem..." autocomplete="off" />
+      <textarea id="userInput" placeholder="Digite sua mensagem..." rows="2" autocomplete="off"></textarea>
       <button id="sendBtn" aria-label="Enviar mensagem">📩 Enviar</button>
     </div>
   </div>
@@ -142,18 +140,10 @@
   </aside>
 </main>
 
-<input type="file" id="importFile" accept=".txt" style="display: none;" aria-hidden="true" />
-
 <script>
   const ViBot = {
-    config: {
-      // Use seu endpoint real e chave API
-      apiUrl: "https://api.groq.com/openai/v1/chat/completions",
-      apiKey: "gsk_GAB1Wl5zqbp30qPDeMObWGdyb3FY0g7KiTlGt5aWhUnkD495Bi3T",
-      model: "llama3-70b-8192",
-      temperature: 0.7,
-      maxTokens: 1024
-    },
+    conversations: {},
+    currentConversationId: null,
 
     init() {
       // Elementos
@@ -165,17 +155,9 @@
       this.languageSelector = document.getElementById("languageSelector");
       this.toggleThemeBtn = document.getElementById("toggleTheme");
       this.startSpeechBtn = document.getElementById("startSpeech");
-      this.exportHistoryBtn = document.getElementById("exportHistory");
-      this.importHistoryBtn = document.getElementById("importHistory");
-      this.importFileInput = document.getElementById("importFile");
       this.clearConversationBtn = document.getElementById("clearConversation");
 
-      this.speaking = false;
       this.speechSynthesis = window.speechSynthesis;
-      this.currentUtterance = null;
-
-      // Para garantir que as vozes sejam carregadas
-      window.speechSynthesis.onvoiceschanged = () => {};
 
       this.typingIndicator = document.createElement("div");
       this.typingIndicator.className = "message bot typing";
@@ -202,21 +184,10 @@
       this.newConversationBtn.onclick = () => this.createNewConversation();
       this.toggleThemeBtn.onclick = () => this.toggleTheme();
       this.startSpeechBtn.onclick = () => this.toggleSpeech();
-      this.exportHistoryBtn.onclick = () => this.exportHistory();
-      this.importHistoryBtn.onclick = () => this.importFileInput.click();
-      this.importFileInput.onchange = e => this.importHistory(e);
-      this.languageSelector.onchange = e => this.changeLanguage(e.target.value);
       this.clearConversationBtn.onclick = () => this.clearConversation();
-
-      // Botão enviar sempre habilitado (removemos disables)
-      this.sendBtn.disabled = false;
-      this.userInput.disabled = false;
 
       this.userInput.focus();
     },
-
-    conversations: {},
-    currentConversationId: null,
 
     loadConversations() {
       const data = localStorage.getItem("vibot_conversations");
@@ -317,53 +288,22 @@
     },
 
     async processBotResponse(userText) {
-      // Mostrar indicador de digitação
+      // Mostra indicador de digitação
       this.chatbox.appendChild(this.typingIndicator);
       this.scrollToBottom();
 
-      try {
-        const response = await fetch(this.config.apiUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${this.config.apiKey}`,
-          },
-          body: JSON.stringify({
-            model: this.config.model,
-            messages: this.conversations[this.currentConversationId].messages,
-            temperature: this.config.temperature,
-            max_tokens: this.config.maxTokens,
-          }),
-        });
+      // Simula delay e resposta do bot
+      await new Promise(r => setTimeout(r, 1500));
 
-        if (!response.ok) {
-          throw new Error("Erro na API: " + response.statusText);
-        }
-        const data = await response.json();
-
-        // Remove indicador de digitação
-        if (this.typingIndicator.parentNode) {
-          this.typingIndicator.parentNode.removeChild(this.typingIndicator);
-        }
-
-        let botReply = "";
-        if (data.choices && data.choices.length > 0) {
-          botReply = data.choices[0].message.content;
-        } else {
-          botReply = "Desculpe, não consegui entender. Pode tentar novamente?";
-        }
-        this.addMessage("bot", botReply);
-
-        // Falar
-        this.speakText(botReply);
-
-      } catch (error) {
-        if (this.typingIndicator.parentNode) {
-          this.typingIndicator.parentNode.removeChild(this.typingIndicator);
-        }
-        this.addMessage("bot", "Erro ao obter resposta do servidor.");
-        console.error(error);
+      if (this.typingIndicator.parentNode) {
+        this.typingIndicator.parentNode.removeChild(this.typingIndicator);
       }
+
+      // Simula resposta (você pode trocar isso pela sua API real)
+      let botReply = "Você disse: " + userText;
+
+      this.addMessage("bot", botReply);
+      this.speakText(botReply);
     },
 
     speakText(text) {
@@ -373,10 +313,8 @@
       }
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = this.languageSelector.value || "pt-BR";
-      // Ajuste de velocidade para voz mais natural
       utterance.rate = 0.9;
 
-      // Selecionar voz que combina com o idioma
       const voices = this.speechSynthesis.getVoices();
       let voice = voices.find(v => v.lang.startsWith(utterance.lang));
       if (!voice) voice = voices[0];
@@ -403,56 +341,11 @@
     },
 
     exportHistory() {
-      const conv = this.conversations[this.currentConversationId];
-      if (!conv) return;
-      const text = conv.messages.map(m => `${m.role === "user" ? "Usuário" : "ViBot"}: ${m.content}`).join("\n\n");
-      const blob = new Blob([text], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `vibot_conversa_${Date.now()}.txt`;
-      a.click();
-      URL.revokeObjectURL(url);
+      // Aqui você pode implementar exportar histórico se quiser
     },
 
-    importHistory(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = e => {
-        const text = e.target.result;
-        // Importa como uma nova conversa com título "Importada"
-        const id = "conv-" + Date.now();
-        this.conversations[id] = { id, title: "Importada", messages: [] };
-
-        // Parse simples: cada linha "Usuário: texto" ou "ViBot: texto"
-        const lines = text.split(/\r?\n/);
-        for (let line of lines) {
-          line = line.trim();
-          if (!line) continue;
-          let role = null;
-          let content = null;
-          if (line.startsWith("Usuário:")) {
-            role = "user";
-            content = line.replace(/^Usuário:\s*/, "");
-          } else if (line.startsWith("ViBot:")) {
-            role = "bot";
-            content = line.replace(/^ViBot:\s*/, "");
-          }
-          if (role && content) this.conversations[id].messages.push({ role, content });
-        }
-        this.currentConversationId = id;
-        this.saveConversations();
-        this.renderConversationsList();
-        this.renderCurrentConversation();
-      };
-      reader.readAsText(file);
-      // Resetar input para poder importar novamente o mesmo arquivo se quiser
-      this.importFileInput.value = "";
-    },
-
-    changeLanguage(lang) {
-      // Só atualiza o select, a fala já respeita este valor
+    importHistory() {
+      // Aqui você pode implementar importar histórico se quiser
     },
 
     toggleTheme() {
