@@ -104,6 +104,7 @@
             border: none;
             font-size: 18px;
             cursor: pointer;
+            color: var(--text);
         }
         [data-theme="dark"] .header-btn {
             background: #2d3748;
@@ -261,6 +262,7 @@
             min-height: 50px;
             resize: none;
             line-height: 1.4;
+            color: var(--text);
         }
         [data-theme="dark"] #userInput {
             background: #1f2937;
@@ -484,6 +486,7 @@
             border: 1px solid #d1d5db;
             background: white;
             font-size: 16px;
+            color: var(--text);
         }
         [data-theme="dark"] .model-selector {
             background: #1f2937;
@@ -515,6 +518,7 @@
             justify-content: center;
             font-size: 20px;
             cursor: pointer;
+            color: var(--text);
         }
         .welcome-message {
             text-align: center;
@@ -573,6 +577,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            color: var(--text);
         }
         .message-actions {
             display: flex;
@@ -764,43 +769,43 @@
 
         <div id="chat-container">
             <div class="toolbar">
-                <button class="toolbar-btn" id="generateEmailBtn">
+                <button class="toolbar-btn" id="toolbarGenerateEmailBtn">
                     <i class="fas fa-envelope toolbar-icon"></i>
                     <span>E-mail</span>
                 </button>
-                <button class="toolbar-btn" id="summarizeTextBtn">
+                <button class="toolbar-btn" id="toolbarSummarizeTextBtn">
                     <i class="fas fa-file-alt toolbar-icon"></i>
                     <span>Resumir</span>
                 </button>
-                <button class="toolbar-btn" id="translateTextBtn">
+                <button class="toolbar-btn" id="toolbarTranslateTextBtn">
                     <i class="fas fa-globe toolbar-icon"></i>
                     <span>Traduzir</span>
                 </button>
-                <button class="toolbar-btn" id="improveTextBtn">
+                <button class="toolbar-btn" id="toolbarImproveTextBtn">
                     <i class="fas fa-edit toolbar-icon"></i>
                     <span>Melhorar</span>
                 </button>
-                <button class="toolbar-btn" id="generateCodeBtn">
+                <button class="toolbar-btn" id="toolbarGenerateCodeBtn">
                     <i class="fas fa-code toolbar-icon"></i>
                     <span>Código</span>
                 </button>
-                <button class="toolbar-btn" id="generateIdeasBtn">
+                <button class="toolbar-btn" id="toolbarGenerateIdeasBtn">
                     <i class="fas fa-lightbulb toolbar-icon"></i>
                     <span>Ideias</span>
                 </button>
-                <button class="toolbar-btn" id="analyzeDataBtn">
+                <button class="toolbar-btn" id="toolbarAnalyzeDataBtn">
                     <i class="fas fa-chart-bar toolbar-icon"></i>
                     <span>Analisar</span>
                 </button>
-                <button class="toolbar-btn" id="createContentBtn">
+                <button class="toolbar-btn" id="toolbarCreateContentBtn">
                     <i class="fas fa-pencil-alt toolbar-icon"></i>
                     <span>Conteúdo</span>
                 </button>
-                <button class="toolbar-btn" id="explainConceptBtn">
+                <button class="toolbar-btn" id="toolbarExplainConceptBtn">
                     <i class="fas fa-book toolbar-icon"></i>
                     <span>Explicar</span>
                 </button>
-                <button class="toolbar-btn" id="solveProblemBtn">
+                <button class="toolbar-btn" id="toolbarSolveProblemBtn">
                     <i class="fas fa-search toolbar-icon"></i>
                     <span>Solucionar</span>
                 </button>
@@ -951,8 +956,20 @@
                         'generateDebateBtn'
                     ];
                     
-                    this.tools.forEach(tool => {
-                        this.elements[tool] = document.getElementById(tool);
+                    // Toolbar buttons (10 tools)
+                    this.toolbarTools = [
+                        'toolbarGenerateEmailBtn', 'toolbarSummarizeTextBtn', 'toolbarTranslateTextBtn',
+                        'toolbarImproveTextBtn', 'toolbarGenerateCodeBtn', 'toolbarGenerateIdeasBtn',
+                        'toolbarAnalyzeDataBtn', 'toolbarCreateContentBtn', 'toolbarExplainConceptBtn',
+                        'toolbarSolveProblemBtn'
+                    ];
+                    
+                    // Combine all buttons
+                    this.allButtons = [...this.tools, ...this.toolbarTools];
+                    
+                    // Cache all buttons
+                    this.allButtons.forEach(button => {
+                        this.elements[button] = document.getElementById(button);
                     });
 
                     this.typingIndicator = document.createElement("div");
@@ -994,6 +1011,15 @@
                     this.tools.forEach(tool => {
                         this.elements[tool].addEventListener('click', () => this.handleToolClick(tool));
                     });
+                    
+                    // Toolbar buttons (10 tools)
+                    this.toolbarTools.forEach(tool => {
+                        this.elements[tool].addEventListener('click', () => {
+                            // Map toolbar buttons to their corresponding main tools
+                            const mainTool = tool.replace('toolbar', '').replace(/^./, str => str.toLowerCase());
+                            this.handleToolClick(mainTool);
+                        });
+                    });
                 },
 
                 setupInitialState() {
@@ -1020,6 +1046,16 @@
                     const newTheme = currentTheme === "dark" ? "light" : "dark";
                     document.documentElement.setAttribute("data-theme", newTheme);
                     localStorage.setItem("vibot_theme", newTheme);
+                    
+                    // Update theme icon
+                    const icon = this.elements.toggleThemeBtn.querySelector('i');
+                    if (newTheme === "dark") {
+                        icon.classList.remove('fa-moon');
+                        icon.classList.add('fa-sun');
+                    } else {
+                        icon.classList.remove('fa-sun');
+                        icon.classList.add('fa-moon');
+                    }
                 },
 
                 toggleSidebar() {
@@ -1259,6 +1295,9 @@
                         this.addMessage("user", `Quero usar a ferramenta: ${toolName}`);
                         this.sendToolMessage(toolPrompts[toolId]);
                     }
+                    
+                    // Fecha a barra de ferramentas após selecionar uma ferramenta
+                    this.elements.toolsSidebar.classList.remove('active');
                 },
                 
                 startChessHelper() {
@@ -1287,14 +1326,32 @@
                     this.addMessage("bot", chessInterface);
                     
                     // Configurar evento para enviar jogada
-                    document.getElementById("submitChessMove").addEventListener('click', () => {
-                        const move = document.getElementById("chessMoveInput").value.trim();
-                        if (move) {
-                            this.addMessage("user", `Jogada: ${move}`);
-                            this.sendChessQuestion(`Analise esta jogada: ${move}. Qual seria a melhor resposta?`);
-                            document.getElementById("chessMoveInput").value = "";
+                    const submitMove = () => {
+                        const moveInput = document.getElementById("chessMoveInput");
+                        if (moveInput) {
+                            const move = moveInput.value.trim();
+                            if (move) {
+                                this.addMessage("user", `Jogada: ${move}`);
+                                this.sendChessQuestion(`Analise esta jogada: ${move}. Qual seria a melhor resposta?`);
+                                moveInput.value = "";
+                            }
                         }
-                    });
+                    };
+                    
+                    // Adiciona event listener após o DOM ser atualizado
+                    setTimeout(() => {
+                        const submitBtn = document.getElementById("submitChessMove");
+                        const moveInput = document.getElementById("chessMoveInput");
+                        
+                        if (submitBtn && moveInput) {
+                            submitBtn.addEventListener('click', submitMove);
+                            moveInput.addEventListener('keypress', (e) => {
+                                if (e.key === 'Enter') {
+                                    submitMove();
+                                }
+                            });
+                        }
+                    }, 100);
                 },
 
                 generateChessBoard() {
@@ -1325,7 +1382,7 @@
                     return boardHTML;
                 },
 
-                sendChessQuestion(question) {
+                async sendChessQuestion(question) {
                     const conversation = this.conversations[this.currentConversationId];
                     
                     this.elements.chatbox.appendChild(this.typingIndicator);
@@ -1440,3 +1497,10 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
