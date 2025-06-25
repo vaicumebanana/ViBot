@@ -1,429 +1,434 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ViBot - Assistente Virtual</title>
-<style>
-  :root {
-    --primary: #4f46e5;
-    --user-bg: #4f46e5;
-    --bot-bg: #f3f4f6;
-    --error-bg: #fee2e2;
-    --text: #111827;
-    --error-text: #dc2626;
-    --bg: #f9fafb;
-  }
-  [data-theme="dark"] {
-    --bg: #1f2937;
-    --bot-bg: #374151;
-    --text: #f9fafb;
-  }
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    margin: 0; padding: 0;
-    transition: background 0.3s, color 0.3s;
-  }
-  header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 16px 32px; background: white; border-bottom: 1px solid #e5e7eb;
-  }
-  [data-theme="dark"] header { background: #111827; }
-  h1 { margin: 0; color: var(--primary); }
-  header div { display: flex; align-items: center; gap: 8px; }
-  button, select {
-    font-size: 14px;
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
-    background: white;
-    cursor: pointer;
-  }
-  button:hover { opacity: 0.9; }
-  main { display: flex; max-width: 1100px; margin: 20px auto; gap: 20px; padding: 0 20px; }
-  #chat-container { flex: 1; display: flex; flex-direction: column; }
-  #chatbox {
-    background: white; border: 1px solid #e5e7eb; border-radius: 12px;
-    flex: 1; padding: 16px; overflow-y: auto;
-    display: flex; flex-direction: column; gap: 12px;
-  }
-  .message {
-    padding: 12px 16px; border-radius: 12px; max-width: 85%;
-    line-height: 1.5; animation: fadeIn 0.3s ease-out;
-    word-wrap: break-word; white-space: pre-wrap;
-  }
-  .user { background: var(--user-bg); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-  .bot { background: var(--bot-bg); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
-  .error { background: var(--error-bg); color: var(--error-text); align-self: center; text-align: center; }
-  .typing { color: #6b7280; font-style: italic; animation: blink 1s steps(1) infinite; }
-  @keyframes fadeIn { from {opacity:0;transform:translateY(10px);} to {opacity:1;transform:translateY(0);} }
-  @keyframes blink { 50% {opacity:0.5;} }
-  #input-container { display: flex; gap: 12px; margin-top: 12px; }
-  #userInput {
-    flex: 1; padding: 12px 16px; border: 1px solid #e5e7eb;
-    border-radius: 12px; font-size: 16px;
-  }
-  #sendBtn {
-    background: var(--primary); color: white; border: none;
-    border-radius: 12px; padding: 0 24px; font-weight: 500;
-    cursor: pointer; transition: background-color 0.2s;
-  }
-  #sendBtn:hover:not(:disabled) { background: #4338ca; }
-  #sendBtn:disabled { background: #9ca3af; cursor: not-allowed; }
-  aside {
-    width: 250px; background: white; border: 1px solid #e5e7eb;
-    border-radius: 12px; padding: 16px; display: flex;
-    flex-direction: column; gap: 12px;
-  }
-  #newConversationBtn {
-    background: var(--primary); color: white; border: none;
-    border-radius: 12px; padding: 12px; font-weight: 600;
-    cursor: pointer; transition: background-color 0.2s;
-  }
-  #newConversationBtn:hover { background: #4338ca; }
-  #conversationList {
-    overflow-y: auto; flex: 1;
-    display: flex; flex-direction: column; gap: 8px;
-  }
-  .conversation-btn {
-    background: #f3f4f6; border: none; border-radius: 8px;
-    padding: 8px 12px; font-size: 14px; color: var(--text);
-    text-align: left; white-space: nowrap; overflow: hidden;
-    text-overflow: ellipsis; cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  .conversation-btn:hover { background: var(--primary); color: white; }
-  .conversation-btn.active { background: var(--primary); color: white; font-weight: 700; }
-  @media(max-width:768px) {
-    main { flex-direction: column; }
-    aside { width:100%; margin-bottom:20px; order:-1; }
-    #chatbox { height:50vh; }
-    #input-container { flex-direction:column; }
-    #sendBtn { width:100%; }
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ViBot - Assistente Virtual</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --user-bg: #4f46e5;
+      --bot-bg: #f3f4f6;
+      --error-bg: #fee2e2;
+      --text: #111827;
+      --bg: #f9fafb;
+    }
+    [data-theme="dark"] {
+      --bg: #1f2937;
+      --bot-bg: #374151;
+      --text: #f9fafb;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0; padding: 0;
+      transition: background 0.3s, color 0.3s;
+    }
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 32px; background: white; border-bottom: 1px solid #e5e7eb;
+    }
+    [data-theme="dark"] header { background: #111827; }
+    h1 { margin: 0; color: var(--primary); }
+    header div {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    button, select {
+      font-size: 14px;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      background: white;
+      cursor: pointer;
+    }
+    button:hover:not(:disabled) { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    main {
+      display: flex; max-width: 1100px; margin: 20px auto; gap: 20px; padding: 0 20px;
+    }
+    #chat-container { flex: 1; display: flex; flex-direction: column; }
+    #chatbox {
+      background: white; border: 1px solid #e5e7eb; border-radius: 12px;
+      flex: 1; padding: 16px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 12px;
+      min-height: 300px;
+    }
+    .message {
+      padding: 12px 16px; border-radius: 12px; max-width: 85%;
+      line-height: 1.5; word-wrap: break-word; white-space: pre-wrap;
+    }
+    .user {
+      background: var(--user-bg); color: white;
+      align-self: flex-end; border-bottom-right-radius: 4px;
+    }
+    .bot {
+      background: var(--bot-bg); color: var(--text);
+      align-self: flex-start; border-bottom-left-radius: 4px;
+    }
+    .error {
+      background: var(--error-bg); color: var(--text);
+      align-self: center; text-align: center;
+    }
+    .typing {
+      color: #6b7280; font-style: italic;
+      animation: blink 1s steps(1) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0.5; } }
+    #input-container {
+      display: flex; gap: 12px; margin-top: 12px;
+    }
+    #userInput {
+      flex: 1; padding: 12px 16px; border: 1px solid #e5e7eb;
+      border-radius: 12px; font-size: 16px;
+      resize: none; min-height: 40px;
+    }
+    #sendBtn {
+      background: var(--primary); color: white; border: none;
+      border-radius: 12px; padding: 0 24px; font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    #sendBtn:hover:not(:disabled) { background: #4338ca; }
+    aside {
+      width: 250px; background: white; border: 1px solid #e5e7eb;
+      border-radius: 12px; padding: 16px; display: flex;
+      flex-direction: column; gap: 12px;
+    }
+    #newConversationBtn {
+      background: var(--primary); color: white; border: none;
+      border-radius: 12px; padding: 12px; font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    #newConversationBtn:hover { background: #4338ca; }
+    #conversationList {
+      overflow-y: auto; flex: 1;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .conversation-btn {
+      background: #f3f4f6; border: none; border-radius: 8px;
+      padding: 8px 12px; font-size: 14px; color: var(--text);
+      text-align: left; white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .conversation-btn:hover { background: var(--primary); color: white; }
+    .conversation-btn.active {
+      background: var(--primary); color: white; font-weight: 700;
+    }
+    @media(max-width:768px) {
+      main { flex-direction: column; }
+      aside { width:100%; margin-bottom:20px; order:-1; }
+      #chatbox { height:50vh; }
+      #input-container { flex-direction:column; }
+      #sendBtn { width:100%; }
+    }
+  </style>
 </head>
 <body>
-<header>
-  <h1>ViBot</h1>
-  <div>
-    <button id="toggleTheme" aria-label="Alternar tema">🌓 Tema</button>
-    <button id="startSpeech" aria-label="Ativar/desativar voz" style="opacity: 0.5;">🎙️ Voz</button>
-    <button id="exportHistory" aria-label="Exportar histórico">📂 Exportar</button>
-    <button id="importHistory" aria-label="Importar histórico">📁 Importar</button>
-    <select id="languageSelector" aria-label="Selecionar idioma">
-      <option value="pt-BR" selected>Português</option>
-      <option value="en-US">English</option>
-      <option value="es-ES">Español</option>
-      <option value="zh-CN">中文</option>
-      <option value="hi-IN">हिन्दी</option>
-      <option value="ar-SA">العربية</option>
-      <option value="fr-FR">Français</option>
-      <option value="ru-RU">Русский</option>
-    </select>
-  </div>
-</header>
-
-<main>
-  <div id="chat-container">
-    <div id="chatbox" role="log" aria-live="polite" aria-atomic="false"></div>
-    <div id="input-container">
-      <input id="userInput" placeholder="Digite sua mensagem..." autocomplete="off" />
-      <button id="sendBtn" aria-label="Enviar mensagem" disabled>📩 Enviar</button>
+  <header>
+    <h1>ViBot</h1>
+    <div>
+      <button id="toggleTheme" aria-label="Alternar tema">🌓 Tema</button>
+      <button id="startSpeech" aria-label="Ativar/desativar voz" style="opacity: 0.5;">🎙️ Voz</button>
+      <button id="exportHistory" aria-label="Exportar histórico">📂 Exportar</button>
+      <button id="importHistory" aria-label="Importar histórico">📁 Importar</button>
+      <select id="languageSelector" aria-label="Selecionar idioma">
+        <option value="pt-BR" selected>Português</option>
+        <option value="en-US">English</option>
+        <option value="es-ES">Español</option>
+        <option value="zh-CN">中文</option>
+        <option value="hi-IN">हिन्दी</option>
+        <option value="ar-SA">العربية</option>
+        <option value="fr-FR">Français</option>
+        <option value="ru-RU">Русский</option>
+      </select>
     </div>
-  </div>
-  <aside>
-    <button id="newConversationBtn" aria-label="Nova conversa">➕ Nova Conversa</button>
-    <div id="conversationList" aria-label="Lista de conversas"></div>
-  </aside>
-</main>
+  </header>
+  <main>
+    <div id="chat-container">
+      <div id="chatbox" role="log" aria-live="polite" aria-atomic="false"></div>
+      <div id="input-container">
+        <textarea id="userInput" placeholder="Digite sua mensagem..." autocomplete="off" rows="1"></textarea>
+        <button id="sendBtn" disabled>📩 Enviar</button>
+      </div>
+    </div>
+    <aside>
+      <button id="newConversationBtn">➕ Nova Conversa</button>
+      <div id="conversationList"></div>
+    </aside>
+  </main>
+  <input type="file" id="importFile" accept=".txt" hidden />
 
-<input type="file" id="importFile" accept=".txt" style="display: none;" aria-hidden="true" />
+  <script>
+    const ViBot = {
+      config: {
+        apiUrl: "https://api.groq.com/openai/v1/chat/completions",
+        apiKey: "gsk_GAB1Wl5zqbp30qPDeMObWGdyb3FY0g7KiTlGt5aWhUnkD495Bi3T",
+        model: "llama3-70b-8192",
+        temperature: 0.7,
+        maxTokens: 1024
+      },
 
-<script>
-  const ViBot = {
-    config: {
-      apiUrl: "https://api.groq.com/openai/v1/chat/completions",
-      apiKey: "gsk_GAB1Wl5zqbp30qPDeMObWGdyb3FY0g7KiTlGt5aWhUnkD495Bi3T",
-      model: "llama3-70b-8192",
-      temperature: 0.7,
-      maxTokens: 1024
-    },
+      init() {
+        // element shortcuts
+        this.chatbox = document.getElementById("chatbox");
+        this.userInput = document.getElementById("userInput");
+        this.sendBtn = document.getElementById("sendBtn");
+        this.newConversationBtn = document.getElementById("newConversationBtn");
+        this.conversationList = document.getElementById("conversationList");
+        this.toggleThemeBtn = document.getElementById("toggleTheme");
+        this.startSpeechBtn = document.getElementById("startSpeech");
+        this.exportHistoryBtn = document.getElementById("exportHistory");
+        this.importHistoryBtn = document.getElementById("importHistory");
+        this.importFileInput = document.getElementById("importFile");
+        this.languageSelector = document.getElementById("languageSelector");
 
-    init() {
-      this.chatbox = document.getElementById("chatbox");
-      this.userInput = document.getElementById("userInput");
-      this.sendBtn = document.getElementById("sendBtn");
-      this.newConversationBtn = document.getElementById("newConversationBtn");
-      this.conversationList = document.getElementById("conversationList");
-      this.languageSelector = document.getElementById("languageSelector");
-      this.toggleThemeBtn = document.getElementById("toggleTheme");
-      this.startSpeechBtn = document.getElementById("startSpeech");
-      this.exportHistoryBtn = document.getElementById("exportHistory");
-      this.importHistoryBtn = document.getElementById("importHistory");
-      this.importFileInput = document.getElementById("importFile");
+        this.speaking = false;
+        this.speechSynthesis = window.speechSynthesis;
+        this.currentUtterance = null;
 
-      this.speaking = false;
-      this.speechSynthesis = window.speechSynthesis;
-      this.currentUtterance = null;
+        this.typingIndicator = document.createElement("div");
+        this.typingIndicator.className = "message bot typing";
+        this.typingIndicator.textContent = "ViBot está digitando...";
 
-      this.typingIndicator = document.createElement("div");
-      this.typingIndicator.className = "message bot typing";
-      this.typingIndicator.textContent = "ViBot está digitando...";
+        this.loadTheme();
+        this.loadConversations();
 
-      this.loadTheme();
-      this.loadConversations();
+        // Start fresh or load existing
+        if (!this.currentConversationId || !this.conversations[this.currentConversationId]) {
+          this.createNewConversation();
+        } else {
+          this.renderConversationsList();
+          this.renderCurrentConversation();
+        }
 
-      if (!this.currentConversationId || !this.conversations[this.currentConversationId]) {
-        this.createNewConversation();
-      } else {
+        // Events
+        this.userInput.addEventListener("input", e => {
+          this.sendBtn.disabled = e.target.value.trim().length === 0;
+          this.adjustTextarea();
+        });
+        this.userInput.addEventListener("keydown", e => {
+          if (e.key === "Enter" && !e.shiftKey && !this.sendBtn.disabled) {
+            e.preventDefault(); this.sendMessage();
+          }
+        });
+        this.sendBtn.addEventListener("click", () => this.sendMessage());
+        this.newConversationBtn.addEventListener("click", () => this.createNewConversation());
+        this.toggleThemeBtn.addEventListener("click", () => this.toggleTheme());
+        this.startSpeechBtn.addEventListener("click", () => this.toggleSpeech());
+        this.exportHistoryBtn.addEventListener("click", () => this.exportHistory());
+        this.importHistoryBtn.addEventListener("click", () => this.importFileInput.click());
+        this.importFileInput.addEventListener("change", e => this.importHistory(e));
+        this.languageSelector.addEventListener("change", () => this.changeLanguage());
+
+        this.sendBtn.disabled = true;
+        this.userInput.focus();
+      },
+
+      conversations: {},
+      currentConversationId: null,
+
+      loadConversations() {
+        const data = localStorage.getItem("vibot_conversations");
+        this.conversations = data ? JSON.parse(data) : {};
+        this.currentConversationId = localStorage.getItem("vibot_current");
+      },
+
+      saveConversations() {
+        localStorage.setItem("vibot_conversations", JSON.stringify(this.conversations));
+        localStorage.setItem("vibot_current", this.currentConversationId);
+      },
+
+      createNewConversation() {
+        const id = `conv_${Date.now()}`;
+        this.conversations[id] = { id, messages: [] };
+        this.currentConversationId = id;
+        this.saveConversations();
         this.renderConversationsList();
         this.renderCurrentConversation();
-      }
+        this.userInput.value = "";
+        this.adjustTextarea();
+        this.sendBtn.disabled = true;
+        this.userInput.focus();
+      },
 
-      // Evento para habilitar/desabilitar botão enviar conforme input
-      this.userInput.addEventListener("input", () => {
-        this.sendBtn.disabled = this.userInput.value.trim().length === 0;
-      });
-
-      // Evento para enviar mensagem ao clicar
-      this.sendBtn.onclick = () => this.sendMessage();
-
-      // Evento para enviar mensagem ao apertar Enter (sem Shift)
-      this.userInput.addEventListener("keydown", e => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          if (!this.sendBtn.disabled) {
-            this.sendMessage();
-          }
+      renderConversationsList() {
+        this.conversationList.innerHTML = "";
+        for (const id in this.conversations) {
+          const conv = this.conversations[id];
+          const btn = document.createElement("button");
+          btn.textContent = conv.messages.length
+            ? conv.messages[0].content.slice(0, 30) + "..."
+            : "Nova conversa";
+          btn.className = `conversation-btn${id === this.currentConversationId ? " active" : ""}`;
+          btn.addEventListener("click", () => {
+            this.currentConversationId = id;
+            this.saveConversations();
+            this.renderConversationsList();
+            this.renderCurrentConversation();
+            this.userInput.value = "";
+            this.adjustTextarea();
+            this.sendBtn.disabled = true;
+            this.userInput.focus();
+          });
+          this.conversationList.appendChild(btn);
         }
-      });
+      },
 
-      this.newConversationBtn.onclick = () => this.createNewConversation();
-      this.toggleThemeBtn.onclick = () => this.toggleTheme();
-      this.startSpeechBtn.onclick = () => this.toggleSpeech();
-      this.exportHistoryBtn.onclick = () => this.exportHistory();
-      this.importHistoryBtn.onclick = () => this.importFileInput.click();
-      this.importFileInput.onchange = e => this.importHistory(e);
-      this.languageSelector.onchange = e => this.changeLanguage(e.target.value);
+      renderCurrentConversation() {
+        this.chatbox.innerHTML = "";
+        const conv = this.conversations[this.currentConversationId];
+        if (conv) conv.messages.forEach(m => this.addMessage(m.role, m.content));
+        this.scrollBot();
+      },
 
-      // Inicialmente botão desabilitado
-      this.sendBtn.disabled = true;
-    },
+      scrollBot() { this.chatbox.scrollTop = this.chatbox.scrollHeight; },
 
-    conversations: {},
-    currentConversationId: null,
+      addMessage(role, text) {
+        const div = document.createElement("div");
+        div.className = `message ${role === "user" ? "user" : "bot"}`;
+        div.textContent = text;
+        this.chatbox.appendChild(div);
+        this.scrollBot();
+      },
 
-    loadConversations() {
-      const data = localStorage.getItem("vibot_conversations");
-      if (data) {
+      async sendMessage() {
+        const txt = this.userInput.value.trim();
+        if (!txt) return;
+
+        // UI lock
+        this.sendBtn.disabled = true;
+        this.userInput.disabled = true;
+
+        // user msg
+        this.addMessage("user", txt);
+        this.conversations[this.currentConversationId].messages.push({ role: "user", content: txt });
+        this.saveConversations();
+
+        // typing indicator
+        this.chatbox.appendChild(this.typingIndicator);
+        this.scrollBot();
+
         try {
-          this.conversations = JSON.parse(data);
-          this.currentConversationId = localStorage.getItem("vibot_current");
-        } catch {
-          this.conversations = {};
-          this.currentConversationId = null;
+          const resp = await this.callApi(this.conversations[this.currentConversationId].messages);
+          this.chatbox.removeChild(this.typingIndicator);
+          this.addMessage("assistant", resp);
+          this.conversations[this.currentConversationId].messages.push({ role: "assistant", content: resp });
+          this.saveConversations();
+          if (this.speaking) this.speak(resp);
+        } catch (err) {
+          this.chatbox.removeChild(this.typingIndicator);
+          this.addMessage("error", err.message || "Erro desconhecido");
         }
+
+        // reset input
+        this.userInput.disabled = false;
+        this.userInput.value = "";
+        this.sendBtn.disabled = true;
+        this.adjustTextarea();
+        this.userInput.focus();
+      },
+
+      async callApi(messages) {
+        const payload = {
+          model: this.config.model,
+          messages, temperature: this.config.temperature,
+          max_tokens: this.config.maxTokens
+        };
+        const res = await fetch(this.config.apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${this.config.apiKey}`
+          },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          let msg = `Erro ${res.status}`;
+          try { const ejson = await res.json(); if (ejson.error?.message) msg = ejson.error.message; } catch {}
+          throw new Error(msg);
+        }
+        const json = await res.json();
+        return json.choices?.[0]?.message?.content?.trim() || "";
+      },
+
+      toggleTheme() {
+        const dark = document.documentElement.getAttribute("data-theme") === "dark";
+        if (dark) {
+          document.documentElement.removeAttribute("data-theme");
+          localStorage.removeItem("vibot_theme");
+        } else {
+          document.documentElement.setAttribute("data-theme", "dark");
+          localStorage.setItem("vibot_theme", "dark");
+        }
+      },
+
+      loadTheme() {
+        const t = localStorage.getItem("vibot_theme");
+        if (t === "dark") document.documentElement.setAttribute("data-theme", "dark");
+      },
+
+      toggleSpeech() {
+        if (!("speechSynthesis" in window)) return alert("Seu navegador não suporta voz.");
+        this.speaking = !this.speaking;
+        this.startSpeechBtn.style.opacity = this.speaking ? "1" : "0.5";
+        if (!this.speaking && this.currentUtterance) {
+          this.speechSynthesis.cancel();
+          this.currentUtterance = null;
+        }
+      },
+
+      speak(text) {
+        if (!this.speaking) return;
+        const utt = new SpeechSynthesisUtterance(text);
+        utt.lang = this.languageSelector.value;
+        this.currentUtterance = utt;
+        this.speechSynthesis.speak(utt);
+      },
+
+      exportHistory() {
+        const conv = this.conversations[this.currentConversationId];
+        if (!conv) return alert("Nada para exportar.");
+        const content = conv.messages.map(m => `${m.role === "user" ? "Você" : "ViBot"}: ${m.content}`).join("\n\n");
+        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `vibot_${this.currentConversationId}.txt`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+      },
+
+      importHistory(e) {
+        const f = e.target.files[0];
+        if (!f) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const id = `conv_${Date.now()}`;
+          this.conversations[id] = { id, messages: [{ role: "user", content: reader.result }] };
+          this.currentConversationId = id;
+          this.saveConversations();
+          this.renderConversationsList();
+          this.renderCurrentConversation();
+        };
+        reader.readAsText(f);
+        e.target.value = "";
+      },
+
+      changeLanguage() {
+        // only affects speech voice
+      },
+
+      adjustTextarea() {
+        const ta = this.userInput;
+        ta.style.height = "auto";
+        ta.style.height = `${ta.scrollHeight}px`;
       }
-    },
-
-    saveConversations() {
-      localStorage.setItem("vibot_conversations", JSON.stringify(this.conversations));
-      localStorage.setItem("vibot_current", this.currentConversationId);
-    },
-
-    createNewConversation() {
-      const id = "conv_" + Date.now();
-      this.conversations[id] = {
-        id,
-        messages: []
-      };
-      this.currentConversationId = id;
-      this.saveConversations();
-      this.renderConversationsList();
-      this.renderCurrentConversation();
-      this.userInput.value = "";
-      this.send
-Btn.disabled = true;
-},
-  renderConversationsList() {
-  this.conversationList.innerHTML = "";
-  for (const id in this.conversations) {
-    const conv = this.conversations[id];
-    const btn = document.createElement("button");
-    btn.textContent = conv.messages.length
-      ? conv.messages[0].content.substring(0, 30) + "..."
-      : "Nova conversa";
-    btn.className = "conversation-btn" + (id === this.currentConversationId ? " active" : "");
-    btn.onclick = () => {
-      this.currentConversationId = id;
-      this.saveConversations();
-      this.renderConversationsList();
-      this.renderCurrentConversation();
     };
-    this.conversationList.appendChild(btn);
-  }
-},
 
-renderCurrentConversation() {
-  this.chatbox.innerHTML = "";
-  const conv = this.conversations[this.currentConversationId];
-  if (!conv) return;
-  for (const msg of conv.messages) {
-    this.addMessageToChatbox(msg.role, msg.content);
-  }
-  this.scrollChatToBottom();
-},
-
-addMessageToChatbox(role, content) {
-  const div = document.createElement("div");
-  div.className = "message " + (role === "user" ? "user" : "bot");
-  div.textContent = content;
-  this.chatbox.appendChild(div);
-},
-
-scrollChatToBottom() {
-  this.chatbox.scrollTop = this.chatbox.scrollHeight;
-},
-
-async sendMessage() {
-  const text = this.userInput.value.trim();
-  if (!text) return;
-
-  this.userInput.value = "";
-  this.sendBtn.disabled = true;
-
-  this.addMessageToChatbox("user", text);
-  this.conversations[this.currentConversationId].messages.push({ role: "user", content: text });
-  this.saveConversations();
-
-  this.chatbox.appendChild(this.typingIndicator);
-  this.scrollChatToBottom();
-
-  try {
-    const responseText = await this.callApi(this.conversations[this.currentConversationId].messages);
-    this.chatbox.removeChild(this.typingIndicator);
-    this.addMessageToChatbox("assistant", responseText);
-    this.conversations[this.currentConversationId].messages.push({ role: "assistant", content: responseText });
-    this.saveConversations();
-
-    if (this.speaking) this.speak(responseText);
-
-  } catch (error) {
-    this.chatbox.removeChild(this.typingIndicator);
-    this.addMessageToChatbox("error", error.message || "Erro desconhecido");
-  }
-
-  this.scrollChatToBottom();
-},
-
-async callApi(messages) {
-  const payload = {
-    model: this.config.model,
-    messages,
-    temperature: this.config.temperature,
-    max_tokens: this.config.maxTokens
-  };
-
-  const response = await fetch(this.config.apiUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${this.config.apiKey}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    let errorMsg = `Erro ${response.status}`;
-    try {
-      const err = await response.json();
-      if (err.error?.message) errorMsg = err.error.message;
-    } catch {}
-    throw new Error(errorMsg);
-  }
-
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content?.trim() || "Sem resposta da API.";
-},
-
-toggleTheme() {
-  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-  if (isDark) {
-    document.documentElement.removeAttribute("data-theme");
-    localStorage.removeItem("vibot_theme");
-  } else {
-    document.documentElement.setAttribute("data-theme", "dark");
-    localStorage.setItem("vibot_theme", "dark");
-  }
-},
-
-loadTheme() {
-  const theme = localStorage.getItem("vibot_theme");
-  if (theme === "dark") document.documentElement.setAttribute("data-theme", "dark");
-},
-
-toggleSpeech() {
-  if (!("speechSynthesis" in window)) return alert("Seu navegador não suporta voz.");
-  this.speaking = !this.speaking;
-  if (!this.speaking && this.currentUtterance) {
-    this.speechSynthesis.cancel();
-    this.currentUtterance = null;
-  }
-  this.startSpeechBtn.style.opacity = this.speaking ? "1" : "0.5";
-},
-
-speak(text) {
-  if (!this.speaking) return;
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = this.languageSelector.value || "pt-BR";
-  this.currentUtterance = utter;
-  this.speechSynthesis.speak(utter);
-},
-
-exportHistory() {
-  const conv = this.conversations[this.currentConversationId];
-  if (!conv) return alert("Nada para exportar.");
-  const content = conv.messages.map(m => `${m.role === "user" ? "Você" : "ViBot"}: ${m.content}`).join("\n\n");
-  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `vibot_${this.currentConversationId}.txt`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 0);
-},
-
-importHistory(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    const text = reader.result;
-    const id = "conv_" + Date.now();
-    this.conversations[id] = { id, messages: [{ role: "user", content: text }] };
-    this.currentConversationId = id;
-    this.saveConversations();
-    this.renderConversationsList();
-    this.renderCurrentConversation();
-    this.userInput.focus();
-  };
-  reader.readAsText(file);
-  e.target.value = "";
-},
-
-changeLanguage(lang) {
-  if (this.speaking && this.currentUtterance) {
-    this.speechSynthesis.cancel();
-    this.currentUtterance.lang = lang;
-    this.speechSynthesis.speak(this.currentUtterance);
-  }
-}
-};
-
-window.onload = () => ViBot.init();
-</script>
-
-</body> </html> 
+    window.addEventListener("DOMContentLoaded", () => ViBot.init());
+  </script>
+</body>
+</html>
