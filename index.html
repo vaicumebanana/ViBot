@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ViBot</title>
+<title>ViBot Plus</title>
 <style>
   :root {
     --primary: #4f46e5;
@@ -14,6 +14,11 @@
     --error-text: #dc2626;
     --bg: #f9fafb;
     --copy-bg: #e5e7eb;
+    --web-search-bg: #e0f2fe;
+    --image-gen-bg: #f0fdf4;
+    --translate-bg: #fef2f2;
+    --doc-chat-bg: #ecfdf5;
+    --reminder-bg: #f5f3ff;
   }
   [data-theme="dark"] {
     --primary: #6366f1;
@@ -22,6 +27,11 @@
     --text: #f9fafb;
     --user-bg: #6366f1;
     --copy-bg: #4b5563;
+    --web-search-bg: #1e3a8a;
+    --image-gen-bg: #14532d;
+    --translate-bg: #7f1d1d;
+    --doc-chat-bg: #064e3b;
+    --reminder-bg: #5b21b6;
   }
   body {
     font-family: 'Inter', sans-serif;
@@ -72,6 +82,11 @@
   .user { background: var(--user-bg); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
   .bot { background: var(--bot-bg); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
   .error { background: var(--error-bg); color: var(--error-text); align-self: center; text-align: center; }
+  .web-search { background: var(--web-search-bg); border-left: 4px solid #0ea5e9; }
+  .image-gen { background: var(--image-gen-bg); border-left: 4px solid #10b981; }
+  .translate { background: var(--translate-bg); border-left: 4px solid #ef4444; }
+  .doc-chat { background: var(--doc-chat-bg); border-left: 4px solid #059669; }
+  .reminder { background: var(--reminder-bg); border-left: 4px solid #8b5cf6; }
   .typing { color: #6b7280; font-style: italic; animation: blink 1s steps(1) infinite; }
   @keyframes fadeIn { from {opacity:0;transform:translateY(10px);} to {opacity:1;transform:translateY(0);} }
   @keyframes blink { 50% {opacity:0.5;} }
@@ -223,6 +238,142 @@
     color: white;
     border-color: #4b5563;
   }
+  .tools-panel {
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--bot-bg);
+    border-radius: 8px;
+  }
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .tool-btn {
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  [data-theme="dark"] .tool-btn {
+    background: #1f2937;
+    color: white;
+    border-color: #4b5563;
+  }
+  .tool-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+  }
+  .modal-content {
+    background: var(--bg);
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+  }
+  .close-modal {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text);
+  }
+  .file-upload {
+    margin: 16px 0;
+    padding: 20px;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .file-upload:hover {
+    border-color: var(--primary);
+  }
+  .file-input {
+    display: none;
+  }
+  .preview-image {
+    max-width: 100%;
+    max-height: 200px;
+    margin-top: 10px;
+    border-radius: 8px;
+  }
+  .reminder-list {
+    margin-top: 16px;
+  }
+  .reminder-item {
+    padding: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+  }
+  .reminder-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .translation-result {
+    margin-top: 16px;
+    padding: 12px;
+    background: var(--bot-bg);
+    border-radius: 8px;
+  }
+  .web-results {
+    margin-top: 16px;
+  }
+  .web-result {
+    padding: 12px;
+    margin-bottom: 8px;
+    background: var(--bot-bg);
+    border-radius: 8px;
+  }
+  .web-result-title {
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  .web-result-url {
+    color: #6b7280;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  [data-theme="dark"] .web-result-url {
+    color: #9ca3af;
+  }
+  .web-result-snippet {
+    font-size: 14px;
+  }
   @media(max-width:768px) {
     main { flex-direction: column; }
     aside { width:100%; margin-bottom:20px; order:-1; }
@@ -239,12 +390,15 @@
       padding: 6px;
       font-size: 12px;
     }
+    .tools-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 </head>
 <body>
 <header>
-  <h1>ViBot</h1>
+  <h1>ViBot Plus</h1>
   <div>
     <button id="toggleTheme" aria-label="Alternar tema">🌓 Tema</button>
     <button id="startSpeech" aria-label="Ativar/desativar voz">🎙️ Voz</button>
@@ -275,6 +429,35 @@
   <aside>
     <button id="newConversationBtn" aria-label="Nova conversa">➕ Nova Conversa</button>
     <div id="conversationList" aria-label="Lista de conversas"></div>
+    
+    <div class="tools-panel">
+      <div class="settings-title">Ferramentas</div>
+      <div class="tools-grid">
+        <button class="tool-btn" id="webSearchBtn">🔍 Busca Web</button>
+        <button class="tool-btn" id="imageGenBtn">🎨 Gerar Imagem</button>
+        <button class="tool-btn" id="translateBtn">🌐 Traduzir</button>
+        <button class="tool-btn" id="summarizeBtn">📝 Resumir</button>
+        <button class="tool-btn" id="grammarCheckBtn">✍️ Corrigir Gramática</button>
+        <button class="tool-btn" id="sentimentBtn">😊 Análise de Sentimento</button>
+        <button class="tool-btn" id="codeGenBtn">💻 Gerar Código</button>
+        <button class="tool-btn" id="docChatBtn">📄 Chat com Documento</button>
+        <button class="tool-btn" id="reminderBtn">⏰ Lembretes</button>
+        <button class="tool-btn" id="calculatorBtn">🧮 Calculadora</button>
+        <button class="tool-btn" id="qrcodeBtn">🔳 QR Code</button>
+        <button class="tool-btn" id="newsBtn">📰 Notícias</button>
+        <button class="tool-btn" id="currencyBtn">💱 Conversor Moedas</button>
+        <button class="tool-btn" id="poetryBtn">✒️ Gerar Poesia</button>
+        <button class="tool-btn" id="plantBtn">🌿 Identificar Planta</button>
+        <button class="tool-btn" id="interviewBtn">🤝 Simular Entrevista</button>
+        <button class="tool-btn" id="travelBtn">✈️ Guia de Viagem</button>
+        <button class="tool-btn" id="thesaurusBtn">📖 Dicionário</button>
+        <button class="tool-btn" id="nameGenBtn">👶 Gerar Nomes</button>
+        <button class="tool-btn" id="nutritionBtn">🍎 Calculadora Nutricional</button>
+        <button class="tool-btn" id="voiceTranscribeBtn">🎤 Transcrever Áudio</button>
+        <button class="tool-btn" id="exerciseBtn">📚 Gerar Exercícios</button>
+        <button class="tool-btn" id="debateBtn">🗣️ Simular Debate</button>
+      </div>
+    </div>
     
     <div class="settings-panel" id="settingsPanel" style="display: none;">
       <div class="settings-title">Configurações do Modelo</div>
@@ -311,13 +494,116 @@
   </aside>
 </main>
 
+<!-- Modais para as ferramentas -->
+<div id="webSearchModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Busca na Web</h3>
+      <button class="close-modal">&times;</button>
+    </div>
+    <input type="text" id="webSearchQuery" placeholder="O que você quer pesquisar?" class="userInput" style="width: 100%;">
+    <button id="performWebSearch" style="margin-top: 10px;">Pesquisar</button>
+    <div id="webSearchResults" class="web-results"></div>
+  </div>
+</div>
+
+<div id="imageGenModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Gerar Imagem</h3>
+      <button class="close-modal">&times;</button>
+    </div>
+    <textarea id="imageGenPrompt" placeholder="Descreva a imagem que deseja gerar..." style="width: 100%; min-height: 100px;"></textarea>
+    <button id="generateImageBtn" style="margin-top: 10px;">Gerar Imagem</button>
+    <div id="generatedImageContainer" style="margin-top: 20px; text-align: center;"></div>
+  </div>
+</div>
+
+<div id="translateModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Tradutor</h3>
+      <button class="close-modal">&times;</button>
+    </div>
+    <textarea id="translateText" placeholder="Texto para traduzir..." style="width: 100%; min-height: 100px;"></textarea>
+    <div style="display: flex; gap: 10px; margin: 10px 0;">
+      <select id="translateFrom">
+        <option value="auto">Detectar</option>
+        <option value="pt">Português</option>
+        <option value="en">Inglês</option>
+        <option value="es">Espanhol</option>
+        <option value="fr">Francês</option>
+        <option value="de">Alemão</option>
+      </select>
+      <span>→</span>
+      <select id="translateTo">
+        <option value="pt">Português</option>
+        <option value="en">Inglês</option>
+        <option value="es">Espanhol</option>
+        <option value="fr">Francês</option>
+        <option value="de">Alemão</option>
+      </select>
+    </div>
+    <button id="performTranslate">Traduzir</button>
+    <div id="translationResult" class="translation-result"></div>
+  </div>
+</div>
+
+<div id="docChatModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Chat com Documento</h3>
+      <button class="close-modal">&times;</button>
+    </div>
+    <div class="file-upload" id="docUploadArea">
+      <p>Arraste e solte seu arquivo aqui ou clique para selecionar</p>
+      <p>Formatos suportados: PDF, DOCX, TXT</p>
+      <input type="file" id="docFileInput" class="file-input" accept=".pdf,.docx,.txt">
+    </div>
+    <div id="docPreview" style="margin-top: 20px;"></div>
+  </div>
+</div>
+
+<div id="reminderModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Gerenciar Lembretes</h3>
+      <button class="close-modal">&times;</button>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <input type="text" id="reminderText" placeholder="Descrição do lembrete" style="flex: 1;">
+      <input type="datetime-local" id="reminderTime">
+    </div>
+    <button id="addReminderBtn" style="margin-top: 10px;">Adicionar Lembrete</button>
+    <div class="reminder-list" id="reminderList"></div>
+  </div>
+</div>
+
+<!-- Outros modais (simplificados) -->
+<div id="grammarModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Correção Gramatical</h3><button class="close-modal">&times;</button></div><textarea id="grammarText" style="width:100%;min-height:100px;"></textarea><button id="checkGrammarBtn">Corrigir</button><div id="grammarResult"></div></div></div>
+<div id="sentimentModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Análise de Sentimento</h3><button class="close-modal">&times;</button></div><textarea id="sentimentText" style="width:100%;min-height:100px;"></textarea><button id="analyzeSentimentBtn">Analisar</button><div id="sentimentResult"></div></div></div>
+<div id="codeGenModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Gerador de Código</h3><button class="close-modal">&times;</button></div><textarea id="codePrompt" style="width:100%;min-height:100px;"></textarea><select id="codeLanguage"><option>Python</option><option>JavaScript</option><option>HTML</option><option>CSS</option><option>Java</option></select><button id="generateCodeBtn">Gerar</button><pre id="codeResult"></pre></div></div>
+<div id="qrcodeModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Gerador QR Code</h3><button class="close-modal">&times;</button></div><input type="text" id="qrcodeText" style="width:100%;"><button id="generateQRBtn">Gerar</button><div id="qrcodeResult" style="text-align:center;margin-top:20px;"></div></div></div>
+<div id="newsModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Últimas Notícias</h3><button class="close-modal">&times;</button></div><select id="newsCategory"><option>Geral</option><option>Tecnologia</option><option>Esportes</option><option>Negócios</option></select><button id="fetchNewsBtn">Buscar</button><div id="newsResults"></div></div></div>
+<div id="currencyModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Conversor de Moedas</h3><button class="close-modal">&times;</button></div><div style="display:flex;gap:10px;"><input type="number" id="currencyAmount"><select id="currencyFrom"><option>USD</option><option>BRL</option><option>EUR</option></select><span>→</span><select id="currencyTo"><option>BRL</option><option>USD</option><option>EUR</option></select></div><button id="convertCurrencyBtn">Converter</button><div id="currencyResult"></div></div></div>
+<div id="poetryModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Gerador de Poesia</h3><button class="close-modal">&times;</button></div><input type="text" id="poetryTheme" style="width:100%;"><select id="poetryStyle"><option>Soneto</option><option>Haicai</option><option>Livre</option></select><button id="generatePoetryBtn">Criar</button><div id="poetryResult"></div></div></div>
+<div id="plantModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Identificar Planta</h3><button class="close-modal">&times;</button></div><textarea id="plantDescription" style="width:100%;min-height:100px;"></textarea><button id="identifyPlantBtn">Identificar</button><div id="plantResult"></div></div></div>
+<div id="interviewModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Simulador de Entrevista</h3><button class="close-modal">&times;</button></div><select id="interviewType"><option>Trabalho</option><option>Universidade</option></select><button id="startInterviewBtn">Iniciar</button><div id="interviewQuestions"></div></div></div>
+<div id="travelModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Guia de Viagem</h3><button class="close-modal">&times;</button></div><input type="text" id="travelDestination" style="width:100%;"><button id="getTravelInfoBtn">Buscar</button><div id="travelInfo"></div></div></div>
+<div id="thesaurusModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Dicionário de Sinônimos</h3><button class="close-modal">&times;</button></div><input type="text" id="thesaurusWord" style="width:100%;"><button id="findSynonymsBtn">Buscar</button><div id="thesaurusResult"></div></div></div>
+<div id="nameGenModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Gerador de Nomes</h3><button class="close-modal">&times;</button></div><select id="nameType"><option>Pessoa</option><option>Empresa</option><option>Personagem</option></select><button id="generateNamesBtn">Gerar</button><div id="nameResults"></div></div></div>
+<div id="nutritionModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Calculadora Nutricional</h3><button class="close-modal">&times;</button></div><textarea id="foodItems" style="width:100%;min-height:100px;"></textarea><button id="calculateNutritionBtn">Calcular</button><div id="nutritionResult"></div></div></div>
+<div id="voiceTranscribeModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Transcrição de Áudio</h3><button class="close-modal">&times;</button></div><button id="startTranscriptionBtn">🎤 Gravar</button><div id="transcriptionResult"></div></div></div>
+<div id="exerciseModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Gerador de Exercícios</h3><button class="close-modal">&times;</button></div><input type="text" id="exerciseTopic" style="width:100%;"><select id="exerciseLevel"><option>Iniciante</option><option>Intermediário</option><option>Avançado</option></select><button id="generateExercisesBtn">Gerar</button><div id="exerciseResults"></div></div></div>
+<div id="debateModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Simulador de Debate</h3><button class="close-modal">&times;</button></div><input type="text" id="debateTopic" style="width:100%;"><button id="startDebateBtn">Iniciar Debate</button><div id="debateArguments"></div></div></div>
+
 <input type="file" id="importFile" accept=".json,.txt" style="display: none;" aria-hidden="true" />
 
 <script>
   const ViBot = {
     config: {
       apiUrl: "https://api.groq.com/openai/v1/chat/completions",
-      apiKey: "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",
+      apiKey: "gsk_GAB1Wl5zqbp30qPDeMObWGdyb3FY0g7KiTlGt5aWhUnkD495Bi3T",
       model: "llama3-70b-8192",
       temperature: 0.7,
       maxTokens: 1024,
@@ -341,7 +627,7 @@
     },
 
     init() {
-      // Elementos
+      // Elementos principais
       this.chatbox = document.getElementById("chatbox");
       this.userInput = document.getElementById("userInput");
       this.sendBtn = document.getElementById("sendBtn");
@@ -363,10 +649,61 @@
       this.tokenCount = document.getElementById("tokenCount");
       this.systemPrompt = document.getElementById("systemPrompt");
 
+      // Elementos das ferramentas
+      this.webSearchBtn = document.getElementById("webSearchBtn");
+      this.imageGenBtn = document.getElementById("imageGenBtn");
+      this.translateBtn = document.getElementById("translateBtn");
+      this.summarizeBtn = document.getElementById("summarizeBtn");
+      this.grammarCheckBtn = document.getElementById("grammarCheckBtn");
+      this.sentimentBtn = document.getElementById("sentimentBtn");
+      this.codeGenBtn = document.getElementById("codeGenBtn");
+      this.docChatBtn = document.getElementById("docChatBtn");
+      this.reminderBtn = document.getElementById("reminderBtn");
+      this.calculatorBtn = document.getElementById("calculatorBtn");
+      this.qrcodeBtn = document.getElementById("qrcodeBtn");
+      this.newsBtn = document.getElementById("newsBtn");
+      this.currencyBtn = document.getElementById("currencyBtn");
+      this.poetryBtn = document.getElementById("poetryBtn");
+      this.plantBtn = document.getElementById("plantBtn");
+      this.interviewBtn = document.getElementById("interviewBtn");
+      this.travelBtn = document.getElementById("travelBtn");
+      this.thesaurusBtn = document.getElementById("thesaurusBtn");
+      this.nameGenBtn = document.getElementById("nameGenBtn");
+      this.nutritionBtn = document.getElementById("nutritionBtn");
+      this.voiceTranscribeBtn = document.getElementById("voiceTranscribeBtn");
+      this.exerciseBtn = document.getElementById("exerciseBtn");
+      this.debateBtn = document.getElementById("debateBtn");
+
+      // Modais
+      this.webSearchModal = document.getElementById("webSearchModal");
+      this.imageGenModal = document.getElementById("imageGenModal");
+      this.translateModal = document.getElementById("translateModal");
+      this.docChatModal = document.getElementById("docChatModal");
+      this.reminderModal = document.getElementById("reminderModal");
+      this.grammarModal = document.getElementById("grammarModal");
+      this.sentimentModal = document.getElementById("sentimentModal");
+      this.codeGenModal = document.getElementById("codeGenModal");
+      this.qrcodeModal = document.getElementById("qrcodeModal");
+      this.newsModal = document.getElementById("newsModal");
+      this.currencyModal = document.getElementById("currencyModal");
+      this.poetryModal = document.getElementById("poetryModal");
+      this.plantModal = document.getElementById("plantModal");
+      this.interviewModal = document.getElementById("interviewModal");
+      this.travelModal = document.getElementById("travelModal");
+      this.thesaurusModal = document.getElementById("thesaurusModal");
+      this.nameGenModal = document.getElementById("nameGenModal");
+      this.nutritionModal = document.getElementById("nutritionModal");
+      this.voiceTranscribeModal = document.getElementById("voiceTranscribeModal");
+      this.exerciseModal = document.getElementById("exerciseModal");
+      this.debateModal = document.getElementById("debateModal");
+
+      // Variáveis de estado
       this.speaking = false;
       this.speechSynthesis = window.speechSynthesis;
       this.currentUtterance = null;
       this.totalTokens = 0;
+      this.reminders = [];
+      this.activeTool = null;
 
       this.typingIndicator = document.createElement("div");
       this.typingIndicator.className = "message bot typing";
@@ -375,6 +712,7 @@
       this.loadTheme();
       this.loadSettings();
       this.loadConversations();
+      this.loadReminders();
 
       if (!this.currentConversationId || !this.conversations[this.currentConversationId]) {
         this.createNewConversation();
@@ -383,7 +721,7 @@
         this.renderCurrentConversation();
       }
 
-      // Eventos
+      // Eventos principais
       this.sendBtn.onclick = () => this.sendMessage();
       this.userInput.addEventListener("keydown", e => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -404,179 +742,275 @@
       this.maxTokensSlider.oninput = e => this.updateMaxTokens(e.target.value);
       this.systemPrompt.onchange = () => this.saveSettings();
 
+      // Eventos das ferramentas
+      this.webSearchBtn.onclick = () => this.showToolModal('webSearch');
+      this.imageGenBtn.onclick = () => this.showToolModal('imageGen');
+      this.translateBtn.onclick = () => this.showToolModal('translate');
+      this.summarizeBtn.onclick = () => this.showToolModal('summarize');
+      this.grammarCheckBtn.onclick = () => this.showToolModal('grammar');
+      this.sentimentBtn.onclick = () => this.showToolModal('sentiment');
+      this.codeGenBtn.onclick = () => this.showToolModal('codeGen');
+      this.docChatBtn.onclick = () => this.showToolModal('docChat');
+      this.reminderBtn.onclick = () => this.showToolModal('reminder');
+      this.calculatorBtn.onclick = () => this.showToolModal('calculator');
+      this.qrcodeBtn.onclick = () => this.showToolModal('qrcode');
+      this.newsBtn.onclick = () => this.showToolModal('news');
+      this.currencyBtn.onclick = () => this.showToolModal('currency');
+      this.poetryBtn.onclick = () => this.showToolModal('poetry');
+      this.plantBtn.onclick = () => this.showToolModal('plant');
+      this.interviewBtn.onclick = () => this.showToolModal('interview');
+      this.travelBtn.onclick = () => this.showToolModal('travel');
+      this.thesaurusBtn.onclick = () => this.showToolModal('thesaurus');
+      this.nameGenBtn.onclick = () => this.showToolModal('nameGen');
+      this.nutritionBtn.onclick = () => this.showToolModal('nutrition');
+      this.voiceTranscribeBtn.onclick = () => this.showToolModal('voiceTranscribe');
+      this.exerciseBtn.onclick = () => this.showToolModal('exercise');
+      this.debateBtn.onclick = () => this.showToolModal('debate');
+
+      // Eventos dos modais
+      document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.onclick = () => this.closeModal(this.activeTool);
+      });
+
+      document.getElementById('performWebSearch').onclick = () => this.performWebSearch();
+      document.getElementById('generateImageBtn').onclick = () => this.generateImage();
+      document.getElementById('performTranslate').onclick = () => this.performTranslation();
+      document.getElementById('addReminderBtn').onclick = () => this.addReminder();
+      document.getElementById('docUploadArea').onclick = () => document.getElementById('docFileInput').click();
+      document.getElementById('docFileInput').onchange = (e) => this.handleFileUpload(e);
+
       this.userInput.focus();
+
+      // Verificar lembretes periodicamente
+      setInterval(() => this.checkReminders(), 60000);
     },
 
-    conversations: {},
-    currentConversationId: null,
+    // ... (mantenha todas as funções originais existentes)
 
-    loadSettings() {
-      const settings = localStorage.getItem("vibot_settings");
-      if (settings) {
-        try {
-          const savedSettings = JSON.parse(settings);
-          this.config.model = savedSettings.model || this.config.model;
-          this.config.temperature = savedSettings.temperature || this.config.temperature;
-          this.config.maxTokens = savedSettings.maxTokens || this.config.maxTokens;
-          this.config.systemPrompt = savedSettings.systemPrompt || this.config.systemPrompt;
-          
-          // Atualiza UI
-          this.modelSelector.value = this.modelNames[this.config.model] || this.modelNames["llama3-70b-8192"];
-          this.temperatureSlider.value = this.config.temperature;
-          this.temperatureValue.textContent = this.config.temperature;
-          this.maxTokensSlider.value = this.config.maxTokens;
-          this.maxTokensValue.textContent = this.config.maxTokens;
-          this.systemPrompt.value = this.config.systemPrompt;
-        } catch {
-          // Usa valores padrão
-        }
+    // Novas funções para as ferramentas
+    showToolModal(toolName) {
+      this.activeTool = toolName;
+      const modal = document.getElementById(`${toolName}Modal`);
+      modal.style.display = 'flex';
+    },
+
+    closeModal(toolName) {
+      const modal = document.getElementById(`${toolName}Modal`);
+      modal.style.display = 'none';
+      this.activeTool = null;
+    },
+
+    async performWebSearch() {
+      const query = document.getElementById('webSearchQuery').value;
+      if (!query) return;
+      
+      this.addMessage("user", `Pesquisar na web: ${query}`);
+      
+      try {
+        // Simulação de busca na web (em uma implementação real, usaria uma API como SerpAPI)
+        const results = [
+          {
+            title: "Resultado da pesquisa 1",
+            url: "https://exemplo.com/1",
+            snippet: `Este é um resultado simulado para "${query}". Em uma implementação real, seriam mostrados resultados reais da web.`
+          },
+          {
+            title: "Resultado da pesquisa 2",
+            url: "https://exemplo.com/2",
+            snippet: `Outro resultado simulado para sua pesquisa sobre "${query}".`
+          }
+        ];
+        
+        let resultHTML = '<div class="web-results">';
+        results.forEach(result => {
+          resultHTML += `
+            <div class="web-result">
+              <div class="web-result-title">${result.title}</div>
+              <div class="web-result-url">${result.url}</div>
+              <div class="web-result-snippet">${result.snippet}</div>
+            </div>
+          `;
+        });
+        resultHTML += '</div>';
+        
+        this.addMessage("bot", resultHTML, 'web-search');
+        this.closeModal('webSearch');
+      } catch (error) {
+        this.addMessage("bot", "Erro ao realizar a busca na web. Tente novamente mais tarde.");
+        console.error("Erro na busca web:", error);
       }
     },
 
-    saveSettings() {
-      this.config.temperature = parseFloat(this.temperatureSlider.value);
-      this.config.maxTokens = parseInt(this.maxTokensSlider.value);
-      this.config.systemPrompt = this.systemPrompt.value;
+    async generateImage() {
+      const prompt = document.getElementById('imageGenPrompt').value;
+      if (!prompt) return;
       
-      localStorage.setItem("vibot_settings", JSON.stringify({
-        model: this.config.model,
-        temperature: this.config.temperature,
-        maxTokens: this.config.maxTokens,
-        systemPrompt: this.config.systemPrompt
-      }));
+      this.addMessage("user", `Gerar imagem: ${prompt}`);
+      
+      try {
+        // Simulação de geração de imagem (em uma implementação real, usaria API como DALL-E)
+        this.addMessage("bot", `Aqui está uma imagem gerada com base na descrição: "${prompt}"\n\n(Em uma implementação real, seria exibida a imagem gerada pela API)`, 'image-gen');
+        this.closeModal('imageGen');
+      } catch (error) {
+        this.addMessage("bot", "Erro ao gerar imagem. Tente novamente mais tarde.");
+        console.error("Erro na geração de imagem:", error);
+      }
     },
 
-    updateModel(modelId) {
-      this.config.model = modelId;
-      this.saveSettings();
+    async performTranslation() {
+      const text = document.getElementById('translateText').value;
+      const fromLang = document.getElementById('translateFrom').value;
+      const toLang = document.getElementById('translateTo').value;
+      
+      if (!text) return;
+      
+      this.addMessage("user", `Traduzir (${fromLang} → ${toLang}): ${text}`);
+      
+      try {
+        // Simulação de tradução (em uma implementação real, usaria API como Google Translate)
+        const translatedText = `[Texto traduzido simulado de ${fromLang} para ${toLang}]\n\n"${text}"\n\n→\n\n"Texto traduzido aqui"`;
+        
+        this.addMessage("bot", translatedText, 'translate');
+        this.closeModal('translate');
+      } catch (error) {
+        this.addMessage("bot", "Erro ao traduzir texto. Tente novamente mais tarde.");
+        console.error("Erro na tradução:", error);
+      }
     },
 
-    updateTemperature(value) {
-      this.config.temperature = parseFloat(value);
-      this.temperatureValue.textContent = value;
-      this.saveSettings();
-    },
-
-    updateMaxTokens(value) {
-      this.config.maxTokens = parseInt(value);
-      this.maxTokensValue.textContent = value;
-      this.saveSettings();
-    },
-
-    updateTokenCount(tokens) {
-      this.totalTokens += tokens;
-      this.tokenCount.textContent = `Tokens usados: ${this.totalTokens}`;
-    },
-
-    toggleSettings() {
-      this.settingsPanel.style.display = this.settingsPanel.style.display === "none" ? "block" : "none";
-    },
-
-    loadConversations() {
-      const data = localStorage.getItem("vibot_conversations");
-      if (data) {
+    handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = async (e) => {
         try {
-          this.conversations = JSON.parse(data);
-          this.currentConversationId = localStorage.getItem("vibot_currentConversationId");
+          // Simulação de processamento de documento (em uma implementação real, usaria API como PDF.js para PDFs)
+          this.addMessage("user", `Documento enviado: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
+          this.addMessage("bot", `Documento "${file.name}" foi carregado com sucesso. Você pode agora fazer perguntas sobre o conteúdo.`, 'doc-chat');
+          this.closeModal('docChat');
+        } catch (error) {
+          this.addMessage("bot", "Erro ao processar documento. Certifique-se de que é um formato suportado.");
+          console.error("Erro no processamento do documento:", error);
+        }
+      };
+      reader.readAsDataURL(file);
+    },
+
+    loadReminders() {
+      const saved = localStorage.getItem("vibot_reminders");
+      if (saved) {
+        try {
+          this.reminders = JSON.parse(saved);
+          this.renderRemindersList();
         } catch {
-          this.conversations = {};
-          this.currentConversationId = null;
+          this.reminders = [];
         }
       } else {
-        this.conversations = {};
-        this.currentConversationId = null;
+        this.reminders = [];
       }
     },
 
-    saveConversations() {
-      localStorage.setItem("vibot_conversations", JSON.stringify(this.conversations));
-      localStorage.setItem("vibot_currentConversationId", this.currentConversationId);
+    saveReminders() {
+      localStorage.setItem("vibot_reminders", JSON.stringify(this.reminders));
     },
 
-    createNewConversation() {
-      const id = "conv_" + Date.now();
-      this.conversations[id] = [];
-      this.currentConversationId = id;
-      this.saveConversations();
-      this.renderConversationsList();
-      this.renderCurrentConversation();
-      this.userInput.value = "";
-      this.userInput.focus();
+    addReminder() {
+      const text = document.getElementById('reminderText').value;
+      const time = document.getElementById('reminderTime').value;
+      
+      if (!text || !time) return;
+      
+      const reminder = {
+        id: 'rem_' + Date.now(),
+        text,
+        time: new Date(time).getTime(),
+        completed: false
+      };
+      
+      this.reminders.push(reminder);
+      this.saveReminders();
+      this.renderRemindersList();
+      
+      document.getElementById('reminderText').value = '';
+      document.getElementById('reminderTime').value = '';
+      
+      this.addMessage("user", `Adicionar lembrete: ${text} (${new Date(time).toLocaleString()})`);
+      this.addMessage("bot", `Lembrete adicionado com sucesso! Eu vou te avisar quando chegar a hora.`, 'reminder');
     },
 
-    deleteConversation(id) {
-      if (!confirm("Tem certeza que deseja excluir esta conversa?")) return;
+    renderRemindersList() {
+      const list = document.getElementById('reminderList');
+      list.innerHTML = '';
       
-      delete this.conversations[id];
-      
-      if (this.currentConversationId === id) {
-        if (Object.keys(this.conversations).length > 0) {
-          this.currentConversationId = Object.keys(this.conversations)[0];
-        } else {
-          this.createNewConversation();
-          return;
-        }
-      }
-      
-      this.saveConversations();
-      this.renderConversationsList();
-      this.renderCurrentConversation();
-    },
-
-    renderConversationsList() {
-      this.conversationList.innerHTML = "";
-      Object.entries(this.conversations).forEach(([id, messages]) => {
-        const btn = document.createElement("button");
-        btn.className = "conversation-btn";
-        
-        const btnText = document.createElement("span");
-        btnText.textContent = messages.length
-          ? messages[messages.length - 1].content.slice(0, 30) + (messages[messages.length - 1].content.length > 30 ? "..." : "")
-          : "(vazio)";
-        
-        btn.appendChild(btnText);
-        
-        // Adiciona ações (botão de excluir)
-        const actionsDiv = document.createElement("div");
-        actionsDiv.className = "conversation-actions";
-        
-        const deleteBtn = document.createElement("button");
-        deleteBtn.innerHTML = "🗑️";
-        deleteBtn.title = "Excluir conversa";
-        deleteBtn.className = "action-btn";
-        deleteBtn.onclick = (e) => {
-          e.stopPropagation();
-          this.deleteConversation(id);
-        };
-        
-        actionsDiv.appendChild(deleteBtn);
-        btn.appendChild(actionsDiv);
-        
-        if (id === this.currentConversationId) btn.classList.add("active");
-        btn.onclick = () => {
-          this.currentConversationId = id;
-          this.saveConversations();
-          this.renderConversationsList();
-          this.renderCurrentConversation();
-        };
-        this.conversationList.appendChild(btn);
+      this.reminders.sort((a, b) => a.time - b.time).forEach(reminder => {
+        const item = document.createElement('div');
+        item.className = 'reminder-item';
+        item.innerHTML = `
+          <div>
+            <strong>${reminder.text}</strong><br>
+            <small>${new Date(reminder.time).toLocaleString()}</small>
+          </div>
+          <div class="reminder-actions">
+            <button class="action-btn" onclick="ViBot.completeReminder('${reminder.id}')">✓</button>
+            <button class="action-btn" onclick="ViBot.deleteReminder('${reminder.id}')">🗑️</button>
+          </div>
+        `;
+        list.appendChild(item);
       });
     },
 
-    renderCurrentConversation() {
-      this.chatbox.innerHTML = "";
-      if (!this.currentConversationId || !this.conversations[this.currentConversationId]) return;
-
-      for (const msg of this.conversations[this.currentConversationId]) {
-        this.addMessageToChatbox(msg.role === "user" ? "user" : "bot", msg.content);
+    completeReminder(id) {
+      const reminder = this.reminders.find(r => r.id === id);
+      if (reminder) {
+        reminder.completed = true;
+        this.saveReminders();
+        this.renderRemindersList();
       }
-      this.scrollToBottom();
     },
 
-    addMessageToChatbox(role, content) {
+    deleteReminder(id) {
+      this.reminders = this.reminders.filter(r => r.id !== id);
+      this.saveReminders();
+      this.renderRemindersList();
+    },
+
+    checkReminders() {
+      const now = new Date().getTime();
+      this.reminders.forEach(reminder => {
+        if (!reminder.completed && reminder.time <= now + 60000 && reminder.time >= now - 60000) {
+          this.showReminderNotification(reminder);
+          reminder.completed = true;
+          this.saveReminders();
+        }
+      });
+    },
+
+    showReminderNotification(reminder) {
+      if (Notification.permission === "granted") {
+        new Notification("⏰ Lembrete do ViBot", {
+          body: reminder.text
+        });
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            new Notification("⏰ Lembrete do ViBot", {
+              body: reminder.text
+            });
+          }
+        });
+      }
+      
+      // Também mostra no chat
+      this.addMessage("bot", `⏰ Lembrete: ${reminder.text}`, 'reminder');
+    },
+
+    // Função modificada para aceitar tipo de mensagem
+    addMessageToChatbox(role, content, type = null) {
       const messageDiv = document.createElement("div");
-      messageDiv.className = "message " + role;
-      messageDiv.textContent = content;
+      messageDiv.className = `message ${role}`;
+      if (type) messageDiv.classList.add(type);
+      messageDiv.innerHTML = content;
       
       // Adiciona botões de ação
       const actionsDiv = document.createElement("div");
@@ -587,7 +1021,7 @@
         const ttsBtn = document.createElement("button");
         ttsBtn.className = "action-btn";
         ttsBtn.innerHTML = "🔊 Ouvir";
-        ttsBtn.onclick = () => this.speakText(content, this.languageSelector.value);
+        ttsBtn.onclick = () => this.speakText(this.getTextContent(content), this.languageSelector.value);
         actionsDiv.appendChild(ttsBtn);
       }
       
@@ -596,7 +1030,7 @@
       copyBtn.className = "action-btn";
       copyBtn.innerHTML = "📋 Copiar";
       copyBtn.onclick = () => {
-        navigator.clipboard.writeText(content);
+        navigator.clipboard.writeText(this.getTextContent(content));
         copyBtn.innerHTML = "✓ Copiado!";
         setTimeout(() => {
           copyBtn.innerHTML = "📋 Copiar";
@@ -608,206 +1042,14 @@
       this.chatbox.appendChild(messageDiv);
     },
 
-    addMessage(role, content) {
-      if (!this.currentConversationId) this.createNewConversation();
-      this.conversations[this.currentConversationId].push({ role, content });
-      this.saveConversations();
-      this.addMessageToChatbox(role, content);
-      this.scrollToBottom();
+    // Função auxiliar para extrair texto de conteúdo HTML
+    getTextContent(html) {
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
+      return temp.textContent || temp.innerText || '';
     },
 
-    scrollToBottom() {
-      this.chatbox.scrollTop = this.chatbox.scrollHeight;
-    },
-
-    async sendMessage() {
-      const text = this.userInput.value.trim();
-      if (!text) return;
-
-      this.addMessage("user", text);
-      this.userInput.value = "";
-      this.sendBtn.disabled = true;
-
-      this.chatbox.appendChild(this.typingIndicator);
-      this.scrollToBottom();
-
-      try {
-        const lang = this.languageSelector.value;
-        const response = await this.callChatAPI(text);
-        
-        this.chatbox.removeChild(this.typingIndicator);
-        this.addMessage("bot", response);
-
-        if (this.speaking) this.speakText(response, lang);
-
-      } catch (error) {
-        this.chatbox.removeChild(this.typingIndicator);
-        this.addMessage("bot", "Erro: não foi possível obter resposta. Tente novamente.");
-        console.error("Erro na API:", error);
-      } finally {
-        this.sendBtn.disabled = false;
-      }
-    },
-
-    async callChatAPI(prompt) {
-      // Prepara o histórico da conversa para enviar à API
-      const messages = [
-        { role: "system", content: this.config.systemPrompt },
-        ...this.conversations[this.currentConversationId].map(msg => ({
-          role: msg.role,
-          content: msg.content
-        })),
-        { role: "user", content: prompt }
-      ];
-
-      const body = {
-        model: this.config.model,
-        temperature: this.config.temperature,
-        max_tokens: this.config.maxTokens,
-        messages: messages
-      };
-
-      const res = await fetch(this.config.apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + this.config.apiKey
-        },
-        body: JSON.stringify(body)
-      });
-
-      if (!res.ok) {
-        throw new Error("Erro na API: " + res.status);
-      }
-      
-      const data = await res.json();
-      
-      if (data.usage && data.usage.total_tokens) {
-        this.updateTokenCount(data.usage.total_tokens);
-      }
-      
-      if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
-        return data.choices[0].message.content.trim();
-      }
-      throw new Error("Resposta da API inesperada");
-    },
-
-    toggleTheme() {
-      const current = document.documentElement.getAttribute("data-theme");
-      if (current === "dark") {
-        document.documentElement.removeAttribute("data-theme");
-        localStorage.setItem("vibot_theme", "light");
-      } else {
-        document.documentElement.setAttribute("data-theme", "dark");
-        localStorage.setItem("vibot_theme", "dark");
-      }
-    },
-
-    loadTheme() {
-      const saved = localStorage.getItem("vibot_theme");
-      if (saved === "dark") {
-        document.documentElement.setAttribute("data-theme", "dark");
-      }
-    },
-
-    toggleSpeech() {
-      if (!("speechSynthesis" in window)) {
-        alert("Síntese de voz não suportada neste navegador.");
-        return;
-      }
-      this.speaking = !this.speaking;
-      this.startSpeechBtn.textContent = this.speaking ? "🔈 Voz: ON" : "🎙️ Voz";
-      if (!this.speaking && this.speechSynthesis.speaking) {
-        this.speechSynthesis.cancel();
-      }
-    },
-
-    speakText(text, lang) {
-      if (!("speechSynthesis" in window)) {
-        alert("Síntese de voz não suportada neste navegador.");
-        return;
-      }
-      
-      if (this.speechSynthesis.speaking) {
-        this.speechSynthesis.cancel();
-      }
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      this.speechSynthesis.speak(utterance);
-    },
-
-    exportHistory() {
-      if (!this.currentConversationId || !this.conversations[this.currentConversationId]) return;
-      const dataStr = JSON.stringify({
-        conversation: this.conversations[this.currentConversationId],
-        settings: {
-          model: this.config.model,
-          temperature: this.config.temperature,
-          maxTokens: this.config.maxTokens,
-          systemPrompt: this.config.systemPrompt
-        }
-      }, null, 2);
-      const blob = new Blob([dataStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `vibot_history_${this.currentConversationId}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    },
-
-    importHistory(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = e => {
-        try {
-          const importedData = JSON.parse(e.target.result);
-          
-          // Verifica se é o novo formato com settings ou o antigo apenas com conversa
-          let importedConversation, importedSettings;
-          if (importedData.conversation && Array.isArray(importedData.conversation)) {
-            importedConversation = importedData.conversation;
-            importedSettings = importedData.settings;
-          } else if (Array.isArray(importedData)) {
-            importedConversation = importedData;
-          } else {
-            throw new Error("Formato inválido");
-          }
-          
-          const id = "conv_" + Date.now();
-          this.conversations[id] = importedConversation;
-          this.currentConversationId = id;
-          
-          // Aplica configurações se existirem no arquivo
-          if (importedSettings) {
-            this.config.model = importedSettings.model || this.config.model;
-            this.config.temperature = importedSettings.temperature || this.config.temperature;
-            this.config.maxTokens = importedSettings.maxTokens || this.config.maxTokens;
-            this.config.systemPrompt = importedSettings.systemPrompt || this.config.systemPrompt;
-            this.saveSettings();
-            this.loadSettings(); // Atualiza a UI
-          }
-          
-          this.saveConversations();
-          this.renderConversationsList();
-          this.renderCurrentConversation();
-          this.userInput.focus();
-          alert("Histórico importado com sucesso!");
-        } catch {
-          alert("Erro ao importar arquivo. Certifique-se de que é um JSON válido.");
-        }
-      };
-      reader.readAsText(file);
-      event.target.value = "";
-    },
-
-    changeLanguage(lang) {
-      this.languageSelector.value = lang;
-      this.userInput.focus();
-    }
+    // ... (mantenha todas as outras funções originais)
   };
 
   window.onload = () => ViBot.init();
