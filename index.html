@@ -15,9 +15,11 @@
     --bg: #f9fafb;
   }
   [data-theme="dark"] {
+    --primary: #6366f1;
     --bg: #1f2937;
     --bot-bg: #374151;
     --text: #f9fafb;
+    --user-bg: #6366f1;
   }
   body {
     font-family: 'Inter', sans-serif;
@@ -30,7 +32,7 @@
     display: flex; justify-content: space-between; align-items: center;
     padding: 16px 32px; background: white; border-bottom: 1px solid #e5e7eb;
   }
-  [data-theme="dark"] header { background: #111827; }
+  [data-theme="dark"] header { background: #111827; border-color: #374151; }
   h1 { margin: 0; color: var(--primary); }
   header div { display: flex; align-items: center; gap: 8px; }
   button, select {
@@ -41,6 +43,11 @@
     background: white;
     cursor: pointer;
   }
+  [data-theme="dark"] button, [data-theme="dark"] select {
+    background: #1f2937;
+    color: white;
+    border-color: #4b5563;
+  }
   button:hover { opacity: 0.9; }
   main { display: flex; max-width: 1100px; margin: 20px auto; gap: 20px; padding: 0 20px; }
   #chat-container { flex: 1; display: flex; flex-direction: column; }
@@ -48,6 +55,11 @@
     background: white; border: 1px solid #e5e7eb; border-radius: 12px;
     flex: 1; padding: 16px; overflow-y: auto;
     display: flex; flex-direction: column; gap: 12px;
+    min-height: 400px;
+  }
+  [data-theme="dark"] #chatbox {
+    background: #111827;
+    border-color: #374151;
   }
   .message {
     padding: 12px 16px; border-radius: 12px; max-width: 85%;
@@ -63,7 +75,12 @@
   #input-container { display: flex; gap: 12px; margin-top: 12px; }
   #userInput {
     flex: 1; padding: 12px 16px; border: 1px solid #e5e7eb;
-    border-radius: 12px; font-size: 16px;
+    border-radius: 12px; font-size: 16px; background: white;
+  }
+  [data-theme="dark"] #userInput {
+    background: #1f2937;
+    color: white;
+    border-color: #4b5563;
   }
   #sendBtn {
     background: var(--primary); color: white; border: none;
@@ -76,6 +93,10 @@
     width: 250px; background: white; border: 1px solid #e5e7eb;
     border-radius: 12px; padding: 16px; display: flex;
     flex-direction: column; gap: 12px;
+  }
+  [data-theme="dark"] aside {
+    background: #111827;
+    border-color: #374151;
   }
   #newConversationBtn {
     background: var(--primary); color: white; border: none;
@@ -93,6 +114,9 @@
     text-align: left; white-space: nowrap; overflow: hidden;
     text-overflow: ellipsis; cursor: pointer;
     transition: background-color 0.2s;
+  }
+  [data-theme="dark"] .conversation-btn {
+    background: #374151;
   }
   .conversation-btn:hover { background: var(--primary); color: white; }
   .conversation-btn.active { background: var(--primary); color: white; font-weight: 700; }
@@ -140,12 +164,11 @@
   </aside>
 </main>
 
-<input type="file" id="importFile" accept=".txt" style="display: none;" aria-hidden="true" />
+<input type="file" id="importFile" accept=".json,.txt" style="display: none;" aria-hidden="true" />
 
 <script>
   const ViBot = {
     config: {
-      // Use seu endpoint real e chave API
       apiUrl: "https://api.groq.com/openai/v1/chat/completions",
       apiKey: "gsk_GAB1Wl5zqbp30qPDeMObWGdyb3FY0g7KiTlGt5aWhUnkD495Bi3T",
       model: "llama3-70b-8192",
@@ -200,10 +223,6 @@
       this.importHistoryBtn.onclick = () => this.importFileInput.click();
       this.importFileInput.onchange = e => this.importHistory(e);
       this.languageSelector.onchange = e => this.changeLanguage(e.target.value);
-
-      // Botão enviar sempre habilitado (removemos disables)
-      this.sendBtn.disabled = false;
-      this.userInput.disabled = false;
 
       this.userInput.focus();
     },
@@ -304,32 +323,23 @@
 
       try {
         const lang = this.languageSelector.value;
-
-        // Traduzir para português para enviar à API (se não for pt-BR)
-        const prompt = lang !== "pt-BR" ? await this.translateText(text, lang, "pt") : text;
-
-        const response = await this.callChatAPI(prompt);
-
-        // Traduzir resposta para idioma do usuário
-        const finalResponse = lang !== "pt-BR" ? await this.translateText(response, "pt", lang) : response;
-
+        const response = await this.callChatAPI(text);
+        
         this.chatbox.removeChild(this.typingIndicator);
-        this.addMessage("bot", finalResponse);
+        this.addMessage("bot", response);
 
-        if (this.speaking) this.speakText(finalResponse, lang);
+        if (this.speaking) this.speakText(response, lang);
 
       } catch (error) {
         this.chatbox.removeChild(this.typingIndicator);
         this.addMessage("bot", "Erro: não foi possível obter resposta. Tente novamente.");
-        console.error(error);
+        console.error("Erro na API:", error);
       } finally {
         this.sendBtn.disabled = false;
       }
     },
 
     async callChatAPI(prompt) {
-      // Chamada POST para API Groq/OpenAI
-
       const body = {
         model: this.config.model,
         temperature: this.config.temperature,
@@ -341,7 +351,7 @@
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + this.config.apiKey
+          "Authorization": "Bearer " + this.config.apiKey
         },
         body: JSON.stringify(body)
       });
@@ -349,31 +359,13 @@
       if (!res.ok) {
         throw new Error("Erro na API: " + res.status);
       }
+      
       const data = await res.json();
-      // Supondo resposta no formato OpenAI: data.choices[0].message.content
+      
       if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
         return data.choices[0].message.content.trim();
       }
       throw new Error("Resposta da API inesperada");
-    },
-
-    async translateText(text, fromLang, toLang) {
-      if (fromLang === toLang) return text;
-
-      const res = await fetch("https://libretranslate.de/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          q: text,
-          source: fromLang.split("-")[0],
-          target: toLang.split("-")[0],
-          format: "text"
-        })
-      });
-
-      if (!res.ok) throw new Error("Erro na tradução");
-      const json = await res.json();
-      return json.translatedText;
     },
 
     toggleTheme() {
@@ -394,7 +386,6 @@
       }
     },
 
-    speaking: false,
     toggleSpeech() {
       if (!("speechSynthesis" in window)) {
         alert("Síntese de voz não suportada neste navegador.");
