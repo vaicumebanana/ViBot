@@ -15,6 +15,7 @@
             --bg: #f9fafb;
             --copy-bg: #e5e7eb;
             --toolbar-bg: #e5e7eb;
+            --sidebar-width: 280px;
         }
         [data-theme="dark"] {
             --primary: #6366f1;
@@ -25,13 +26,21 @@
             --copy-bg: #4b5563;
             --toolbar-bg: #374151;
         }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             transition: background 0.3s, color 0.3s;
+            line-height: 1.6;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         header {
             display: flex;
@@ -40,28 +49,52 @@
             padding: 16px 32px;
             background: white;
             border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 10;
         }
         [data-theme="dark"] header {
             background: #111827;
             border-color: #374151;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
         }
         h1 {
             margin: 0;
             color: var(--primary);
+            font-size: 1.8rem;
+            font-weight: 700;
         }
-        header div {
+        .header-controls {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
             flex-wrap: wrap;
         }
         button, select {
             font-size: 14px;
-            padding: 8px;
+            padding: 8px 16px;
             border-radius: 8px;
             border: 1px solid #d1d5db;
             background: white;
             cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
         }
         [data-theme="dark"] button, [data-theme="dark"] select {
             background: #1f2937;
@@ -69,45 +102,58 @@
             border-color: #4b5563;
         }
         button:hover {
-            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        [data-theme="dark"] button:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
         main {
             display: flex;
-            max-width: 1100px;
-            margin: 20px auto;
-            gap: 20px;
-            padding: 0 20px;
+            flex: 1;
+            overflow: hidden;
+        }
+        #sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            z-index: 5;
+        }
+        [data-theme="dark"] #sidebar {
+            background: #111827;
+            border-color: #374151;
         }
         #chat-container {
             flex: 1;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
         #chatbox {
             background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
             flex: 1;
-            padding: 16px;
+            padding: 24px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            min-height: 400px;
+            gap: 20px;
+            transition: background 0.3s;
         }
         [data-theme="dark"] #chatbox {
-            background: #111827;
-            border-color: #374151;
+            background: #1a202c;
         }
         .message {
-            padding: 12px 16px;
-            border-radius: 12px;
+            padding: 16px 20px;
+            border-radius: 18px;
             max-width: 85%;
-            line-height: 1.5;
+            line-height: 1.6;
             animation: fadeIn 0.3s ease-out;
             word-wrap: break-word;
-            white-space: pre-wrap;
             position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         .user {
             background: var(--user-bg);
@@ -126,6 +172,7 @@
             color: var(--error-text);
             align-self: center;
             text-align: center;
+            max-width: 90%;
         }
         .typing {
             color: #6b7280;
@@ -147,64 +194,80 @@
                 opacity: 0.5;
             }
         }
+        #input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+        [data-theme="dark"] #input-area {
+            background: #111827;
+            border-color: #374151;
+        }
         #input-container {
             display: flex;
             gap: 12px;
-            margin-top: 12px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
         #userInput {
             flex: 1;
-            padding: 12px 16px;
+            padding: 16px 20px;
             border: 1px solid #e5e7eb;
             border-radius: 12px;
             font-size: 16px;
             background: white;
+            transition: all 0.3s;
         }
         [data-theme="dark"] #userInput {
             background: #1f2937;
             color: white;
             border-color: #4b5563;
         }
+        #userInput:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+        [data-theme="dark"] #userInput:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        }
         #sendBtn {
             background: var(--primary);
             color: white;
             border: none;
             border-radius: 12px;
-            padding: 0 24px;
-            font-weight: 500;
+            padding: 0 28px;
+            font-weight: 600;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             transition: background-color 0.2s;
         }
         #sendBtn:hover {
             background: #4338ca;
+            transform: translateY(-2px);
         }
         #sendBtn:disabled {
             background: #9ca3af;
             cursor: not-allowed;
-        }
-        aside {
-            width: 250px;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        [data-theme="dark"] aside {
-            background: #111827;
-            border-color: #374151;
+            transform: none;
         }
         #newConversationBtn {
             background: var(--primary);
             color: white;
             border: none;
             border-radius: 12px;
-            padding: 12px;
+            padding: 14px;
             font-weight: 600;
+            margin: 20px;
             cursor: pointer;
             transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         #newConversationBtn:hover {
             background: #4338ca;
@@ -215,57 +278,60 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            padding: 0 20px 20px;
         }
         .conversation-btn {
             background: #f3f4f6;
             border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 14px;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 15px;
             color: var(--text);
             text-align: left;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
             position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
         [data-theme="dark"] .conversation-btn {
-            background: #374151;
+            background: #2d3748;
         }
         .conversation-btn:hover {
             background: var(--primary);
             color: white;
+            transform: translateX(5px);
         }
         .conversation-btn.active {
             background: var(--primary);
             color: white;
-            font-weight: 700;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .conversation-icon {
+            font-size: 18px;
         }
         .conversation-actions {
             position: absolute;
-            right: 8px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             display: flex;
-            gap: 4px;
+            gap: 8px;
         }
         .conversation-btn:hover .conversation-actions {
             display: flex;
         }
-        .message-actions {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 8px;
-            gap: 8px;
-        }
         .action-btn {
             background: var(--copy-bg);
             border: none;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 12px;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 13px;
             cursor: pointer;
             transition: background-color 0.2s;
             display: flex;
@@ -287,139 +353,280 @@
         .user .action-btn:hover {
             background: rgba(255, 255, 255, 0.3);
         }
-        .model-selector {
-            margin-top: 12px;
-            width: 100%;
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            background: var(--toolbar-bg);
+            border-radius: 0 0 16px 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        [data-theme="dark"] .toolbar {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .toolbar-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 160px;
+            max-width: 200px;
+            justify-content: center;
+        }
+        .toolbar-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
         .settings-panel {
-            margin-top: 12px;
-            padding: 12px;
+            padding: 20px;
             background: var(--bot-bg);
-            border-radius: 8px;
+            border-radius: 16px;
+            margin: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        [data-theme="dark"] .settings-panel {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
         .settings-title {
-            font-weight: bold;
-            margin-bottom: 8px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            font-size: 18px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .slider-container {
-            margin: 12px 0;
+            margin: 20px 0;
         }
         .slider-label {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
+            font-weight: 500;
         }
         .slider-value {
             font-weight: bold;
+            color: var(--primary);
         }
         input[type="range"] {
             width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            outline: none;
+        }
+        [data-theme="dark"] input[type="range"] {
+            background: #4b5563;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
         }
         .token-count {
-            font-size: 12px;
+            font-size: 14px;
             color: #6b7280;
             text-align: right;
-            margin-top: 4px;
+            margin-top: 8px;
+            font-weight: 500;
         }
         [data-theme="dark"] .token-count {
             color: #9ca3af;
         }
         .system-prompt-container {
-            margin-top: 12px;
+            margin-top: 24px;
         }
         #systemPrompt {
             width: 100%;
-            padding: 8px;
-            border-radius: 8px;
+            padding: 14px;
+            border-radius: 12px;
             border: 1px solid #d1d5db;
             background: white;
             font-family: inherit;
             resize: vertical;
-            min-height: 60px;
+            min-height: 100px;
+            font-size: 15px;
         }
         [data-theme="dark"] #systemPrompt {
             background: #1f2937;
             color: white;
             border-color: #4b5563;
         }
-        .toolbar {
-            display: flex;
-            gap: 8px;
-            padding: 8px;
-            background: var(--toolbar-bg);
-            border-radius: 8px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-        .toolbar-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 6px 12px;
-            font-size: 13px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .toolbar-btn:hover {
-            opacity: 0.9;
-        }
         .api-key-container {
-            margin-top: 12px;
+            margin-top: 24px;
         }
         #apiKeyInput {
             width: 100%;
-            padding: 8px;
-            border-radius: 8px;
+            padding: 14px;
+            border-radius: 12px;
             border: 1px solid #d1d5db;
             background: white;
             font-family: inherit;
+            font-size: 15px;
         }
         [data-theme="dark"] #apiKeyInput {
             background: #1f2937;
             color: white;
             border-color: #4b5563;
         }
+        .status-bar {
+            padding: 12px 24px;
+            background: var(--toolbar-bg);
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+        }
+        [data-theme="dark"] .status-bar {
+            border-color: #374151;
+            color: #9ca3af;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .model-tag {
+            background: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text);
+        }
+        @media (max-width: 992px) {
+            #sidebar {
+                position: absolute;
+                left: calc(-1 * var(--sidebar-width));
+                height: 100%;
+                z-index: 100;
+            }
+            #sidebar.active {
+                left: 0;
+                box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
         @media (max-width: 768px) {
-            main {
-                flex-direction: column;
+            header {
+                padding: 14px 20px;
             }
-            aside {
-                width: 100%;
-                margin-bottom: 20px;
-                order: -1;
+            h1 {
+                font-size: 1.4rem;
             }
-            #chatbox {
-                height: 50vh;
+            .toolbar {
+                gap: 8px;
+                padding: 12px;
+            }
+            .toolbar-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+                min-width: 140px;
             }
             #input-container {
                 flex-direction: column;
             }
             #sendBtn {
                 width: 100%;
+                padding: 16px;
             }
-            .conversation-actions {
-                display: flex;
+            .conversation-btn {
+                padding: 12px 16px;
             }
-            header div {
-                gap: 4px;
+            .settings-panel {
+                margin: 12px;
+                padding: 16px;
             }
-            button, select {
-                padding: 6px;
-                font-size: 12px;
+            .status-bar {
+                flex-direction: column;
+                gap: 8px;
+                padding: 12px;
             }
-            .toolbar {
-                justify-content: center;
-            }
+        }
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .welcome-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+        .welcome-text {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: var(--text);
+            opacity: 0.9;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+        .feature-card {
+            background: var(--bot-bg);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        .feature-title {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+        .feature-description {
+            font-size: 1rem;
+            color: var(--text);
+            opacity: 0.8;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>ViBot Plus</h1>
-        <div>
+        <div class="logo">
+            <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+            <div class="logo-icon">V</div>
+            <h1>ViBot Plus</h1>
+        </div>
+        <div class="header-controls">
             <button id="toggleTheme" aria-label="Alternar tema">🌓 Tema</button>
             <button id="exportHistory" aria-label="Exportar histórico">📂 Exportar</button>
             <button id="importHistory" aria-label="Importar histórico">📁 Importar</button>
@@ -428,41 +635,26 @@
     </header>
 
     <main>
-        <div id="chat-container">
-            <div class="toolbar">
-                <!-- Original 5 tools -->
-                <button class="toolbar-btn" id="generateEmailBtn">📧 Gerar E-mail</button>
-                <button class="toolbar-btn" id="summarizeTextBtn">📝 Resumir Texto</button>
-                <button class="toolbar-btn" id="translateTextBtn">🌐 Traduzir</button>
-                <button class="toolbar-btn" id="improveTextBtn">✍️ Melhorar Texto</button>
-                <button class="toolbar-btn" id="generateCodeBtn">💻 Gerar Código</button>
-                
-                <!-- New 5 tools -->
-                <button class="toolbar-btn" id="generateIdeasBtn">💡 Gerar Ideias</button>
-                <button class="toolbar-btn" id="analyzeDataBtn">📊 Analisar Dados</button>
-                <button class="toolbar-btn" id="createContentBtn">✏️ Criar Conteúdo</button>
-                <button class="toolbar-btn" id="explainConceptBtn">📚 Explicar Conceito</button>
-                <button class="toolbar-btn" id="solveProblemBtn">🔍 Solucionar Problema</button>
-            </div>
-            <div id="chatbox" role="log" aria-live="polite" aria-atomic="false"></div>
-            <div id="input-container">
-                <input id="userInput" placeholder="Digite sua mensagem..." autocomplete="off" />
-                <button id="sendBtn" aria-label="Enviar mensagem">📩 Enviar</button>
-            </div>
-        </div>
-        <aside>
-            <button id="newConversationBtn" aria-label="Nova conversa">➕ Nova Conversa</button>
-            <div id="conversationList" aria-label="Lista de conversas"></div>
+        <div id="sidebar">
+            <button id="newConversationBtn">
+                <span>+</span> Nova Conversa
+            </button>
+            <div id="conversationList"></div>
             
-            <div class="settings-panel" id="settingsPanel" style="display: none;">
-                <div class="settings-title">Configurações do Modelo</div>
+            <div class="settings-panel" id="settingsPanel">
+                <div class="settings-title">⚙️ Configurações do Modelo</div>
                 
-                <select id="modelSelector" class="model-selector">
-                    <option value="llama3-70b-8192">ViBot Pro (Alta Performance)</option>
-                    <option value="llama3-8b-8192">ViBot Standard (Balanço)</option>
-                    <option value="mixtral-8x7b-32768">ViBot Expert (Conhecimento Avançado)</option>
-                    <option value="gemma-7b-it">ViBot Lite (Rápido e Leve)</option>
-                </select>
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Modelo:</span>
+                    </div>
+                    <select id="modelSelector" class="model-selector">
+                        <option value="llama3-70b-8192">ViBot Pro (Alta Performance)</option>
+                        <option value="llama3-8b-8192">ViBot Standard (Balanço)</option>
+                        <option value="mixtral-8x7b-32768">ViBot Expert (Conhecimento Avançado)</option>
+                        <option value="gemma-7b-it">ViBot Lite (Rápido e Leve)</option>
+                    </select>
+                </div>
                 
                 <div class="slider-container">
                     <div class="slider-label">
@@ -482,638 +674,646 @@
                 </div>
                 
                 <div class="system-prompt-container">
-                    <div class="settings-title">Instruções do Sistema</div>
-                    <textarea id="systemPrompt" placeholder="Como o assistente deve se comportar..."></textarea>
+                    <div class="settings-title">📝 Instruções do Sistema</div>
+                    <textarea id="systemPrompt" placeholder="Como o assistente deve se comportar...">Você é um assistente útil chamado ViBot. Responda de forma clara e concisa no idioma do usuário.</textarea>
                 </div>
                 
                 <div class="api-key-container">
-                    <div class="settings-title">Chave da API</div>
+                    <div class="settings-title">🔑 Chave da API</div>
                     <input type="password" id="apiKeyInput" placeholder="Insira sua chave da API" />
                 </div>
             </div>
-        </aside>
+        </div>
+
+        <div id="chat-container">
+            <div class="toolbar">
+                <!-- Ferramentas principais -->
+                <button class="toolbar-btn" id="generateEmailBtn">📧 Gerar E-mail</button>
+                <button class="toolbar-btn" id="summarizeTextBtn">📝 Resumir Texto</button>
+                <button class="toolbar-btn" id="translateTextBtn">🌐 Traduzir</button>
+                <button class="toolbar-btn" id="improveTextBtn">✍️ Melhorar Texto</button>
+                <button class="toolbar-btn" id="generateCodeBtn">💻 Gerar Código</button>
+                
+                <!-- Novas ferramentas -->
+                <button class="toolbar-btn" id="generateIdeasBtn">💡 Gerar Ideias</button>
+                <button class="toolbar-btn" id="analyzeDataBtn">📊 Analisar Dados</button>
+                <button class="toolbar-btn" id="createContentBtn">✏️ Criar Conteúdo</button>
+                <button class="toolbar-btn" id="explainConceptBtn">📚 Explicar Conceito</button>
+                <button class="toolbar-btn" id="solveProblemBtn">🔍 Solucionar Problema</button>
+            </div>
+            
+            <div id="chatbox" role="log" aria-live="polite" aria-atomic="false">
+                <div class="welcome-message">
+                    <div class="welcome-title">Bem-vindo ao ViBot Plus!</div>
+                    <div class="welcome-text">Seu assistente de IA com 10 ferramentas poderosas para impulsionar sua produtividade.</div>
+                    
+                    <div class="features">
+                        <div class="feature-card">
+                            <div class="feature-icon">📧</div>
+                            <div class="feature-title">Gerador de E-mails</div>
+                            <div class="feature-description">Crie e-mails profissionais em segundos</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📝</div>
+                            <div class="feature-title">Resumos Inteligentes</div>
+                            <div class="feature-description">Resuma textos longos mantendo o essencial</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🌐</div>
+                            <div class="feature-title">Tradução Avançada</div>
+                            <div class="feature-description">Traduza entre diversos idiomas com precisão</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">✍️</div>
+                            <div class="feature-title">Otimização de Texto</div>
+                            <div class="feature-description">Melhore clareza, concisão e tom do seu texto</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="input-area">
+                <div id="input-container">
+                    <input id="userInput" placeholder="Digite sua mensagem aqui..." autocomplete="off" />
+                    <button id="sendBtn">
+                        <span>Enviar</span>
+                        <span>📩</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
 
-    <input type="file" id="importFile" accept=".json,.txt" style="display: none;" aria-hidden="true" />
+    <div class="status-bar">
+        <div class="status-item">
+            <span>Modelo:</span>
+            <span class="model-tag" id="currentModel">ViBot Pro</span>
+        </div>
+        <div class="status-item">
+            <span>Status:</span>
+            <span id="connectionStatus">Conectado</span>
+        </div>
+        <div class="status-item">
+            <span>Tokens:</span>
+            <span id="tokenStatus">0</span>
+        </div>
+    </div>
+
+    <input type="file" id="importFile" accept=".json" style="display: none;" aria-hidden="true" />
 
     <script>
-        const ViBot = {
-            config: {
-                apiUrl: "https://api.groq.com/openai/v1/chat/completions",
-                apiKey: "",
-                model: "llama3-70b-8192",
-                temperature: 0.7,
-                maxTokens: 1024,
-                systemPrompt: "Você é um assistente útil chamado ViBot. Responda de forma clara e concisa no idioma do usuário."
-            },
+        document.addEventListener('DOMContentLoaded', () => {
+            const ViBot = {
+                config: {
+                    apiUrl: "https://api.groq.com/openai/v1/chat/completions",
+                    apiKey: "",
+                    model: "llama3-70b-8192",
+                    temperature: 0.7,
+                    maxTokens: 1024,
+                    systemPrompt: "Você é um assistente útil chamado ViBot. Responda de forma clara e concisa no idioma do usuário."
+                },
 
-            modelNames: {
-                "llama3-70b-8192": "ViBot Pro (Alta Performance)",
-                "llama3-8b-8192": "ViBot Standard (Balanço)",
-                "mixtral-8x7b-32768": "ViBot Expert (Conhecimento Avançado)",
-                "gemma-7b-it": "ViBot Lite (Rápido e Leve)"
-            },
+                modelNames: {
+                    "llama3-70b-8192": "ViBot Pro (Alta Performance)",
+                    "llama3-8b-8192": "ViBot Standard (Balanço)",
+                    "mixtral-8x7b-32768": "ViBot Expert (Conhecimento Avançado)",
+                    "gemma-7b-it": "ViBot Lite (Rápido e Leve)"
+                },
 
-            getModelIdByName(name) {
-                for (const [id, modelName] of Object.entries(this.modelNames)) {
-                    if (modelName === name) return id;
-                }
-                return "llama3-70b-8192";
-            },
+                init() {
+                    this.cacheElements();
+                    this.setupEventListeners();
+                    this.setupInitialState();
+                    this.updateUI();
+                },
 
-            init() {
-                this.chatbox = document.getElementById("chatbox");
-                this.userInput = document.getElementById("userInput");
-                this.sendBtn = document.getElementById("sendBtn");
-                this.newConversationBtn = document.getElementById("newConversationBtn");
-                this.conversationList = document.getElementById("conversationList");
-                this.toggleThemeBtn = document.getElementById("toggleTheme");
-                this.exportHistoryBtn = document.getElementById("exportHistory");
-                this.importHistoryBtn = document.getElementById("importHistory");
-                this.importFileInput = document.getElementById("importFile");
-                this.settingsBtn = document.getElementById("settingsBtn");
-                this.settingsPanel = document.getElementById("settingsPanel");
-                this.modelSelector = document.getElementById("modelSelector");
-                this.temperatureSlider = document.getElementById("temperatureSlider");
-                this.temperatureValue = document.getElementById("temperatureValue");
-                this.maxTokensSlider = document.getElementById("maxTokensSlider");
-                this.maxTokensValue = document.getElementById("maxTokensValue");
-                this.tokenCount = document.getElementById("tokenCount");
-                this.systemPrompt = document.getElementById("systemPrompt");
-                this.apiKeyInput = document.getElementById("apiKeyInput");
-                
-                // Tool buttons
-                this.generateEmailBtn = document.getElementById("generateEmailBtn");
-                this.summarizeTextBtn = document.getElementById("summarizeTextBtn");
-                this.translateTextBtn = document.getElementById("translateTextBtn");
-                this.improveTextBtn = document.getElementById("improveTextBtn");
-                this.generateCodeBtn = document.getElementById("generateCodeBtn");
-                this.generateIdeasBtn = document.getElementById("generateIdeasBtn");
-                this.analyzeDataBtn = document.getElementById("analyzeDataBtn");
-                this.createContentBtn = document.getElementById("createContentBtn");
-                this.explainConceptBtn = document.getElementById("explainConceptBtn");
-                this.solveProblemBtn = document.getElementById("solveProblemBtn");
+                cacheElements() {
+                    this.elements = {
+                        chatbox: document.getElementById("chatbox"),
+                        userInput: document.getElementById("userInput"),
+                        sendBtn: document.getElementById("sendBtn"),
+                        newConversationBtn: document.getElementById("newConversationBtn"),
+                        conversationList: document.getElementById("conversationList"),
+                        toggleThemeBtn: document.getElementById("toggleTheme"),
+                        exportHistoryBtn: document.getElementById("exportHistory"),
+                        importHistoryBtn: document.getElementById("importHistory"),
+                        importFileInput: document.getElementById("importFile"),
+                        settingsBtn: document.getElementById("settingsBtn"),
+                        modelSelector: document.getElementById("modelSelector"),
+                        temperatureSlider: document.getElementById("temperatureSlider"),
+                        temperatureValue: document.getElementById("temperatureValue"),
+                        maxTokensSlider: document.getElementById("maxTokensSlider"),
+                        maxTokensValue: document.getElementById("maxTokensValue"),
+                        tokenCount: document.getElementById("tokenCount"),
+                        systemPrompt: document.getElementById("systemPrompt"),
+                        apiKeyInput: document.getElementById("apiKeyInput"),
+                        mobileMenuBtn: document.getElementById("mobileMenuBtn"),
+                        currentModel: document.getElementById("currentModel"),
+                        tokenStatus: document.getElementById("tokenStatus"),
+                        sidebar: document.getElementById("sidebar")
+                    };
 
-                this.typingIndicator = document.createElement("div");
-                this.typingIndicator.className = "message bot typing";
-                this.typingIndicator.textContent = "ViBot está digitando...";
-
-                this.conversations = {};
-                this.currentConversationId = null;
-                this.totalTokens = 0;
-
-                this.loadTheme();
-                this.loadSettings();
-                this.loadConversations();
-
-                if (!this.currentConversationId || !this.conversations[this.currentConversationId]) {
-                    this.createNewConversation();
-                } else {
-                    this.renderConversationsList();
-                    this.renderCurrentConversation();
-                }
-
-                this.setupEventListeners();
-                this.userInput.focus();
-            },
-
-            setupEventListeners() {
-                this.sendBtn.onclick = () => this.sendMessage();
-                this.userInput.addEventListener("keydown", e => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        this.sendMessage();
-                    }
-                });
-                this.newConversationBtn.onclick = () => this.createNewConversation();
-                this.toggleThemeBtn.onclick = () => this.toggleTheme();
-                this.exportHistoryBtn.onclick = () => this.exportHistory();
-                this.importHistoryBtn.onclick = () => this.importFileInput.click();
-                this.importFileInput.onchange = e => this.importHistory(e);
-                this.settingsBtn.onclick = () => this.toggleSettings();
-                this.modelSelector.onchange = e => this.updateModel(this.getModelIdByName(e.target.value));
-                this.temperatureSlider.oninput = e => this.updateTemperature(e.target.value);
-                this.maxTokensSlider.oninput = e => this.updateMaxTokens(e.target.value);
-                this.systemPrompt.onchange = () => this.saveSettings();
-                this.apiKeyInput.onchange = () => {
-                    this.config.apiKey = this.apiKeyInput.value;
-                    this.saveSettings();
-                };
-
-                // Tool buttons event listeners
-                this.generateEmailBtn.onclick = () => this.generateEmail();
-                this.summarizeTextBtn.onclick = () => this.summarizeText();
-                this.translateTextBtn.onclick = () => this.translateText();
-                this.improveTextBtn.onclick = () => this.improveText();
-                this.generateCodeBtn.onclick = () => this.generateCode();
-                this.generateIdeasBtn.onclick = () => this.generateIdeas();
-                this.analyzeDataBtn.onclick = () => this.analyzeData();
-                this.createContentBtn.onclick = () => this.createContent();
-                this.explainConceptBtn.onclick = () => this.explainConcept();
-                this.solveProblemBtn.onclick = () => this.solveProblem();
-            },
-
-            loadTheme() {
-                const theme = localStorage.getItem("vibot_theme") || "light";
-                document.documentElement.setAttribute("data-theme", theme);
-            },
-
-            toggleTheme() {
-                const currentTheme = document.documentElement.getAttribute("data-theme");
-                const newTheme = currentTheme === "dark" ? "light" : "dark";
-                document.documentElement.setAttribute("data-theme", newTheme);
-                localStorage.setItem("vibot_theme", newTheme);
-            },
-
-            loadSettings() {
-                const settings = JSON.parse(localStorage.getItem("vibot_settings")) || {};
-                
-                if (settings.model) {
-                    this.config.model = settings.model;
-                    this.modelSelector.value = this.modelNames[settings.model] || this.modelNames["llama3-70b-8192"];
-                }
-                
-                if (settings.temperature) {
-                    this.config.temperature = parseFloat(settings.temperature);
-                    this.temperatureSlider.value = this.config.temperature;
-                    this.temperatureValue.textContent = this.config.temperature;
-                }
-                
-                if (settings.maxTokens) {
-                    this.config.maxTokens = parseInt(settings.maxTokens);
-                    this.maxTokensSlider.value = this.config.maxTokens;
-                    this.maxTokensValue.textContent = this.config.maxTokens;
-                }
-                
-                if (settings.systemPrompt) {
-                    this.config.systemPrompt = settings.systemPrompt;
-                    this.systemPrompt.value = this.config.systemPrompt;
-                }
-                
-                if (settings.apiKey) {
-                    this.config.apiKey = settings.apiKey;
-                    this.apiKeyInput.value = settings.apiKey;
-                }
-            },
-
-            saveSettings() {
-                const settings = {
-                    model: this.config.model,
-                    temperature: this.config.temperature,
-                    maxTokens: this.config.maxTokens,
-                    systemPrompt: this.systemPrompt.value,
-                    apiKey: this.apiKeyInput.value
-                };
-                
-                localStorage.setItem("vibot_settings", JSON.stringify(settings));
-                this.config.systemPrompt = this.systemPrompt.value;
-                this.config.apiKey = this.apiKeyInput.value;
-            },
-
-            updateModel(model) {
-                this.config.model = model;
-                this.saveSettings();
-            },
-
-            updateTemperature(value) {
-                this.config.temperature = parseFloat(value);
-                this.temperatureValue.textContent = value;
-                this.saveSettings();
-            },
-
-            updateMaxTokens(value) {
-                this.config.maxTokens = parseInt(value);
-                this.maxTokensValue.textContent = value;
-                this.saveSettings();
-            },
-
-            toggleSettings() {
-                this.settingsPanel.style.display = this.settingsPanel.style.display === "none" ? "block" : "none";
-            },
-
-            loadConversations() {
-                const saved = localStorage.getItem("vibot_conversations");
-                if (saved) {
-                    try {
-                        this.conversations = JSON.parse(saved);
-                        this.currentConversationId = localStorage.getItem("vibot_currentConversation");
-                    } catch {
-                        this.conversations = {};
-                    }
-                } else {
-                    this.conversations = {};
-                }
-            },
-
-            saveConversations() {
-                localStorage.setItem("vibot_conversations", JSON.stringify(this.conversations));
-                localStorage.setItem("vibot_currentConversation", this.currentConversationId);
-            },
-
-            createNewConversation() {
-                const id = "conv_" + Date.now();
-                this.conversations[id] = {
-                    id,
-                    title: "Nova Conversa",
-                    messages: [],
-                    createdAt: Date.now()
-                };
-                
-                this.currentConversationId = id;
-                this.saveConversations();
-                this.renderConversationsList();
-                this.renderCurrentConversation();
-                this.userInput.focus();
-            },
-
-            renderConversationsList() {
-                this.conversationList.innerHTML = "";
-                
-                Object.values(this.conversations)
-                    .sort((a, b) => b.createdAt - a.createdAt)
-                    .forEach(conversation => {
-                        const btn = document.createElement("button");
-                        btn.className = `conversation-btn ${conversation.id === this.currentConversationId ? "active" : ""}`;
-                        btn.textContent = conversation.title;
-                        btn.onclick = () => this.switchConversation(conversation.id);
-                        
-                        const actionsDiv = document.createElement("div");
-                        actionsDiv.className = "conversation-actions";
-                        
-                        const deleteBtn = document.createElement("button");
-                        deleteBtn.className = "action-btn";
-                        deleteBtn.innerHTML = "🗑️";
-                        deleteBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            this.deleteConversation(conversation.id);
-                        };
-                        
-                        actionsDiv.appendChild(deleteBtn);
-                        btn.appendChild(actionsDiv);
-                        this.conversationList.appendChild(btn);
-                    });
-            },
-
-            switchConversation(id) {
-                this.currentConversationId = id;
-                this.saveConversations();
-                this.renderConversationsList();
-                this.renderCurrentConversation();
-            },
-
-            deleteConversation(id) {
-                if (Object.keys(this.conversations).length <= 1) {
-                    this.createNewConversation();
-                }
-                
-                delete this.conversations[id];
-                this.saveConversations();
-                
-                if (id === this.currentConversationId) {
-                    const firstId = Object.keys(this.conversations)[0];
-                    this.switchConversation(firstId);
-                } else {
-                    this.renderConversationsList();
-                }
-            },
-
-            renderCurrentConversation() {
-                this.chatbox.innerHTML = "";
-                
-                if (!this.currentConversationId || !this.conversations[this.currentConversationId]) {
-                    this.createNewConversation();
-                    return;
-                }
-                
-                const conversation = this.conversations[this.currentConversationId];
-                
-                if (conversation.messages.length === 0) {
-                    this.addMessage("bot", "Olá! Sou o ViBot, seu assistente de IA. Como posso te ajudar hoje?");
-                } else {
-                    conversation.messages.forEach(msg => {
-                        this.addMessageToChatbox(msg.role, msg.content, msg.type);
-                    });
-                }
-                
-                this.chatbox.scrollTop = this.chatbox.scrollHeight;
-            },
-
-            async sendMessage() {
-                const message = this.userInput.value.trim();
-                if (!message) return;
-                
-                if (!this.config.apiKey) {
-                    this.addMessage("bot", "Por favor, configure sua chave da API nas configurações para usar o ViBot.", "error");
-                    return;
-                }
-                
-                const conversation = this.conversations[this.currentConversationId];
-                
-                this.addMessage("user", message);
-                this.userInput.value = "";
-                
-                this.chatbox.appendChild(this.typingIndicator);
-                this.chatbox.scrollTop = this.chatbox.scrollHeight;
-                
-                try {
-                    const messages = [
-                        { role: "system", content: this.config.systemPrompt },
-                        ...conversation.messages.map(msg => ({
-                            role: msg.role,
-                            content: this.getTextContent(msg.content)
-                        }))
+                    // Tool buttons
+                    this.tools = [
+                        'generateEmailBtn', 'summarizeTextBtn', 'translateTextBtn', 
+                        'improveTextBtn', 'generateCodeBtn', 'generateIdeasBtn', 
+                        'analyzeDataBtn', 'createContentBtn', 'explainConceptBtn', 
+                        'solveProblemBtn'
                     ];
                     
-                    const response = await fetch(this.config.apiUrl, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${this.config.apiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: this.config.model,
-                            messages,
-                            temperature: this.config.temperature,
-                            max_tokens: this.config.maxTokens
-                        })
+                    this.tools.forEach(tool => {
+                        this.elements[tool] = document.getElementById(tool);
                     });
+
+                    this.typingIndicator = document.createElement("div");
+                    this.typingIndicator.className = "message bot typing";
+                    this.typingIndicator.textContent = "ViBot está digitando...";
+                },
+
+                setupEventListeners() {
+                    // Core functionality
+                    this.elements.sendBtn.addEventListener('click', () => this.sendMessage());
+                    this.elements.userInput.addEventListener('keydown', e => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            this.sendMessage();
+                        }
+                    });
+                    this.elements.newConversationBtn.addEventListener('click', () => this.createNewConversation());
+                    this.elements.toggleThemeBtn.addEventListener('click', () => this.toggleTheme());
+                    this.elements.exportHistoryBtn.addEventListener('click', () => this.exportHistory());
+                    this.elements.importHistoryBtn.addEventListener('click', () => this.elements.importFileInput.click());
+                    this.elements.importFileInput.addEventListener('change', e => this.importHistory(e));
+                    this.elements.settingsBtn.addEventListener('click', () => this.toggleSettings());
+                    this.elements.modelSelector.addEventListener('change', e => this.updateModel(e.target.value));
+                    this.elements.temperatureSlider.addEventListener('input', e => this.updateTemperature(e.target.value));
+                    this.elements.maxTokensSlider.addEventListener('input', e => this.updateMaxTokens(e.target.value));
+                    this.elements.systemPrompt.addEventListener('change', () => this.saveSettings());
+                    this.elements.apiKeyInput.addEventListener('change', () => {
+                        this.config.apiKey = this.elements.apiKeyInput.value;
+                        this.saveSettings();
+                    });
+                    this.elements.mobileMenuBtn.addEventListener('click', () => {
+                        this.elements.sidebar.classList.toggle('active');
+                    });
+
+                    // Tool buttons
+                    this.tools.forEach(tool => {
+                        this.elements[tool].addEventListener('click', () => this.handleToolClick(tool));
+                    });
+                },
+
+                setupInitialState() {
+                    this.conversations = {};
+                    this.currentConversationId = null;
+                    this.totalTokens = 0;
+
+                    this.loadTheme();
+                    this.loadSettings();
+                    this.loadConversations();
+
+                    if (!this.currentConversationId || !this.conversations[this.currentConversationId]) {
+                        this.createNewConversation();
+                    } else {
+                        this.renderConversationsList();
+                        this.renderCurrentConversation();
+                    }
+                },
+
+                updateUI() {
+                    this.elements.currentModel.textContent = this.modelNames[this.config.model] || "ViBot Pro";
+                    this.elements.tokenStatus.textContent = this.totalTokens;
+                },
+
+                // Core functionality methods (loadTheme, toggleTheme, etc.)
+                loadTheme() {
+                    const theme = localStorage.getItem("vibot_theme") || "light";
+                    document.documentElement.setAttribute("data-theme", theme);
+                },
+
+                toggleTheme() {
+                    const currentTheme = document.documentElement.getAttribute("data-theme");
+                    const newTheme = currentTheme === "dark" ? "light" : "dark";
+                    document.documentElement.setAttribute("data-theme", newTheme);
+                    localStorage.setItem("vibot_theme", newTheme);
+                },
+
+                loadSettings() {
+                    const settings = JSON.parse(localStorage.getItem("vibot_settings")) || {};
                     
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error?.message || `Erro na API: ${response.status}`);
+                    if (settings.model) {
+                        this.config.model = settings.model;
+                        this.elements.modelSelector.value = settings.model;
                     }
                     
-                    const data = await response.json();
-                    const botMessage = data.choices[0].message.content;
+                    if (settings.temperature) {
+                        this.config.temperature = parseFloat(settings.temperature);
+                        this.elements.temperatureSlider.value = this.config.temperature;
+                        this.elements.temperatureValue.textContent = this.config.temperature;
+                    }
                     
-                    this.typingIndicator.remove();
-                    this.addMessage("bot", botMessage);
+                    if (settings.maxTokens) {
+                        this.config.maxTokens = parseInt(settings.maxTokens);
+                        this.elements.maxTokensSlider.value = this.config.maxTokens;
+                        this.elements.maxTokensValue.textContent = this.config.maxTokens;
+                    }
                     
-                    this.totalTokens += data.usage?.total_tokens || 0;
-                    this.tokenCount.textContent = `Tokens usados: ${this.totalTokens}`;
-                } catch (error) {
-                    this.typingIndicator.remove();
-                    this.addMessage("bot", `Desculpe, ocorreu um erro: ${error.message}`, "error");
-                    console.error("Erro ao enviar mensagem:", error);
-                }
-            },
+                    if (settings.systemPrompt) {
+                        this.config.systemPrompt = settings.systemPrompt;
+                        this.elements.systemPrompt.value = this.config.systemPrompt;
+                    }
+                    
+                    if (settings.apiKey) {
+                        this.config.apiKey = settings.apiKey;
+                        this.elements.apiKeyInput.value = settings.apiKey;
+                    }
+                },
 
-            addMessage(role, content, type = null) {
-                const conversation = this.conversations[this.currentConversationId];
-                const message = { role, content, type, timestamp: Date.now() };
-                
-                conversation.messages.push(message);
-                
-                if (role === "user" && conversation.messages.length === 1) {
-                    conversation.title = content.length > 30 ? content.substring(0, 30) + "..." : content;
-                }
-                
-                this.saveConversations();
-                this.renderConversationsList();
-                this.addMessageToChatbox(role, content, type);
-                this.chatbox.scrollTop = this.chatbox.scrollHeight;
-            },
-
-            addMessageToChatbox(role, content, type = null) {
-                const messageDiv = document.createElement("div");
-                messageDiv.className = `message ${role}`;
-                if (type) messageDiv.classList.add(type);
-                messageDiv.innerHTML = content;
-                
-                const actionsDiv = document.createElement("div");
-                actionsDiv.className = "message-actions";
-                
-                const copyBtn = document.createElement("button");
-                copyBtn.className = "action-btn";
-                copyBtn.innerHTML = "📋 Copiar";
-                copyBtn.onclick = () => {
-                    navigator.clipboard.writeText(this.getTextContent(content));
-                    copyBtn.innerHTML = "✓ Copiado!";
-                    setTimeout(() => {
-                        copyBtn.innerHTML = "📋 Copiar";
-                    }, 2000);
-                };
-                actionsDiv.appendChild(copyBtn);
-                
-                messageDiv.appendChild(actionsDiv);
-                this.chatbox.appendChild(messageDiv);
-            },
-
-            getTextContent(html) {
-                const temp = document.createElement('div');
-                temp.innerHTML = html;
-                return temp.textContent || temp.innerText || '';
-            },
-
-            exportHistory() {
-                const data = {
-                    conversations: this.conversations,
-                    currentConversationId: this.currentConversationId,
-                    settings: {
+                saveSettings() {
+                    const settings = {
                         model: this.config.model,
                         temperature: this.config.temperature,
                         maxTokens: this.config.maxTokens,
-                        systemPrompt: this.config.systemPrompt,
-                        apiKey: "" // Don't export API key for security
-                    }
-                };
-                
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-                const url = URL.createObjectURL(blob);
-                
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `vibot-history-${new Date().toISOString().slice(0, 10)}.json`;
-                a.click();
-                
-                setTimeout(() => {
-                    URL.revokeObjectURL(url);
-                }, 100);
-            },
+                        systemPrompt: this.elements.systemPrompt.value,
+                        apiKey: this.elements.apiKeyInput.value
+                    };
+                    
+                    localStorage.setItem("vibot_settings", JSON.stringify(settings));
+                    this.config.systemPrompt = this.elements.systemPrompt.value;
+                    this.config.apiKey = this.elements.apiKeyInput.value;
+                },
 
-            importHistory(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
+                updateModel(model) {
+                    this.config.model = model;
+                    this.saveSettings();
+                    this.updateUI();
+                },
+
+                updateTemperature(value) {
+                    this.config.temperature = parseFloat(value);
+                    this.elements.temperatureValue.textContent = value;
+                    this.saveSettings();
+                },
+
+                updateMaxTokens(value) {
+                    this.config.maxTokens = parseInt(value);
+                    this.elements.maxTokensValue.textContent = value;
+                    this.saveSettings();
+                },
+
+                toggleSettings() {
+                    const isVisible = this.elements.settingsPanel.style.display !== "none";
+                    this.elements.settingsPanel.style.display = isVisible ? "none" : "block";
+                },
+
+                loadConversations() {
+                    const saved = localStorage.getItem("vibot_conversations");
+                    if (saved) {
+                        try {
+                            this.conversations = JSON.parse(saved);
+                            this.currentConversationId = localStorage.getItem("vibot_currentConversation");
+                        } catch {
+                            this.conversations = {};
+                        }
+                    } else {
+                        this.conversations = {};
+                    }
+                },
+
+                saveConversations() {
+                    localStorage.setItem("vibot_conversations", JSON.stringify(this.conversations));
+                    localStorage.setItem("vibot_currentConversation", this.currentConversationId);
+                },
+
+                createNewConversation() {
+                    const id = "conv_" + Date.now();
+                    this.conversations[id] = {
+                        id,
+                        title: "Nova Conversa",
+                        messages: [],
+                        createdAt: Date.now()
+                    };
+                    
+                    this.currentConversationId = id;
+                    this.saveConversations();
+                    this.renderConversationsList();
+                    this.renderCurrentConversation();
+                    this.elements.userInput.focus();
+                },
+
+                renderConversationsList() {
+                    this.elements.conversationList.innerHTML = "";
+                    
+                    Object.values(this.conversations)
+                        .sort((a, b) => b.createdAt - a.createdAt)
+                        .forEach(conversation => {
+                            const btn = document.createElement("button");
+                            btn.className = `conversation-btn ${conversation.id === this.currentConversationId ? "active" : ""}`;
+                            btn.innerHTML = `
+                                <span class="conversation-icon">💬</span>
+                                <span>${conversation.title}</span>
+                                <div class="conversation-actions">
+                                    <button class="action-btn">🗑️</button>
+                                </div>
+                            `;
+                            
+                            btn.onclick = () => this.switchConversation(conversation.id);
+                            this.elements.conversationList.appendChild(btn);
+                        });
+                },
+
+                switchConversation(id) {
+                    this.currentConversationId = id;
+                    this.saveConversations();
+                    this.renderConversationsList();
+                    this.renderCurrentConversation();
+                },
+
+                renderCurrentConversation() {
+                    this.elements.chatbox.innerHTML = "";
+                    
+                    if (!this.currentConversationId || !this.conversations[this.currentConversationId]) {
+                        this.createNewConversation();
+                        return;
+                    }
+                    
+                    const conversation = this.conversations[this.currentConversationId];
+                    
+                    if (conversation.messages.length === 0) {
+                        this.addMessage("bot", "Olá! Sou o ViBot, seu assistente de IA. Como posso te ajudar hoje?");
+                    } else {
+                        conversation.messages.forEach(msg => {
+                            this.addMessageToChatbox(msg.role, msg.content);
+                        });
+                    }
+                    
+                    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
+                },
+
+                async sendMessage() {
+                    const message = this.elements.userInput.value.trim();
+                    if (!message) return;
+                    
+                    if (!this.config.apiKey) {
+                        this.addMessage("bot", "⚠️ Por favor, configure sua chave da API nas configurações para usar o ViBot.", "error");
+                        return;
+                    }
+                    
+                    const conversation = this.conversations[this.currentConversationId];
+                    
+                    this.addMessage("user", message);
+                    this.elements.userInput.value = "";
+                    
+                    this.elements.chatbox.appendChild(this.typingIndicator);
+                    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
+                    
                     try {
-                        const data = JSON.parse(e.target.result);
+                        const messages = [
+                            { role: "system", content: this.config.systemPrompt },
+                            ...conversation.messages.map(msg => ({
+                                role: msg.role,
+                                content: this.getTextContent(msg.content)
+                            }))
+                        ];
                         
-                        if (data.conversations) {
-                            this.conversations = data.conversations;
+                        const response = await fetch(this.config.apiUrl, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${this.config.apiKey}`
+                            },
+                            body: JSON.stringify({
+                                model: this.config.model,
+                                messages,
+                                temperature: this.config.temperature,
+                                max_tokens: this.config.maxTokens
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`Erro na API: ${response.status}`);
                         }
                         
-                        if (data.currentConversationId) {
-                            this.currentConversationId = data.currentConversationId;
-                        }
+                        const data = await response.json();
+                        const botMessage = data.choices[0].message.content;
                         
-                        if (data.settings) {
-                            if (data.settings.model) {
-                                this.config.model = data.settings.model;
-                                this.modelSelector.value = this.modelNames[data.settings.model] || this.modelNames["llama3-70b-8192"];
-                            }
-                            
-                            if (data.settings.temperature) {
-                                this.config.temperature = data.settings.temperature;
-                                this.temperatureSlider.value = data.settings.temperature;
-                                this.temperatureValue.textContent = data.settings.temperature;
-                            }
-                            
-                            if (data.settings.maxTokens) {
-                                this.config.maxTokens = data.settings.maxTokens;
-                                this.maxTokensSlider.value = data.settings.maxTokens;
-                                this.maxTokensValue.textContent = data.settings.maxTokens;
-                            }
-                            
-                            if (data.settings.systemPrompt) {
-                                this.config.systemPrompt = data.settings.systemPrompt;
-                                this.systemPrompt.value = data.settings.systemPrompt;
-                            }
-                            
-                            this.saveSettings();
-                        }
+                        this.typingIndicator.remove();
+                        this.addMessage("bot", botMessage);
                         
-                        this.saveConversations();
-                        this.renderConversationsList();
-                        this.renderCurrentConversation();
-                        
-                        this.addMessage("bot", "Histórico importado com sucesso!");
+                        this.totalTokens += data.usage?.total_tokens || 0;
+                        this.elements.tokenCount.textContent = `Tokens usados: ${this.totalTokens}`;
+                        this.elements.tokenStatus.textContent = this.totalTokens;
                     } catch (error) {
-                        this.addMessage("bot", "Erro ao importar histórico. O arquivo pode estar corrompido.", "error");
-                        console.error("Erro ao importar histórico:", error);
+                        this.typingIndicator.remove();
+                        this.addMessage("bot", `⚠️ Desculpe, ocorreu um erro: ${error.message}`, "error");
+                        console.error("Erro ao enviar mensagem:", error);
                     }
-                };
-                reader.readAsText(file);
-            },
-            
-            // Original 5 tools
-            generateEmail() {
-                const prompt = `Por favor, gere um e-mail profissional com base nas seguintes informações:
-                
-                - Assunto: 
-                - Destinatário: 
-                - Mensagem principal: 
-                - Tom (formal, informal, etc.): 
-                
-                Por favor, peça ao usuário para fornecer esses detalhes antes de gerar o e-mail.`;
-                
-                this.addMessage("user", "Quero gerar um e-mail profissional");
-                this.sendToolMessage(prompt);
-            },
-            
-            summarizeText() {
-                const prompt = `Por favor, resuma o seguinte texto mantendo os pontos principais. 
-                O resumo deve ser conciso e claro. Aguardo o texto que você deseja resumir:`;
-                
-                this.addMessage("user", "Quero resumir um texto");
-                this.sendToolMessage(prompt);
-            },
-            
-            translateText() {
-                const prompt = `Por favor, traduza o seguinte texto. 
-                Informe o idioma de origem e o idioma de destino, seguido pelo texto a ser traduzido:`;
-                
-                this.addMessage("user", "Quero traduzir um texto");
-                this.sendToolMessage(prompt);
-            },
-            
-            improveText() {
-                const prompt = `Por favor, revise e melhore o seguinte texto, tornando-o mais claro, conciso e profissional. 
-                Aguardo o texto que você deseja melhorar:`;
-                
-                this.addMessage("user", "Quero melhorar um texto");
-                this.sendToolMessage(prompt);
-            },
-            
-                        generateCode() {
-                const prompt = `Por favor, gere código com base nas seguintes especificações:
-                
-                - Linguagem de programação: 
-                - Funcionalidade desejada: 
-                - Requisitos específicos: 
-                
-                Por favor, peça ao usuário para fornecer esses detalhes antes de gerar o código.`;
-                
-                this.addMessage("user", "Quero gerar código");
-                this.sendToolMessage(prompt);
-            },
-            
-            // New 5 tools
-            generateIdeas() {
-                const prompt = `Por favor, gere ideias criativas com base no seguinte contexto/tema. 
-                Forneça uma lista diversificada de sugestões inovadoras:`;
-                
-                this.addMessage("user", "Quero gerar ideias criativas");
-                this.sendToolMessage(prompt);
-            },
-            
-            analyzeData() {
-                const prompt = `Por favor, analise os seguintes dados e forneça insights relevantes: 
-                
-                - Dados: 
-                - Objetivo da análise: 
-                - Formato desejado (tabela, gráfico, resumo, etc.): 
-                
-                Aguardo os dados para análise.`;
-                
-                this.addMessage("user", "Quero analisar dados");
-                this.sendToolMessage(prompt);
-            },
-            
-            createContent() {
-                const prompt = `Por favor, crie conteúdo com base nestes requisitos:
-                
-                - Tipo de conteúdo (post de blog, roteiro, artigo, etc.): 
-                - Tema principal: 
-                - Tom e estilo: 
-                - Comprimento aproximado: 
-                
-                Informe os detalhes para criação.`;
-                
-                this.addMessage("user", "Quero criar conteúdo");
-                this.sendToolMessage(prompt);
-            },
-            
-            explainConcept() {
-                const prompt = `Por favor, explique o seguinte conceito de forma clara e didática:
-                
-                - Conceito: 
-                - Nível de complexidade (iniciante, intermediário, avançado): 
-                - Exemplos práticos (sim/não): 
-                
-                Aguardo o conceito que deseja explicar.`;
-                
-                this.addMessage("user", "Quero entender um conceito");
-                this.sendToolMessage(prompt);
-            },
-            
-            solveProblem() {
-                const prompt = `Por favor, ajude a solucionar o seguinte problema:
-                
-                - Descrição detalhada do problema: 
-                - Contexto e ambiente: 
-                - Tentativas anteriores de solução: 
-                
-                Descreva o problema para que eu possa ajudar.`;
-                
-                this.addMessage("user", "Preciso resolver um problema");
-                this.sendToolMessage(prompt);
-            },
-            
-            sendToolMessage(prompt) {
-                if (!this.config.apiKey) {
-                    this.addMessage("bot", "Configure sua chave API primeiro nas configurações", "error");
-                    return;
-                }
-                
-                this.userInput.value = prompt;
-                this.sendMessage();
-            }
-        };
+                },
 
-        // Initialize ViBot when page loads
-        document.addEventListener("DOMContentLoaded", () => {
+                addMessage(role, content, type = null) {
+                    const conversation = this.conversations[this.currentConversationId];
+                    const message = { role, content, type, timestamp: Date.now() };
+                    
+                    conversation.messages.push(message);
+                    
+                    if (role === "user" && conversation.messages.length === 1) {
+                        conversation.title = content.length > 30 ? content.substring(0, 30) + "..." : content;
+                    }
+                    
+                    this.saveConversations();
+                    this.renderConversationsList();
+                    this.addMessageToChatbox(role, content, type);
+                    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
+                },
+
+                addMessageToChatbox(role, content, type = null) {
+                    const messageDiv = document.createElement("div");
+                    messageDiv.className = `message ${role}`;
+                    if (type) messageDiv.classList.add(type);
+                    messageDiv.innerHTML = content;
+                    
+                    const actionsDiv = document.createElement("div");
+                    actionsDiv.className = "message-actions";
+                    
+                    const copyBtn = document.createElement("button");
+                    copyBtn.className = "action-btn";
+                    copyBtn.innerHTML = "📋 Copiar";
+                    copyBtn.onclick = () => {
+                        navigator.clipboard.writeText(this.getTextContent(content));
+                        copyBtn.innerHTML = "✓ Copiado!";
+                        setTimeout(() => {
+                            copyBtn.innerHTML = "📋 Copiar";
+                        }, 2000);
+                    };
+                    actionsDiv.appendChild(copyBtn);
+                    
+                    messageDiv.appendChild(actionsDiv);
+                    this.elements.chatbox.appendChild(messageDiv);
+                },
+
+                getTextContent(html) {
+                    const temp = document.createElement('div');
+                    temp.innerHTML = html;
+                    return temp.textContent || temp.innerText || '';
+                },
+
+                exportHistory() {
+                    const data = {
+                        conversations: this.conversations,
+                        currentConversationId: this.currentConversationId,
+                        settings: {
+                            model: this.config.model,
+                            temperature: this.config.temperature,
+                            maxTokens: this.config.maxTokens,
+                            systemPrompt: this.config.systemPrompt
+                        }
+                    };
+                    
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `vibot-history-${new Date().toISOString().slice(0, 10)}.json`;
+                    a.click();
+                    
+                    setTimeout(() => {
+                        URL.revokeObjectURL(url);
+                    }, 100);
+                },
+
+                importHistory(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            
+                            if (data.conversations) {
+                                this.conversations = data.conversations;
+                            }
+                            
+                            if (data.currentConversationId) {
+                                this.currentConversationId = data.currentConversationId;
+                            }
+                            
+                            if (data.settings) {
+                                if (data.settings.model) {
+                                    this.config.model = data.settings.model;
+                                    this.elements.modelSelector.value = data.settings.model;
+                                }
+                                
+                                if (data.settings.temperature) {
+                                    this.config.temperature = data.settings.temperature;
+                                    this.elements.temperatureSlider.value = data.settings.temperature;
+                                    this.elements.temperatureValue.textContent = data.settings.temperature;
+                                }
+                                
+                                if (data.settings.maxTokens) {
+                                    this.config.maxTokens = data.settings.maxTokens;
+                                    this.elements.maxTokensSlider.value = data.settings.maxTokens;
+                                    this.elements.maxTokensValue.textContent = data.settings.maxTokens;
+                                }
+                                
+                                if (data.settings.systemPrompt) {
+                                    this.config.systemPrompt = data.settings.systemPrompt;
+                                    this.elements.systemPrompt.value = data.settings.systemPrompt;
+                                }
+                                
+                                this.saveSettings();
+                            }
+                            
+                            this.saveConversations();
+                            this.renderConversationsList();
+                            this.renderCurrentConversation();
+                            
+                            this.addMessage("bot", "✅ Histórico importado com sucesso!");
+                        } catch (error) {
+                            this.addMessage("bot", "⚠️ Erro ao importar histórico. O arquivo pode estar corrompido.", "error");
+                            console.error("Erro ao importar histórico:", error);
+                        }
+                    };
+                    reader.readAsText(file);
+                },
+                
+                // Tool handling
+                handleToolClick(toolId) {
+                    const toolPrompts = {
+                        generateEmailBtn: `Por favor, gere um e-mail profissional com base nas informações que eu fornecer.`,
+                        summarizeTextBtn: `Por favor, resuma o seguinte texto mantendo os pontos principais.`,
+                        translateTextBtn: `Por favor, traduza o seguinte texto para o idioma que eu especificar.`,
+                        improveTextBtn: `Por favor, revise e melhore o seguinte texto, tornando-o mais claro e profissional.`,
+                        generateCodeBtn: `Por favor, gere código com base nas especificações que eu fornecer.`,
+                        generateIdeasBtn: `Por favor, gere ideias criativas com base no tema que eu fornecer.`,
+                        analyzeDataBtn: `Por favor, analise os dados que eu fornecer e extraia insights relevantes.`,
+                        createContentBtn: `Por favor, crie conteúdo de qualidade com base no tópico que eu fornecer.`,
+                        explainConceptBtn: `Por favor, explique este conceito de forma clara e didática.`,
+                        solveProblemBtn: `Por favor, me ajude a solucionar este problema com uma abordagem passo a passo.`
+                    };
+                    
+                    const toolName = toolId.replace('Btn', '').replace(/([A-Z])/g, ' $1').trim();
+                    this.addMessage("user", `Quero usar a ferramenta: ${toolName}`);
+                    this.sendToolMessage(toolPrompts[toolId]);
+                },
+                
+                async sendToolMessage(prompt) {
+                    if (!this.config.apiKey) {
+                        this.addMessage("bot", "⚠️ Por favor, configure sua chave da API nas configurações para usar as ferramentas.", "error");
+                        return;
+                    }
+                    
+                    const conversation = this.conversations[this.currentConversationId];
+                    
+                    this.elements.chatbox.appendChild(this.typingIndicator);
+                    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
+                    
+                    try {
+                        const messages = [
+                            { role: "system", content: this.config.systemPrompt },
+                            ...conversation.messages.map(msg => ({
+                                role: msg.role,
+                                content: this.getTextContent(msg.content)
+                            })),
+                            { role: "user", content: prompt }
+                        ];
+                        
+                        const response = await fetch(this.config.apiUrl, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${this.config.apiKey}`
+                            },
+                            body: JSON.stringify({
+                                model: this.config.model,
+                                messages,
+                                temperature: this.config.temperature,
+                                max_tokens: this.config.maxTokens
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`Erro na API: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        const botMessage = data.choices[0].message.content;
+                        
+                        this.typingIndicator.remove();
+                        this.addMessage("bot", botMessage);
+                        
+                        this.totalTokens += data.usage?.total_tokens || 0;
+                        this.elements.tokenCount.textContent = `Tokens usados: ${this.totalTokens}`;
+                        this.elements.tokenStatus.textContent = this.totalTokens;
+                    } catch (error) {
+                        this.typingIndicator.remove();
+                        this.addMessage("bot", `⚠️ Desculpe, ocorreu um erro: ${error.message}`, "error");
+                        console.error("Erro ao usar ferramenta:", error);
+                    }
+                }
+            };
+
             ViBot.init();
         });
     </script>
