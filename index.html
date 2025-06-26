@@ -356,38 +356,6 @@
         .conversation-delete:hover {
             background: rgba(239, 68, 68, 0.1);
         }
-        .toolbar {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            padding: 12px;
-            background: var(--toolbar-bg);
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-        .toolbar::-webkit-scrollbar {
-            display: none;
-        }
-        .toolbar-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            min-width: 120px;
-            height: 80px;
-        }
-        .toolbar-icon {
-            font-size: 20px;
-        }
         .settings-panel {
             padding: 20px;
             background: var(--bot-bg);
@@ -620,9 +588,6 @@
             gap: 8px;
         }
         @media (min-width: 768px) {
-            .toolbar {
-                grid-template-columns: repeat(5, 1fr);
-            }
             .features {
                 grid-template-columns: repeat(4, 1fr);
             }
@@ -1122,49 +1087,6 @@
         </div>
 
         <div id="chat-container">
-            <div class="toolbar">
-                <button class="toolbar-btn" id="toolbarGenerateEmailBtn">
-                    <i class="fas fa-envelope toolbar-icon"></i>
-                    <span>E-mail</span>
-                </button>
-                <button class="toolbar-btn" id="toolbarSummarizeTextBtn">
-                    <i class="fas fa-file-alt toolbar-icon"></i>
-                    <span>Resumir</span>
-                </button>
-                <button class="toolbar-btn" id="toolbarTranslateTextBtn">
-                    <i class="fas fa-globe toolbar-icon"></i>
-                    <span>Traduzir</span>
-                </button>
-                <button class="toolbar-btn" id="toolbarImproveTextBtn">
-                    <i class="fas fa-edit toolbar-icon"></i>
-                    <span>Melhorar</span>
-                </button>
-                <button class="toolbar-btn" id="toolbarGenerateCodeBtn">
-                    <i class="fas fa-code toolbar-icon"></i>
-                    <span>Código</span>
-                </button>
-                <button class="toolbar-btn" id="toolbarGenerateIdeasBtn">
-                    <i class="fas fa-lightbulb toolbar-icon"></i>
-                    <span>Ideias</span>
-                </button>
-                <button class="toolbar-btn" id="toolbarAnalyzeDataBtn">
-                    <i class="fas fa-chart-bar toolbar-icon"></i>
-                    <span>Analisar</span>
-                </button>
-                <button class="toolbar-btn" id="toolbarCreateContentBtn">
-                    <i class="fas fa-pencil-alt toolbar-icon"></i>
-                    <span>Conteúdo</span>
-                </button>
-                <button class="toolbar-btn" id="toolbarExplainConceptBtn">
-                    <i class="fas fa-book toolbar-icon"></i>
-                    <span>Explicar</span>
-                </button>
-                <button class="toolbar-btn" id="toolbarSolveProblemBtn">
-                    <i class="fas fa-search toolbar-icon"></i>
-                    <span>Solucionar</span>
-                </button>
-            </div>
-            
             <div id="chatbox">
                 <div class="welcome-message">
                     <div class="welcome-title">Bem-vindo ao ViBot Plus!</div>
@@ -1353,19 +1275,8 @@
                         'generateProductivityBtn'
                     ];
                     
-                    // Toolbar buttons (10 tools)
-                    this.toolbarTools = [
-                        'toolbarGenerateEmailBtn', 'toolbarSummarizeTextBtn', 'toolbarTranslateTextBtn',
-                        'toolbarImproveTextBtn', 'toolbarGenerateCodeBtn', 'toolbarGenerateIdeasBtn',
-                        'toolbarAnalyzeDataBtn', 'toolbarCreateContentBtn', 'toolbarExplainConceptBtn',
-                        'toolbarSolveProblemBtn'
-                    ];
-                    
-                    // Combine all buttons
-                    this.allButtons = [...this.tools, ...this.toolbarTools];
-                    
                     // Cache all buttons
-                    this.allButtons.forEach(button => {
+                    this.tools.forEach(button => {
                         this.elements[button] = document.getElementById(button);
                     });
 
@@ -1410,15 +1321,6 @@
                         if (this.elements[tool]) {
                             this.elements[tool].addEventListener('click', () => this.handleToolClick(tool));
                         }
-                    });
-                    
-                    // Toolbar buttons (10 tools)
-                    this.toolbarTools.forEach(tool => {
-                        this.elements[tool].addEventListener('click', () => {
-                            // Map toolbar buttons to their corresponding main tools
-                            const mainTool = tool.replace('toolbar', '').replace(/^./, str => str.toLowerCase());
-                            this.handleToolClick(mainTool);
-                        });
                     });
                 },
 
