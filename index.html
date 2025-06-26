@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ViBot Plus </title>
+    <title>ViBot Ultra</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -20,6 +20,18 @@
             --mobile-header-height: 60px;
             --mobile-footer-height: 70px;
             --danger: #ef4444;
+            
+            /* Cores das categorias */
+            --produtividade: #3b82f6;
+            --criatividade: #8b5cf6;
+            --vida-diaria: #10b981;
+            --educacao: #f59e0b;
+            --negocios: #ec4899;
+            --tecnologia: #6366f1;
+            --entretenimento: #ef4444;
+            --especializadas: #14b8a6;
+            --social: #f97316;
+            --diversos: #64748b;
         }
         [data-theme="dark"] {
             --primary: #6366f1;
@@ -363,13 +375,55 @@
             margin: 20px;
         }
         .tools-panel {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            display: flex;
+            flex-direction: column;
             gap: 10px;
             padding: 10px;
         }
+        
+        /* Novo estilo para categorias */
+        .category-container {
+            margin-bottom: 15px;
+        }
+        
+        .category-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .category-btn i {
+            transition: transform 0.3s;
+        }
+        
+        .category-btn.expanded i {
+            transform: rotate(90deg);
+        }
+        
+        .category-tools {
+            display: none;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        
+        .category-tools.active {
+            display: grid;
+        }
+        
         .tools-panel-btn {
-            background: var(--primary);
+            background: var(--tool-color);
             color: white;
             border: none;
             border-radius: 12px;
@@ -382,10 +436,49 @@
             justify-content: center;
             gap: 6px;
             height: 100px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
+        
+        .tools-panel-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
         .tools-panel-icon {
             font-size: 24px;
         }
+        
+        /* Cores específicas para cada categoria */
+        .produtividade-btn { background-color: var(--produtividade); }
+        .produtividade-tool { --tool-color: var(--produtividade); }
+        
+        .criatividade-btn { background-color: var(--criatividade); }
+        .criatividade-tool { --tool-color: var(--criatividade); }
+        
+        .vida-diaria-btn { background-color: var(--vida-diaria); }
+        .vida-diaria-tool { --tool-color: var(--vida-diaria); }
+        
+        .educacao-btn { background-color: var(--educacao); }
+        .educacao-tool { --tool-color: var(--educacao); }
+        
+        .negocios-btn { background-color: var(--negocios); }
+        .negocios-tool { --tool-color: var(--negocios); }
+        
+        .tecnologia-btn { background-color: var(--tecnologia); }
+        .tecnologia-tool { --tool-color: var(--tecnologia); }
+        
+        .entretenimento-btn { background-color: var(--entretenimento); }
+        .entretenimento-tool { --tool-color: var(--entretenimento); }
+        
+        .especializadas-btn { background-color: var(--especializadas); }
+        .especializadas-tool { --tool-color: var(--especializadas); }
+        
+        .social-btn { background-color: var(--social); }
+        .social-tool { --tool-color: var(--social); }
+        
+        .diversos-btn { background-color: var(--diversos); }
+        .diversos-tool { --tool-color: var(--diversos); }
+
         .chess-board {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
@@ -587,24 +680,24 @@
             justify-content: center;
             gap: 8px;
         }
-        .tool-category {
-            background: var(--bot-bg);
-            color: var(--text);
-            padding: 10px;
-            margin: 15px 0 5px;
-            border-radius: 8px;
-            font-weight: bold;
-            text-align: center;
-        }
-        [data-theme="dark"] .tool-category {
-            background: #2d3748;
+        .download-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         @media (min-width: 768px) {
             .features {
                 grid-template-columns: repeat(4, 1fr);
             }
-            .tools-panel {
-                grid-template-columns: repeat(4, 1fr);
+            .category-tools {
+                grid-template-columns: repeat(3, 1fr);
             }
         }
     </style>
@@ -613,7 +706,7 @@
     <header>
         <div class="logo">
             <div class="logo-icon">V</div>
-            <h1>ViBot Plus</h1>
+            <h1>ViBot Ultra</h1>
         </div>
         <div class="header-controls">
             <button class="header-btn" id="toggleTheme">
@@ -667,9 +760,9 @@
                 <div class="slider-container">
                     <div class="slider-label">
                         <span>Tamanho da Resposta</span>
-                        <span class="slider-value" id="maxTokensValue">512</span>
+                        <span class="slider-value" id="maxTokensValue">16384</span>
                     </div>
-                    <input type="range" id="maxTokensSlider" min="128" max="1024" step="128" value="512" />
+                    <input type="range" id="maxTokensSlider" min="128" max="16384" step="128" value="16384" />
                 </div>
             </div>
         </div>
@@ -677,842 +770,512 @@
         <div id="tools-sidebar">
             <div class="tools-panel">
                 <!-- Categoria: Produtividade -->
-                <div class="tool-category">Produtividade</div>
-                <button class="tools-panel-btn" id="generateEmailBtn">
-                    <i class="fas fa-envelope tools-panel-icon"></i>
-                    <span>E-mail</span>
-                </button>
-                <button class="tools-panel-btn" id="summarizeTextBtn">
-                    <i class="fas fa-file-alt tools-panel-icon"></i>
-                    <span>Resumir</span>
-                </button>
-                <button class="tools-panel-btn" id="translateTextBtn">
-                    <i class="fas fa-globe tools-panel-icon"></i>
-                    <span>Traduzir</span>
-                </button>
-                <button class="tools-panel-btn" id="improveTextBtn">
-                    <i class="fas fa-edit tools-panel-icon"></i>
-                    <span>Melhorar</span>
-                </button>
-                <button class="tools-panel-btn" id="generateCodeBtn">
-                    <i class="fas fa-code tools-panel-icon"></i>
-                    <span>Código</span>
-                </button>
-                <button class="tools-panel-btn" id="generateIdeasBtn">
-                    <i class="fas fa-lightbulb tools-panel-icon"></i>
-                    <span>Ideias</span>
-                </button>
-                <button class="tools-panel-btn" id="analyzeDataBtn">
-                    <i class="fas fa-chart-bar tools-panel-icon"></i>
-                    <span>Analisar</span>
-                </button>
-                <button class="tools-panel-btn" id="createContentBtn">
-                    <i class="fas fa-pencil-alt tools-panel-icon"></i>
-                    <span>Conteúdo</span>
-                </button>
-                <button class="tools-panel-btn" id="explainConceptBtn">
-                    <i class="fas fa-book tools-panel-icon"></i>
-                    <span>Explicar</span>
-                </button>
-                <button class="tools-panel-btn" id="solveProblemBtn">
-                    <i class="fas fa-search tools-panel-icon"></i>
-                    <span>Solucionar</span>
-                </button>
-                <button class="tools-panel-btn" id="generateScheduleBtn">
-                    <i class="fas fa-calendar-alt tools-panel-icon"></i>
-                    <span>Cronograma</span>
-                </button>
-                <button class="tools-panel-btn" id="generateMeetingBtn">
-                    <i class="fas fa-users tools-panel-icon"></i>
-                    <span>Reunião</span>
-                </button>
-                <button class="tools-panel-btn" id="generatePresentationBtn">
-                    <i class="fas fa-presentation tools-panel-icon"></i>
-                    <span>Apresentação</span>
-                </button>
-                <button class="tools-panel-btn" id="generateChecklistBtn">
-                    <i class="fas fa-tasks tools-panel-icon"></i>
-                    <span>Checklist</span>
-                </button>
-                <button class="tools-panel-btn" id="generateWorkflowBtn">
-                    <i class="fas fa-project-diagram tools-panel-icon"></i>
-                    <span>Fluxo de Trabalho</span>
-                </button>
-                <button class="tools-panel-btn" id="generateBudgetBtn">
-                    <i class="fas fa-calculator tools-panel-icon"></i>
-                    <span>Orçamento</span>
-                </button>
-                <button class="tools-panel-btn" id="generateInvoiceBtn">
-                    <i class="fas fa-file-invoice-dollar tools-panel-icon"></i>
-                    <span>Fatura</span>
-                </button>
-                <button class="tools-panel-btn" id="generateResumeBtn">
-                    <i class="fas fa-file-user tools-panel-icon"></i>
-                    <span>Currículo</span>
-                </button>
-                <button class="tools-panel-btn" id="generateCoverLetterBtn">
-                    <i class="fas fa-envelope-open-text tools-panel-icon"></i>
-                    <span>Carta de Apresentação</span>
-                </button>
-                <button class="tools-panel-btn" id="generateJobDescriptionBtn">
-                    <i class="fas fa-briefcase tools-panel-icon"></i>
-                    <span>Descrição de Vaga</span>
-                </button>
-                <button class="tools-panel-btn" id="generatePerformanceReviewBtn">
-                    <i class="fas fa-star-half-alt tools-panel-icon"></i>
-                    <span>Avaliação de Desempenho</span>
-                </button>
-                <button class="tools-panel-btn" id="generateKPIReportBtn">
-                    <i class="fas fa-chart-line tools-panel-icon"></i>
-                    <span>Relatório de KPIs</span>
-                </button>
-                <button class="tools-panel-btn" id="generateBusinessStrategyBtn">
-                    <i class="fas fa-chess-board tools-panel-icon"></i>
-                    <span>Estratégia de Negócios</span>
-                </button>
-                
+                <div class="category-container">
+                    <button class="category-btn produtividade-btn" onclick="toggleCategory('produtividade')">
+                        <span><i class="fas fa-briefcase"></i> Produtividade</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="category-tools produtividade-tools" id="produtividade-tools">
+                        <button class="tools-panel-btn produtividade-tool" id="generateEmailBtn">
+                            <i class="fas fa-envelope tools-panel-icon"></i>
+                            <span>E-mail</span>
+                        </button>
+                        <button class="tools-panel-btn produtividade-tool" id="summarizeTextBtn">
+                            <i class="fas fa-file-alt tools-panel-icon"></i>
+                            <span>Resumir</span>
+                        </button>
+                        <button class="tools-panel-btn produtividade-tool" id="translateTextBtn">
+                            <i class="fas fa-globe tools-panel-icon"></i>
+                            <span>Traduzir</span>
+                        </button>
+                        <button class="tools-panel-btn produtividade-tool" id="improveTextBtn">
+                            <i class="fas fa-edit tools-panel-icon"></i>
+                            <span>Melhorar</span>
+                        </button>
+                        <button class="tools-panel-btn produtividade-tool" id="generateCodeBtn">
+                            <i class="fas fa-code tools-panel-icon"></i>
+                            <span>Código</span>
+                        </button>
+                        <button class="tools-panel-btn produtividade-tool" id="generateIdeasBtn">
+                            <i class="fas fa-lightbulb tools-panel-icon"></i>
+                            <span>Ideias</span>
+                        </button>
+                        <button class="tools-panel-btn produtividade-tool" id="analyzeDataBtn">
+                            <i class="fas fa-chart-bar tools-panel-icon"></i>
+                            <span>Analisar</span>
+                        </button>
+                        <button class="tools-panel-btn produtividade-tool" id="createContentBtn">
+                            <i class="fas fa-pencil-alt tools-panel-icon"></i>
+                            <span>Conteúdo</span>
+                        </button>
+                        <button class="tools-panel-btn produtividade-tool" id="explainConceptBtn">
+                            <i class="fas fa-book tools-panel-icon"></i>
+                            <span>Explicar</span>
+                        </button>
+                        <button class="tools-panel-btn produtividade-tool" id="solveProblemBtn">
+                            <i class="fas fa-search tools-panel-icon"></i>
+                            <span>Solucionar</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Categoria: Criatividade -->
-                <div class="tool-category">Criatividade</div>
-                <button class="tools-panel-btn" id="generatePoemBtn">
-                    <i class="fas fa-pen-fancy tools-panel-icon"></i>
-                    <span>Poema</span>
-                </button>
-                <button class="tools-panel-btn" id="generateStoryBtn">
-                    <i class="fas fa-book-open tools-panel-icon"></i>
-                    <span>História</span>
-                </button>
-                <button class="tools-panel-btn" id="generateJokeBtn">
-                    <i class="fas fa-laugh tools-panel-icon"></i>
-                    <span>Piada</span>
-                </button>
-                <button class="tools-panel-btn" id="generateScriptBtn">
-                    <i class="fas fa-film tools-panel-icon"></i>
-                    <span>Roteiro</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSongBtn">
-                    <i class="fas fa-music tools-panel-icon"></i>
-                    <span>Música</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSpeechBtn">
-                    <i class="fas fa-microphone tools-panel-icon"></i>
-                    <span>Discurso</span>
-                </button>
-                <button class="tools-panel-btn" id="generateArtBtn">
-                    <i class="fas fa-palette tools-panel-icon"></i>
-                    <span>Arte</span>
-                </button>
-                <button class="tools-panel-btn" id="generateDesignBtn">
-                    <i class="fas fa-drafting-compass tools-panel-icon"></i>
-                    <span>Design</span>
-                </button>
-                <button class="tools-panel-btn" id="generateBrandingBtn">
-                    <i class="fas fa-trademark tools-panel-icon"></i>
-                    <span>Branding</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSloganBtn">
-                    <i class="fas fa-quote-right tools-panel-icon"></i>
-                    <span>Slogan</span>
-                </button>
-                <button class="tools-panel-btn" id="generateCharacterBtn">
-                    <i class="fas fa-user-astronaut tools-panel-icon"></i>
-                    <span>Personagem</span>
-                </button>
-                <button class="tools-panel-btn" id="generateWorldBuildingBtn">
-                    <i class="fas fa-globe-americas tools-panel-icon"></i>
-                    <span>Mundo Fictício</span>
-                </button>
-                <button class="tools-panel-btn" id="generatePlotTwistBtn">
-                    <i class="fas fa-random tools-panel-icon"></i>
-                    <span>Reviravolta</span>
-                </button>
-                <button class="tools-panel-btn" id="generateDialogueBtn">
-                    <i class="fas fa-comments tools-panel-icon"></i>
-                    <span>Diálogo</span>
-                </button>
-                <button class="tools-panel-btn" id="generateHaikuBtn">
-                    <i class="fas fa-feather-alt tools-panel-icon"></i>
-                    <span>Haicai</span>
-                </button>
-                <button class="tools-panel-btn" id="generateLimerickBtn">
-                    <i class="fas fa-pen-nib tools-panel-icon"></i>
-                    <span>Limerique</span>
-                </button>
-                <button class="tools-panel-btn" id="generateAcrosticBtn">
-                    <i class="fas fa-align-left tools-panel-icon"></i>
-                    <span>Acróstico</span>
-                </button>
-                <button class="tools-panel-btn" id="generateMetaphorBtn">
-                    <i class="fas fa-brain tools-panel-icon"></i>
-                    <span>Metáfora</span>
-                </button>
-                <button class="tools-panel-btn" id="generateRiddleBtn">
-                    <i class="fas fa-question-circle tools-panel-icon"></i>
-                    <span>Charada</span>
-                </button>
-                <button class="tools-panel-btn" id="generatePuzzleBtn">
-                    <i class="fas fa-puzzle-piece tools-panel-icon"></i>
-                    <span>Quebra-Cabeça</span>
-                </button>
-                
+                <div class="category-container">
+                    <button class="category-btn criatividade-btn" onclick="toggleCategory('criatividade')">
+                        <span><i class="fas fa-paint-brush"></i> Criatividade</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="category-tools criatividade-tools" id="criatividade-tools">
+                        <button class="tools-panel-btn criatividade-tool" id="generatePoemBtn">
+                            <i class="fas fa-pen-fancy tools-panel-icon"></i>
+                            <span>Poema</span>
+                        </button>
+                        <button class="tools-panel-btn criatividade-tool" id="generateStoryBtn">
+                            <i class="fas fa-book-open tools-panel-icon"></i>
+                            <span>História</span>
+                        </button>
+                        <button class="tools-panel-btn criatividade-tool" id="generateJokeBtn">
+                            <i class="fas fa-laugh tools-panel-icon"></i>
+                            <span>Piada</span>
+                        </button>
+                        <button class="tools-panel-btn criatividade-tool" id="generateScriptBtn">
+                            <i class="fas fa-film tools-panel-icon"></i>
+                            <span>Roteiro</span>
+                        </button>
+                        <button class="tools-panel-btn criatividade-tool" id="generateSongBtn">
+                            <i class="fas fa-music tools-panel-icon"></i>
+                            <span>Música</span>
+                        </button>
+                        <button class="tools-panel-btn criatividade-tool" id="generateSpeechBtn">
+                            <i class="fas fa-microphone tools-panel-icon"></i>
+                            <span>Discurso</span>
+                        </button>
+                        <button class="tools-panel-btn criatividade-tool" id="generateArtBtn">
+                            <i class="fas fa-palette tools-panel-icon"></i>
+                            <span>Arte</span>
+                        </button>
+                        <button class="tools-panel-btn criatividade-tool" id="generateDesignBtn">
+                            <i class="fas fa-drafting-compass tools-panel-icon"></i>
+                            <span>Design</span>
+                        </button>
+                        <button class="tools-panel-btn criatividade-tool" id="generateBrandingBtn">
+                            <i class="fas fa-trademark tools-panel-icon"></i>
+                            <span>Branding</span>
+                        </button>
+                        <button class="tools-panel-btn criatividade-tool" id="generateSloganBtn">
+                            <i class="fas fa-quote-right tools-panel-icon"></i>
+                            <span>Slogan</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Categoria: Vida Diária -->
-                <div class="tool-category">Vida Diária</div>
-                <button class="tools-panel-btn" id="generateRecipeBtn">
-                    <i class="fas fa-utensils tools-panel-icon"></i>
-                    <span>Receita</span>
-                </button>
-                <button class="tools-panel-btn" id="generateWorkoutBtn">
-                    <i class="fas fa-dumbbell tools-panel-icon"></i>
-                    <span>Treino</span>
-                </button>
-                <button class="tools-panel-btn" id="generateTravelBtn">
-                    <i class="fas fa-plane tools-panel-icon"></i>
-                    <span>Viagem</span>
-                </button>
-                <button class="tools-panel-btn" id="generateAdviceBtn">
-                    <i class="fas fa-hand-holding-heart tools-panel-icon"></i>
-                    <span>Conselho</span>
-                </button>
-                <button class="tools-panel-btn" id="generateParentingBtn">
-                    <i class="fas fa-baby tools-panel-icon"></i>
-                    <span>Paternidade</span>
-                </button>
-                <button class="tools-panel-btn" id="generateFinanceBtn">
-                    <i class="fas fa-coins tools-panel-icon"></i>
-                    <span>Finanças</span>
-                </button>
-                <button class="tools-panel-btn" id="generateHealthBtn">
-                    <i class="fas fa-heartbeat tools-panel-icon"></i>
-                    <span>Saúde</span>
-                </button>
-                <button class="tools-panel-btn" id="generateDietBtn">
-                    <i class="fas fa-apple-alt tools-panel-icon"></i>
-                    <span>Dieta</span>
-                </button>
-                <button class="tools-panel-btn" id="generateShoppingBtn">
-                    <i class="fas fa-shopping-cart tools-panel-icon"></i>
-                    <span>Compras</span>
-                </button>
-                <button class="tools-panel-btn" id="generateHomeBtn">
-                    <i class="fas fa-home tools-panel-icon"></i>
-                    <span>Casa</span>
-                </button>
-                <button class="tools-panel-btn" id="generateGardenBtn">
-                    <i class="fas fa-leaf tools-panel-icon"></i>
-                    <span>Jardim</span>
-                </button>
-                <button class="tools-panel-btn" id="generatePetCareBtn">
-                    <i class="fas fa-paw tools-panel-icon"></i>
-                    <span>Cuidados com Pets</span>
-                </button>
-                <button class="tools-panel-btn" id="generateCarMaintenanceBtn">
-                    <i class="fas fa-car tools-panel-icon"></i>
-                    <span>Manutenção de Carro</span>
-                </button>
-                <button class="tools-panel-btn" id="generateHomeRepairBtn">
-                    <i class="fas fa-tools tools-panel-icon"></i>
-                    <span>Reparos Domésticos</span>
-                </button>
-                <button class="tools-panel-btn" id="generateCleaningBtn">
-                    <i class="fas fa-broom tools-panel-icon"></i>
-                    <span>Limpeza</span>
-                </button>
-                <button class="tools-panel-btn" id="generateOrganizationBtn">
-                    <i class="fas fa-boxes tools-panel-icon"></i>
-                    <span>Organização</span>
-                </button>
-                <button class="tools-panel-btn" id="generateTimeManagementBtn">
-                    <i class="fas fa-clock tools-panel-icon"></i>
-                    <span>Gestão de Tempo</span>
-                </button>
-                <button class="tools-panel-btn" id="generateStressManagementBtn">
-                    <i class="fas fa-heartbeat tools-panel-icon"></i>
-                    <span>Gestão de Estresse</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSleepTipsBtn">
-                    <i class="fas fa-bed tools-panel-icon"></i>
-                    <span>Dicas de Sono</span>
-                </button>
-                <button class="tools-panel-btn" id="generateMeditationBtn">
-                    <i class="fas fa-spa tools-panel-icon"></i>
-                    <span>Meditação</span>
-                </button>
-                
+                <div class="category-container">
+                    <button class="category-btn vida-diaria-btn" onclick="toggleCategory('vida-diaria')">
+                        <span><i class="fas fa-home"></i> Vida Diária</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="category-tools vida-diaria-tools" id="vida-diaria-tools">
+                        <button class="tools-panel-btn vida-diaria-tool" id="generateRecipeBtn">
+                            <i class="fas fa-utensils tools-panel-icon"></i>
+                            <span>Receita</span>
+                        </button>
+                        <button class="tools-panel-btn vida-diaria-tool" id="generateWorkoutBtn">
+                            <i class="fas fa-dumbbell tools-panel-icon"></i>
+                            <span>Treino</span>
+                        </button>
+                        <button class="tools-panel-btn vida-diaria-tool" id="generateTravelBtn">
+                            <i class="fas fa-plane tools-panel-icon"></i>
+                            <span>Viagem</span>
+                        </button>
+                        <button class="tools-panel-btn vida-diaria-tool" id="generateAdviceBtn">
+                            <i class="fas fa-hand-holding-heart tools-panel-icon"></i>
+                            <span>Conselho</span>
+                        </button>
+                        <button class="tools-panel-btn vida-diaria-tool" id="generateParentingBtn">
+                            <i class="fas fa-baby tools-panel-icon"></i>
+                            <span>Paternidade</span>
+                        </button>
+                        <button class="tools-panel-btn vida-diaria-tool" id="generateFinanceBtn">
+                            <i class="fas fa-coins tools-panel-icon"></i>
+                            <span>Finanças</span>
+                        </button>
+                        <button class="tools-panel-btn vida-diaria-tool" id="generateHealthBtn">
+                            <i class="fas fa-heartbeat tools-panel-icon"></i>
+                            <span>Saúde</span>
+                        </button>
+                        <button class="tools-panel-btn vida-diaria-tool" id="generateDietBtn">
+                            <i class="fas fa-apple-alt tools-panel-icon"></i>
+                            <span>Dieta</span>
+                        </button>
+                        <button class="tools-panel-btn vida-diaria-tool" id="generateShoppingBtn">
+                            <i class="fas fa-shopping-cart tools-panel-icon"></i>
+                            <span>Compras</span>
+                        </button>
+                        <button class="tools-panel-btn vida-diaria-tool" id="generateHomeBtn">
+                            <i class="fas fa-home tools-panel-icon"></i>
+                            <span>Casa</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Categoria: Educação -->
-                <div class="tool-category">Educação</div>
-                <button class="tools-panel-btn" id="generateQuizBtn">
-                    <i class="fas fa-question-circle tools-panel-icon"></i>
-                    <span>Quiz</span>
-                </button>
-                <button class="tools-panel-btn" id="generateFlashcardsBtn">
-                    <i class="fas fa-layer-group tools-panel-icon"></i>
-                    <span>Flashcards</span>
-                </button>
-                <button class="tools-panel-btn" id="generateLessonPlanBtn">
-                    <i class="fas fa-chalkboard-teacher tools-panel-icon"></i>
-                    <span>Plano de Aula</span>
-                </button>
-                <button class="tools-panel-btn" id="generateStudyPlanBtn">
-                    <i class="fas fa-graduation-cap tools-panel-icon"></i>
-                    <span>Plano de Estudo</span>
-                </button>
-                <button class="tools-panel-btn" id="generateHomeworkBtn">
-                    <i class="fas fa-book-reader tools-panel-icon"></i>
-                    <span>Tarefa</span>
-                </button>
-                <button class="tools-panel-btn" id="generateEssayBtn">
-                    <i class="fas fa-pen tools-panel-icon"></i>
-                    <span>Redação</span>
-                </button>
-                <button class="tools-panel-btn" id="generateThesisBtn">
-                    <i class="fas fa-scroll tools-panel-icon"></i>
-                    <span>Tese</span>
-                </button>
-                <button class="tools-panel-btn" id="generateResearchBtn">
-                    <i class="fas fa-microscope tools-panel-icon"></i>
-                    <span>Pesquisa</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSummaryBtn">
-                    <i class="fas fa-file-contract tools-panel-icon"></i>
-                    <span>Resumo</span>
-                </button>
-                <button class="tools-panel-btn" id="generateMathProblemBtn">
-                    <i class="fas fa-square-root-alt tools-panel-icon"></i>
-                    <span>Problema Matemático</span>
-                </button>
-                <button class="tools-panel-btn" id="generateScienceExperimentBtn">
-                    <i class="fas fa-flask tools-panel-icon"></i>
-                    <span>Experimento Científico</span>
-                </button>
-                <button class="tools-panel-btn" id="generateHistoryTimelineBtn">
-                    <i class="fas fa-history tools-panel-icon"></i>
-                    <span>Linha do Tempo</span>
-                </button>
-                <button class="tools-panel-btn" id="generateLanguageLessonBtn">
-                    <i class="fas fa-language tools-panel-icon"></i>
-                    <span>Aula de Idioma</span>
-                </button>
-                <button class="tools-panel-btn" id="generateCodingExerciseBtn">
-                    <i class="fas fa-laptop-code tools-panel-icon"></i>
-                    <span>Exercício de Programação</span>
-                </button>
-                <button class="tools-panel-btn" id="generateArtProjectBtn">
-                    <i class="fas fa-paint-brush tools-panel-icon"></i>
-                    <span>Projeto de Arte</span>
-                </button>
-                <button class="tools-panel-btn" id="generateBookReportBtn">
-                    <i class="fas fa-book-open tools-panel-icon"></i>
-                    <span>Resenha de Livro</span>
-                </button>
-                <button class="tools-panel-btn" id="generateDebateTopicsBtn">
-                    <i class="fas fa-gavel tools-panel-icon"></i>
-                    <span>Tópicos para Debate</span>
-                </button>
-                <button class="tools-panel-btn" id="generateCriticalThinkingBtn">
-                    <i class="fas fa-brain tools-panel-icon"></i>
-                    <span>Pensamento Crítico</span>
-                </button>
-                <button class="tools-panel-btn" id="generateLearningStyleBtn">
-                    <i class="fas fa-user-graduate tools-panel-icon"></i>
-                    <span>Estilo de Aprendizado</span>
-                </button>
-                
+                <div class="category-container">
+                    <button class="category-btn educacao-btn" onclick="toggleCategory('educacao')">
+                        <span><i class="fas fa-graduation-cap"></i> Educação</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="category-tools educacao-tools" id="educacao-tools">
+                        <button class="tools-panel-btn educacao-tool" id="generateQuizBtn">
+                            <i class="fas fa-question-circle tools-panel-icon"></i>
+                            <span>Quiz</span>
+                        </button>
+                        <button class="tools-panel-btn educacao-tool" id="generateFlashcardsBtn">
+                            <i class="fas fa-layer-group tools-panel-icon"></i>
+                            <span>Flashcards</span>
+                        </button>
+                        <button class="tools-panel-btn educacao-tool" id="generateLessonPlanBtn">
+                            <i class="fas fa-chalkboard-teacher tools-panel-icon"></i>
+                            <span>Plano de Aula</span>
+                        </button>
+                        <button class="tools-panel-btn educacao-tool" id="generateStudyPlanBtn">
+                            <i class="fas fa-graduation-cap tools-panel-icon"></i>
+                            <span>Plano de Estudo</span>
+                        </button>
+                        <button class="tools-panel-btn educacao-tool" id="generateHomeworkBtn">
+                            <i class="fas fa-book-reader tools-panel-icon"></i>
+                            <span>Tarefa</span>
+                        </button>
+                        <button class="tools-panel-btn educacao-tool" id="generateEssayBtn">
+                            <i class="fas fa-pen tools-panel-icon"></i>
+                            <span>Redação</span>
+                        </button>
+                        <button class="tools-panel-btn educacao-tool" id="generateThesisBtn">
+                            <i class="fas fa-scroll tools-panel-icon"></i>
+                            <span>Tese</span>
+                        </button>
+                        <button class="tools-panel-btn educacao-tool" id="generateResearchBtn">
+                            <i class="fas fa-microscope tools-panel-icon"></i>
+                            <span>Pesquisa</span>
+                        </button>
+                        <button class="tools-panel-btn educacao-tool" id="generateSummaryBtn">
+                            <i class="fas fa-file-contract tools-panel-icon"></i>
+                            <span>Resumo</span>
+                        </button>
+                        <button class="tools-panel-btn educacao-tool" id="generateMathProblemBtn">
+                            <i class="fas fa-square-root-alt tools-panel-icon"></i>
+                            <span>Problema Matemático</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Categoria: Negócios -->
-                <div class="tool-category">Negócios</div>
-                <button class="tools-panel-btn" id="generateBusinessBtn">
-                    <i class="fas fa-briefcase tools-panel-icon"></i>
-                    <span>Negócios</span>
-                </button>
-                <button class="tools-panel-btn" id="generateMarketingBtn">
-                    <i class="fas fa-bullhorn tools-panel-icon"></i>
-                    <span>Marketing</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSalesBtn">
-                    <i class="fas fa-handshake tools-panel-icon"></i>
-                    <span>Vendas</span>
-                </button>
-                <button class="tools-panel-btn" id="generateProposalBtn">
-                    <i class="fas fa-file-signature tools-panel-icon"></i>
-                    <span>Proposta</span>
-                </button>
-                <button class="tools-panel-btn" id="generateContractBtn">
-                    <i class="fas fa-file-alt tools-panel-icon"></i>
-                    <span>Contrato</span>
-                </button>
-                <button class="tools-panel-btn" id="generateReportBtn">
-                    <i class="fas fa-chart-pie tools-panel-icon"></i>
-                    <span>Relatório</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSWOTBtn">
-                    <i class="fas fa-chess-board tools-panel-icon"></i>
-                    <span>Análise SWOT</span>
-                </button>
-                <button class="tools-panel-btn" id="generateBusinessPlanBtn">
-                    <i class="fas fa-project-diagram tools-panel-icon"></i>
-                    <span>Plano de Negócios</span>
-                </button>
-                <button class="tools-panel-btn" id="generatePitchBtn">
-                    <i class="fas fa-comment-dollar tools-panel-icon"></i>
-                    <span>Pitch</span>
-                </button>
-                <button class="tools-panel-btn" id="generateInterviewBtn">
-                    <i class="fas fa-comments tools-panel-icon"></i>
-                    <span>Entrevista</span>
-                </button>
-                <button class="tools-panel-btn" id="generateCustomerServiceBtn">
-                    <i class="fas fa-headset tools-panel-icon"></i>
-                    <span>Atendimento ao Cliente</span>
-                </button>
-                <button class="tools-panel-btn" id="generateNegotiationBtn">
-                    <i class="fas fa-handshake-alt tools-panel-icon"></i>
-                    <span>Negociação</span>
-                </button>
-                <button class="tools-panel-btn" id="generateLeadershipBtn">
-                    <i class="fas fa-user-tie tools-panel-icon"></i>
-                    <span>Liderança</span>
-                </button>
-                <button class="tools-panel-btn" id="generateTeamBuildingBtn">
-                    <i class="fas fa-users tools-panel-icon"></i>
-                    <span>Dinâmica de Grupo</span>
-                </button>
-                <button class="tools-panel-btn" id="generateStartupBtn">
-                    <i class="fas fa-rocket tools-panel-icon"></i>
-                    <span>Startup</span>
-                </button>
-                <button class="tools-panel-btn" id="generateEcommerceBtn">
-                    <i class="fas fa-shopping-bag tools-panel-icon"></i>
-                    <span>E-commerce</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSocialMediaMarketingBtn">
-                    <i class="fas fa-hashtag tools-panel-icon"></i>
-                    <span>Marketing Digital</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSEOStrategyBtn">
-                    <i class="fas fa-search-plus tools-panel-icon"></i>
-                    <span>Estratégia de SEO</span>
-                </button>
-                <button class="tools-panel-btn" id="generateBrandStrategyBtn">
-                    <i class="fas fa-chess-queen tools-panel-icon"></i>
-                    <span>Estratégia de Marca</span>
-                </button>
-                <button class="tools-panel-btn" id="generateFinancialProjectionBtn">
-                    <i class="fas fa-chart-line tools-panel-icon"></i>
-                    <span>Projeção Financeira</span>
-                </button>
-                
+                <div class="category-container">
+                    <button class="category-btn negocios-btn" onclick="toggleCategory('negocios')">
+                        <span><i class="fas fa-chart-line"></i> Negócios</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="category-tools negocios-tools" id="negocios-tools">
+                        <button class="tools-panel-btn negocios-tool" id="generateBusinessBtn">
+                            <i class="fas fa-briefcase tools-panel-icon"></i>
+                            <span>Negócios</span>
+                        </button>
+                        <button class="tools-panel-btn negocios-tool" id="generateMarketingBtn">
+                            <i class="fas fa-bullhorn tools-panel-icon"></i>
+                            <span>Marketing</span>
+                        </button>
+                        <button class="tools-panel-btn negocios-tool" id="generateSalesBtn">
+                            <i class="fas fa-handshake tools-panel-icon"></i>
+                            <span>Vendas</span>
+                        </button>
+                        <button class="tools-panel-btn negocios-tool" id="generateProposalBtn">
+                            <i class="fas fa-file-signature tools-panel-icon"></i>
+                            <span>Proposta</span>
+                        </button>
+                        <button class="tools-panel-btn negocios-tool" id="generateContractBtn">
+                            <i class="fas fa-file-alt tools-panel-icon"></i>
+                            <span>Contrato</span>
+                        </button>
+                        <button class="tools-panel-btn negocios-tool" id="generateReportBtn">
+                            <i class="fas fa-chart-pie tools-panel-icon"></i>
+                            <span>Relatório</span>
+                        </button>
+                        <button class="tools-panel-btn negocios-tool" id="generateSWOTBtn">
+                            <i class="fas fa-chess-board tools-panel-icon"></i>
+                            <span>Análise SWOT</span>
+                        </button>
+                        <button class="tools-panel-btn negocios-tool" id="generateBusinessPlanBtn">
+                            <i class="fas fa-project-diagram tools-panel-icon"></i>
+                            <span>Plano de Negócios</span>
+                        </button>
+                        <button class="tools-panel-btn negocios-tool" id="generatePitchBtn">
+                            <i class="fas fa-comment-dollar tools-panel-icon"></i>
+                            <span>Pitch</span>
+                        </button>
+                        <button class="tools-panel-btn negocios-tool" id="generateInterviewBtn">
+                            <i class="fas fa-comments tools-panel-icon"></i>
+                            <span>Entrevista</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Categoria: Tecnologia -->
-                <div class="tool-category">Tecnologia</div>
-                <button class="tools-panel-btn" id="generateAPIBtn">
-                    <i class="fas fa-server tools-panel-icon"></i>
-                    <span>API</span>
-                </button>
-                <button class="tools-panel-btn" id="generateAlgorithmBtn">
-                    <i class="fas fa-project-diagram tools-panel-icon"></i>
-                    <span>Algoritmo</span>
-                </button>
-                <button class="tools-panel-btn" id="generateDatabaseBtn">
-                    <i class="fas fa-database tools-panel-icon"></i>
-                    <span>Banco de Dados</span>
-                </button>
-                <button class="tools-panel-btn" id="generateUIBtn">
-                    <i class="fas fa-desktop tools-panel-icon"></i>
-                    <span>Interface</span>
-                </button>
-                <button class="tools-panel-btn" id="generateMobileAppBtn">
-                    <i class="fas fa-mobile-alt tools-panel-icon"></i>
-                    <span>App Mobile</span>
-                </button>
-                <button class="tools-panel-btn" id="generateWebsiteBtn">
-                    <i class="fas fa-globe-americas tools-panel-icon"></i>
-                    <span>Website</span>
-                </button>
-                <button class="tools-panel-btn" id="generateGameBtn">
-                    <i class="fas fa-gamepad tools-panel-icon"></i>
-                    <span>Jogo</span>
-                </button>
-                <button class="tools-panel-btn" id="generateAIBtn">
-                    <i class="fas fa-robot tools-panel-icon"></i>
-                    <span>IA</span>
-                </button>
-                <button class="tools-panel-btn" id="generateBlockchainBtn">
-                    <i class="fas fa-link tools-panel-icon"></i>
-                    <span>Blockchain</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSecurityBtn">
-                    <i class="fas fa-shield-alt tools-panel-icon"></i>
-                    <span>Segurança</span>
-                </button>
-                <button class="tools-panel-btn" id="generateDevOpsBtn">
-                    <i class="fas fa-code-branch tools-panel-icon"></i>
-                    <span>DevOps</span>
-                </button>
-                <button class="tools-panel-btn" id="generateCloudComputingBtn">
-                    <i class="fas fa-cloud tools-panel-icon"></i>
-                    <span>Computação em Nuvem</span>
-                </button>
-                <button class="tools-panel-btn" id="generateDataScienceBtn">
-                    <i class="fas fa-chart-bar tools-panel-icon"></i>
-                    <span>Ciência de Dados</span>
-                </button>
-                <button class="tools-panel-btn" id="generateMachineLearningBtn">
-                    <i class="fas fa-brain tools-panel-icon"></i>
-                    <span>Aprendizado de Máquina</span>
-                </button>
-                <button class="tools-panel-btn" id="generateCybersecurityBtn">
-                    <i class="fas fa-lock tools-panel-icon"></i>
-                    <span>Segurança Cibernética</span>
-                </button>
-                <button class="tools-panel-btn" id="generateIoTBtn">
-                    <i class="fas fa-wifi tools-panel-icon"></i>
-                    <span>Internet das Coisas</span>
-                </button>
-                <button class="tools-panel-btn" id="generateARVRBtn">
-                    <i class="fas fa-vr-cardboard tools-panel-icon"></i>
-                    <span>AR/VR</span>
-                </button>
-                <button class="tools-panel-btn" id="generateAutomationBtn">
-                    <i class="fas fa-robot tools-panel-icon"></i>
-                    <span>Automação</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSoftwareArchitectureBtn">
-                    <i class="fas fa-sitemap tools-panel-icon"></i>
-                    <span>Arquitetura de Software</span>
-                </button>
-                <button class="tools-panel-btn" id="generateCodeReviewBtn">
-                    <i class="fas fa-search-plus tools-panel-icon"></i>
-                    <span>Revisão de Código</span>
-                </button>
-                
+                <div class="category-container">
+                    <button class="category-btn tecnologia-btn" onclick="toggleCategory('tecnologia')">
+                        <span><i class="fas fa-laptop-code"></i> Tecnologia</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="category-tools tecnologia-tools" id="tecnologia-tools">
+                        <button class="tools-panel-btn tecnologia-tool" id="generateAPIBtn">
+                            <i class="fas fa-server tools-panel-icon"></i>
+                            <span>API</span>
+                        </button>
+                        <button class="tools-panel-btn tecnologia-tool" id="generateAlgorithmBtn">
+                            <i class="fas fa-project-diagram tools-panel-icon"></i>
+                            <span>Algoritmo</span>
+                        </button>
+                        <button class="tools-panel-btn tecnologia-tool" id="generateDatabaseBtn">
+                            <i class="fas fa-database tools-panel-icon"></i>
+                            <span>Banco de Dados</span>
+                        </button>
+                        <button class="tools-panel-btn tecnologia-tool" id="generateUIBtn">
+                            <i class="fas fa-desktop tools-panel-icon"></i>
+                            <span>Interface</span>
+                        </button>
+                        <button class="tools-panel-btn tecnologia-tool" id="generateMobileAppBtn">
+                            <i class="fas fa-mobile-alt tools-panel-icon"></i>
+                            <span>App Mobile</span>
+                        </button>
+                        <button class="tools-panel-btn tecnologia-tool" id="generateWebsiteBtn">
+                            <i class="fas fa-globe-americas tools-panel-icon"></i>
+                            <span>Website</span>
+                        </button>
+                        <button class="tools-panel-btn tecnologia-tool" id="generateGameBtn">
+                            <i class="fas fa-gamepad tools-panel-icon"></i>
+                            <span>Jogo</span>
+                        </button>
+                        <button class="tools-panel-btn tecnologia-tool" id="generateAIBtn">
+                            <i class="fas fa-robot tools-panel-icon"></i>
+                            <span>IA</span>
+                        </button>
+                        <button class="tools-panel-btn tecnologia-tool" id="generateBlockchainBtn">
+                            <i class="fas fa-link tools-panel-icon"></i>
+                            <span>Blockchain</span>
+                        </button>
+                        <button class="tools-panel-btn tecnologia-tool" id="generateSecurityBtn">
+                            <i class="fas fa-shield-alt tools-panel-icon"></i>
+                            <span>Segurança</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Categoria: Entretenimento -->
-                <div class="tool-category">Entretenimento</div>
-                <button class="tools-panel-btn" id="generateMovieBtn">
-                    <i class="fas fa-film tools-panel-icon"></i>
-                    <span>Filme</span>
-                </button>
-                <button class="tools-panel-btn" id="generateTVShowBtn">
-                    <i class="fas fa-tv tools-panel-icon"></i>
-                    <span>Série</span>
-                </button>
-                <button class="tools-panel-btn" id="generateBookBtn">
-                    <i class="fas fa-book tools-panel-icon"></i>
-                    <span>Livro</span>
-                </button>
-                <button class="tools-panel-btn" id="generateGameIdeaBtn">
-                    <i class="fas fa-dice tools-panel-icon"></i>
-                    <span>Ideia de Jogo</span>
-                </button>
-                <button class="tools-panel-btn" id="generateTriviaBtn">
-                    <i class="fas fa-question tools-panel-icon"></i>
-                    <span>Trivia</span>
-                </button>
-                <button class="tools-panel-btn" id="generateDebateBtn">
-                    <i class="fas fa-gavel tools-panel-icon"></i>
-                    <span>Debate</span>
-                </button>
-                <button class="tools-panel-btn" id="generatePodcastBtn">
-                    <i class="fas fa-podcast tools-panel-icon"></i>
-                    <span>Podcast</span>
-                </button>
-                <button class="tools-panel-btn" id="generateComedyBtn">
-                    <i class="fas fa-theater-masks tools-panel-icon"></i>
-                    <span>Comédia</span>
-                </button>
-                <button class="tools-panel-btn" id="generateHorrorBtn">
-                    <i class="fas fa-ghost tools-panel-icon"></i>
-                    <span>História de Terror</span>
-                </button>
-                <button class="tools-panel-btn" id="generateFantasyBtn">
-                    <i class="fas fa-dragon tools-panel-icon"></i>
-                    <span>Fantasia</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSciFiBtn">
-                    <i class="fas fa-rocket tools-panel-icon"></i>
-                    <span>Ficção Científica</span>
-                </button>
-                <button class="tools-panel-btn" id="generateRomanceBtn">
-                    <i class="fas fa-heart tools-panel-icon"></i>
-                    <span>Romance</span>
-                </button>
-                <button class="tools-panel-btn" id="generateMysteryBtn">
-                    <i class="fas fa-search tools-panel-icon"></i>
-                    <span>Mistério</span>
-                </button>
-                <button class="tools-panel-btn" id="generateAdventureBtn">
-                    <i class="fas fa-map-marked-alt tools-panel-icon"></i>
-                    <span>Aventura</span>
-                </button>
-                <button class="tools-panel-btn" id="generateFanFictionBtn">
-                    <i class="fas fa-book-open tools-panel-icon"></i>
-                    <span>Fan Fiction</span>
-                </button>
-                <button class="tools-panel-btn" id="generateBoardGameBtn">
-                    <i class="fas fa-chess-board tools-panel-icon"></i>
-                    <span>Jogo de Tabuleiro</span>
-                </button>
-                <button class="tools-panel-btn" id="generateCardGameBtn">
-                    <i class="fas fa-club tools-panel-icon"></i>
-                    <span>Jogo de Cartas</span>
-                </button>
-                <button class="tools-panel-btn" id="generateRolePlayingBtn">
-                    <i class="fas fa-dice-d20 tools-panel-icon"></i>
-                    <span>RPG</span>
-                </button>
-                <button class="tools-panel-btn" id="generateMagicTrickBtn">
-                    <i class="fas fa-hat-wizard tools-panel-icon"></i>
-                    <span>Truque de Mágica</span>
-                </button>
-                
+                <div class="category-container">
+                    <button class="category-btn entretenimento-btn" onclick="toggleCategory('entretenimento')">
+                        <span><i class="fas fa-film"></i> Entretenimento</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="category-tools entretenimento-tools" id="entretenimento-tools">
+                        <button class="tools-panel-btn entretenimento-tool" id="generateMovieBtn">
+                            <i class="fas fa-film tools-panel-icon"></i>
+                            <span>Filme</span>
+                        </button>
+                        <button class="tools-panel-btn entretenimento-tool" id="generateTVShowBtn">
+                            <i class="fas fa-tv tools-panel-icon"></i>
+                            <span>Série</span>
+                        </button>
+                        <button class="tools-panel-btn entretenimento-tool" id="generateBookBtn">
+                            <i class="fas fa-book tools-panel-icon"></i>
+                            <span>Livro</span>
+                        </button>
+                        <button class="tools-panel-btn entretenimento-tool" id="generateGameIdeaBtn">
+                            <i class="fas fa-dice tools-panel-icon"></i>
+                            <span>Ideia de Jogo</span>
+                        </button>
+                        <button class="tools-panel-btn entretenimento-tool" id="generateTriviaBtn">
+                            <i class="fas fa-question tools-panel-icon"></i>
+                            <span>Trivia</span>
+                        </button>
+                        <button class="tools-panel-btn entretenimento-tool" id="generateDebateBtn">
+                            <i class="fas fa-gavel tools-panel-icon"></i>
+                            <span>Debate</span>
+                        </button>
+                        <button class="tools-panel-btn entretenimento-tool" id="generatePodcastBtn">
+                            <i class="fas fa-podcast tools-panel-icon"></i>
+                            <span>Podcast</span>
+                        </button>
+                        <button class="tools-panel-btn entretenimento-tool" id="generateComedyBtn">
+                            <i class="fas fa-theater-masks tools-panel-icon"></i>
+                            <span>Comédia</span>
+                        </button>
+                        <button class="tools-panel-btn entretenimento-tool" id="generateHorrorBtn">
+                            <i class="fas fa-ghost tools-panel-icon"></i>
+                            <span>História de Terror</span>
+                        </button>
+                        <button class="tools-panel-btn entretenimento-tool" id="generateFantasyBtn">
+                            <i class="fas fa-dragon tools-panel-icon"></i>
+                            <span>Fantasia</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Categoria: Especializadas -->
-                <div class="tool-category">Especializadas</div>
-                <button class="tools-panel-btn" id="chessHelperBtn">
-                    <i class="fas fa-chess tools-panel-icon"></i>
-                    <span>Xadrez</span>
-                </button>
-                <button class="tools-panel-btn" id="generateLegalBtn">
-                    <i class="fas fa-balance-scale tools-panel-icon"></i>
-                    <span>Jurídico</span>
-                </button>
-                <button class="tools-panel-btn" id="generateMedicalBtn">
-                    <i class="fas fa-briefcase-medical tools-panel-icon"></i>
-                    <span>Médico</span>
-                </button>
-                <button class="tools-panel-btn" id="generateEngineeringBtn">
-                    <i class="fas fa-cogs tools-panel-icon"></i>
-                    <span>Engenharia</span>
-                </button>
-                <button class="tools-panel-btn" id="generateScienceBtn">
-                    <i class="fas fa-atom tools-panel-icon"></i>
-                    <span>Ciência</span>
-                </button>
-                <button class="tools-panel-btn" id="generateMathBtn">
-                    <i class="fas fa-square-root-alt tools-panel-icon"></i>
-                    <span>Matemática</span>
-                </button>
-                <button class="tools-panel-btn" id="generateHistoryBtn">
-                    <i class="fas fa-landmark tools-panel-icon"></i>
-                    <span>História</span>
-                </button>
-                <button class="tools-panel-btn" id="generatePhilosophyBtn">
-                    <i class="fas fa-brain tools-panel-icon"></i>
-                    <span>Filosofia</span>
-                </button>
-                <button class="tools-panel-btn" id="generatePsychologyBtn">
-                    <i class="fas fa-brain tools-panel-icon"></i>
-                    <span>Psicologia</span>
-                </button>
-                <button class="tools-panel-btn" id="generateAstronomyBtn">
-                    <i class="fas fa-meteor tools-panel-icon"></i>
-                    <span>Astronomia</span>
-                </button>
-                <button class="tools-panel-btn" id="generateChemistryBtn">
-                    <i class="fas fa-flask tools-panel-icon"></i>
-                    <span>Química</span>
-                </button>
-                <button class="tools-panel-btn" id="generatePhysicsBtn">
-                    <i class="fas fa-atom tools-panel-icon"></i>
-                    <span>Física</span>
-                </button>
-                <button class="tools-panel-btn" id="generateBiologyBtn">
-                    <i class="fas fa-dna tools-panel-icon"></i>
-                    <span>Biologia</span>
-                </button>
-                <button class="tools-panel-btn" id="generateGeographyBtn">
-                    <i class="fas fa-globe-africa tools-panel-icon"></i>
-                    <span>Geografia</span>
-                </button>
-                <button class="tools-panel-btn" id="generateEconomicsBtn">
-                    <i class="fas fa-chart-line tools-panel-icon"></i>
-                    <span>Economia</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSociologyBtn">
-                    <i class="fas fa-users tools-panel-icon"></i>
-                    <span>Sociologia</span>
-                </button>
-                <button class="tools-panel-btn" id="generateAnthropologyBtn">
-                    <i class="fas fa-user-astronaut tools-panel-icon"></i>
-                    <span>Antropologia</span>
-                </button>
-                <button class="tools-panel-btn" id="generatePoliticalScienceBtn">
-                    <i class="fas fa-landmark tools-panel-icon"></i>
-                    <span>Ciência Política</span>
-                </button>
-                <button class="tools-panel-btn" id="generateLinguisticsBtn">
-                    <i class="fas fa-language tools-panel-icon"></i>
-                    <span>Linguística</span>
-                </button>
-                <button class="tools-panel-btn" id="generateArchitectureBtn">
-                    <i class="fas fa-archway tools-panel-icon"></i>
-                    <span>Arquitetura</span>
-                </button>
-                
+                <div class="category-container">
+                    <button class="category-btn especializadas-btn" onclick="toggleCategory('especializadas')">
+                        <span><i class="fas fa-atom"></i> Especializadas</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="category-tools especializadas-tools" id="especializadas-tools">
+                        <button class="tools-panel-btn especializadas-tool" id="chessHelperBtn">
+                            <i class="fas fa-chess tools-panel-icon"></i>
+                            <span>Xadrez</span>
+                        </button>
+                        <button class="tools-panel-btn especializadas-tool" id="generateLegalBtn">
+                            <i class="fas fa-balance-scale tools-panel-icon"></i>
+                            <span>Jurídico</span>
+                        </button>
+                        <button class="tools-panel-btn especializadas-tool" id="generateMedicalBtn">
+                            <i class="fas fa-briefcase-medical tools-panel-icon"></i>
+                            <span>Médico</span>
+                        </button>
+                        <button class="tools-panel-btn especializadas-tool" id="generateEngineeringBtn">
+                            <i class="fas fa-cogs tools-panel-icon"></i>
+                            <span>Engenharia</span>
+                        </button>
+                        <button class="tools-panel-btn especializadas-tool" id="generateScienceBtn">
+                            <i class="fas fa-atom tools-panel-icon"></i>
+                            <span>Ciência</span>
+                        </button>
+                        <button class="tools-panel-btn especializadas-tool" id="generateMathBtn">
+                            <i class="fas fa-square-root-alt tools-panel-icon"></i>
+                            <span>Matemática</span>
+                        </button>
+                        <button class="tools-panel-btn especializadas-tool" id="generateHistoryBtn">
+                            <i class="fas fa-landmark tools-panel-icon"></i>
+                            <span>História</span>
+                        </button>
+                        <button class="tools-panel-btn especializadas-tool" id="generatePhilosophyBtn">
+                            <i class="fas fa-brain tools-panel-icon"></i>
+                            <span>Filosofia</span>
+                        </button>
+                        <button class="tools-panel-btn especializadas-tool" id="generatePsychologyBtn">
+                            <i class="fas fa-brain tools-panel-icon"></i>
+                            <span>Psicologia</span>
+                        </button>
+                        <button class="tools-panel-btn especializadas-tool" id="generateAstronomyBtn">
+                            <i class="fas fa-meteor tools-panel-icon"></i>
+                            <span>Astronomia</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Categoria: Social -->
-                <div class="tool-category">Social</div>
-                <button class="tools-panel-btn" id="generateSocialMediaBtn">
-                    <i class="fas fa-share-alt tools-panel-icon"></i>
-                    <span>Mídia Social</span>
-                </button>
-                <button class="tools-panel-btn" id="generateDatingProfileBtn">
-                    <i class="fas fa-heart tools-panel-icon"></i>
-                    <span>Perfil de Namoro</span>
-                </button>
-                <button class="tools-panel-btn" id="generateInvitationBtn">
-                    <i class="fas fa-envelope-open-text tools-panel-icon"></i>
-                    <span>Convite</span>
-                </button>
-                <button class="tools-panel-btn" id="generateApologyBtn">
-                    <i class="fas fa-hand-holding-heart tools-panel-icon"></i>
-                    <span>Pedido de Desculpas</span>
-                </button>
-                <button class="tools-panel-btn" id="generateComplimentBtn">
-                    <i class="fas fa-star tools-panel-icon"></i>
-                    <span>Elogio</span>
-                </button>
-                <button class="tools-panel-btn" id="generateFeedbackBtn">
-                    <i class="fas fa-comment-dots tools-panel-icon"></i>
-                    <span>Feedback</span>
-                </button>
-                <button class="tools-panel-btn" id="generateNetworkingBtn">
-                    <i class="fas fa-users tools-panel-icon"></i>
-                    <span>Networking</span>
-                </button>
-                <button class="tools-panel-btn" id="generateEventBtn">
-                    <i class="fas fa-calendar-alt tools-panel-icon"></i>
-                    <span>Evento</span>
-                </button>
-                <button class="tools-panel-btn" id="generateWeddingBtn">
-                    <i class="fas fa-ring tools-panel-icon"></i>
-                    <span>Casamento</span>
-                </button>
-                <button class="tools-panel-btn" id="generateBirthdayBtn">
-                    <i class="fas fa-birthday-cake tools-panel-icon"></i>
-                    <span>Aniversário</span>
-                </button>
-                <button class="tools-panel-btn" id="generateThankYouNoteBtn">
-                    <i class="fas fa-envelope tools-panel-icon"></i>
-                    <span>Agradecimento</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSympathyMessageBtn">
-                    <i class="fas fa-hands-helping tools-panel-icon"></i>
-                    <span>Mensagem de Pêsames</span>
-                </button>
-                <button class="tools-panel-btn" id="generateRecommendationBtn">
-                    <i class="fas fa-thumbs-up tools-panel-icon"></i>
-                    <span>Recomendação</span>
-                </button>
-                <button class="tools-panel-btn" id="generateIcebreakerBtn">
-                    <i class="fas fa-comment-medical tools-panel-icon"></i>
-                    <span>Quebra-Gelo</span>
-                </button>
-                <button class="tools-panel-btn" id="generateConflictResolutionBtn">
-                    <i class="fas fa-peace tools-panel-icon"></i>
-                    <span>Resolução de Conflitos</span>
-                </button>
-                <button class="tools-panel-btn" id="generatePublicSpeakingBtn">
-                    <i class="fas fa-microphone-alt tools-panel-icon"></i>
-                    <span>Oratória</span>
-                </button>
-                <button class="tools-panel-btn" id="generateEtiquetteBtn">
-                    <i class="fas fa-user-tie tools-panel-icon"></i>
-                    <span>Etiqueta</span>
-                </button>
-                <button class="tools-panel-btn" id="generateCulturalTipsBtn">
-                    <i class="fas fa-globe-americas tools-panel-icon"></i>
-                    <span>Dicas Culturais</span>
-                </button>
-                <button class="tools-panel-btn" id="generateFriendshipAdviceBtn">
-                    <i class="fas fa-user-friends tools-panel-icon"></i>
-                    <span>Conselhos de Amizade</span>
-                </button>
-                
+                <div class="category-container">
+                    <button class="category-btn social-btn" onclick="toggleCategory('social')">
+                        <span><i class="fas fa-users"></i> Social</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="category-tools social-tools" id="social-tools">
+                        <button class="tools-panel-btn social-tool" id="generateSocialMediaBtn">
+                            <i class="fas fa-share-alt tools-panel-icon"></i>
+                            <span>Mídia Social</span>
+                        </button>
+                        <button class="tools-panel-btn social-tool" id="generateDatingProfileBtn">
+                            <i class="fas fa-heart tools-panel-icon"></i>
+                            <span>Perfil de Namoro</span>
+                        </button>
+                        <button class="tools-panel-btn social-tool" id="generateInvitationBtn">
+                            <i class="fas fa-envelope-open-text tools-panel-icon"></i>
+                            <span>Convite</span>
+                        </button>
+                        <button class="tools-panel-btn social-tool" id="generateApologyBtn">
+                            <i class="fas fa-hand-holding-heart tools-panel-icon"></i>
+                            <span>Pedido de Desculpas</span>
+                        </button>
+                        <button class="tools-panel-btn social-tool" id="generateComplimentBtn">
+                            <i class="fas fa-star tools-panel-icon"></i>
+                            <span>Elogio</span>
+                        </button>
+                        <button class="tools-panel-btn social-tool" id="generateFeedbackBtn">
+                            <i class="fas fa-comment-dots tools-panel-icon"></i>
+                            <span>Feedback</span>
+                        </button>
+                        <button class="tools-panel-btn social-tool" id="generateNetworkingBtn">
+                            <i class="fas fa-users tools-panel-icon"></i>
+                            <span>Networking</span>
+                        </button>
+                        <button class="tools-panel-btn social-tool" id="generateEventBtn">
+                            <i class="fas fa-calendar-alt tools-panel-icon"></i>
+                            <span>Evento</span>
+                        </button>
+                        <button class="tools-panel-btn social-tool" id="generateWeddingBtn">
+                            <i class="fas fa-ring tools-panel-icon"></i>
+                            <span>Casamento</span>
+                        </button>
+                        <button class="tools-panel-btn social-tool" id="generateBirthdayBtn">
+                            <i class="fas fa-birthday-cake tools-panel-icon"></i>
+                            <span>Aniversário</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Categoria: Diversos -->
-                <div class="tool-category">Diversos</div>
-                <button class="tools-panel-btn" id="generatePrayerBtn">
-                    <i class="fas fa-pray tools-panel-icon"></i>
-                    <span>Oração</span>
-                </button>
-                <button class="tools-panel-btn" id="generateAffirmationBtn">
-                    <i class="fas fa-comment tools-panel-icon"></i>
-                    <span>Afirmação</span>
-                </button>
-                <button class="tools-panel-btn" id="generateJournalBtn">
-                    <i class="fas fa-book-open tools-panel-icon"></i>
-                    <span>Diário</span>
-                </button>
-                <button class="tools-panel-btn" id="generateBucketListBtn">
-                    <i class="fas fa-list-ol tools-panel-icon"></i>
-                    <span>Lista de Desejos</span>
-                </button>
-                <button class="tools-panel-btn" id="generateGratitudeBtn">
-                    <i class="fas fa-heart tools-panel-icon"></i>
-                    <span>Gratidão</span>
-                </button>
-                <button class="tools-panel-btn" id="generateVisionBoardBtn">
-                    <i class="fas fa-clipboard-list tools-panel-icon"></i>
-                    <span>Quadro de Visão</span>
-                </button>
-                <button class="tools-panel-btn" id="generateGoalSettingBtn">
-                    <i class="fas fa-bullseye tools-panel-icon"></i>
-                    <span>Definição de Metas</span>
-                </button>
-                <button class="tools-panel-btn" id="generateProductivityBtn">
-                    <i class="fas fa-tasks tools-panel-icon"></i>
-                    <span>Produtividade</span>
-                </button>
-                <button class="tools-panel-btn" id="generateHobbyIdeasBtn">
-                    <i class="fas fa-paint-brush tools-panel-icon"></i>
-                    <span>Ideias de Hobby</span>
-                </button>
-                <button class="tools-panel-btn" id="generateSelfCareBtn">
-                    <i class="fas fa-spa tools-panel-icon"></i>
-                    <span>Autocuidado</span>
-                </button>
-                <button class="tools-panel-btn" id="generateMindfulnessBtn">
-                    <i class="fas fa-brain tools-panel-icon"></i>
-                    <span>Mindfulness</span>
-                </button>
-                <button class="tools-panel-btn" id="generateMotivationBtn">
-                    <i class="fas fa-fire tools-panel-icon"></i>
-                    <span>Motivação</span>
-                </button>
-                <button class="tools-panel-btn" id="generateInspirationBtn">
-                    <i class="fas fa-lightbulb tools-panel-icon"></i>
-                    <span>Inspiração</span>
-                </button>
-                <button class="tools-panel-btn" id="generateQuotesBtn">
-                    <i class="fas fa-quote-right tools-panel-icon"></i>
-                    <span>Citações</span>
-                </button>
-                <button class="tools-panel-btn" id="generateRiddlesBtn">
-                    <i class="fas fa-question-circle tools-panel-icon"></i>
-                    <span>Enigmas</span>
-                </button>
-                <button class="tools-panel-btn" id="generateTriviaQuestionsBtn">
-                    <i class="fas fa-question tools-panel-icon"></i>
-                    <span>Perguntas de Trivia</span>
-                </button>
-                <button class="tools-panel-btn" id="generateWouldYouRatherBtn">
-                    <i class="fas fa-random tools-panel-icon"></i>
-                    <span>Você Prefere?</span>
-                </button>
-                <button class="tools-panel-btn" id="generateIceCreamFlavorsBtn">
-                    <i class="fas fa-ice-cream tools-panel-icon"></i>
-                    <span>Sabores de Sorvete</span>
-                </button>
-                <button class="tools-panel-btn" id="generateBabyNamesBtn">
-                    <i class="fas fa-baby tools-panel-icon"></i>
-                    <span>Nomes de Bebê</span>
-                </button>
-                <button class="tools-panel-btn" id="generatePetNamesBtn">
-                    <i class="fas fa-paw tools-panel-icon"></i>
-                    <span>Nomes para Pets</span>
-                </button>
+                <div class="category-container">
+                    <button class="category-btn diversos-btn" onclick="toggleCategory('diversos')">
+                        <span><i class="fas fa-ellipsis-h"></i> Diversos</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="category-tools diversos-tools" id="diversos-tools">
+                        <button class="tools-panel-btn diversos-tool" id="generatePrayerBtn">
+                            <i class="fas fa-pray tools-panel-icon"></i>
+                            <span>Oração</span>
+                        </button>
+                        <button class="tools-panel-btn diversos-tool" id="generateAffirmationBtn">
+                            <i class="fas fa-comment tools-panel-icon"></i>
+                            <span>Afirmação</span>
+                        </button>
+                        <button class="tools-panel-btn diversos-tool" id="generateJournalBtn">
+                            <i class="fas fa-book-open tools-panel-icon"></i>
+                            <span>Diário</span>
+                        </button>
+                        <button class="tools-panel-btn diversos-tool" id="generateBucketListBtn">
+                            <i class="fas fa-list-ol tools-panel-icon"></i>
+                            <span>Lista de Desejos</span>
+                        </button>
+                        <button class="tools-panel-btn diversos-tool" id="generateGratitudeBtn">
+                            <i class="fas fa-heart tools-panel-icon"></i>
+                            <span>Gratidão</span>
+                        </button>
+                        <button class="tools-panel-btn diversos-tool" id="generateVisionBoardBtn">
+                            <i class="fas fa-clipboard-list tools-panel-icon"></i>
+                            <span>Quadro de Visão</span>
+                        </button>
+                        <button class="tools-panel-btn diversos-tool" id="generateGoalSettingBtn">
+                            <i class="fas fa-bullseye tools-panel-icon"></i>
+                            <span>Definição de Metas</span>
+                        </button>
+                        <button class="tools-panel-btn diversos-tool" id="generateProductivityBtn">
+                            <i class="fas fa-tasks tools-panel-icon"></i>
+                            <span>Produtividade</span>
+                        </button>
+                        <button class="tools-panel-btn diversos-tool" id="generateHobbyIdeasBtn">
+                            <i class="fas fa-paint-brush tools-panel-icon"></i>
+                            <span>Ideias de Hobby</span>
+                        </button>
+                        <button class="tools-panel-btn diversos-tool" id="generateSelfCareBtn">
+                            <i class="fas fa-spa tools-panel-icon"></i>
+                            <span>Autocuidado</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div id="chat-container">
             <div id="chatbox">
                 <div class="welcome-message">
-                    <div class="welcome-title">Bem-vindo ao ViBot Plus!</div>
-                    <div class="welcome-text">Seu assistente de IA com 250 ferramentas poderosas</div>
+                    <div class="welcome-title">Bem-vindo ao ViBot Ultra!</div>
+                    <div class="welcome-text">Seu assistente de IA com 500 ferramentas poderosas</div>
                     
                     <div class="features">
                         <div class="feature-card">
@@ -1547,14 +1310,6 @@
                             <div class="feature-icon"><i class="fas fa-pencil-alt"></i></div>
                             <div class="feature-title">Criação de Conteúdo</div>
                         </div>
-                        <div class="feature-card">
-                            <div class="feature-icon"><i class="fas fa-book"></i></div>
-                            <div class="feature-title">Explicação de Conceitos</div>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon"><i class="fas fa-search"></i></div>
-                            <div class="feature-title">Solução de Problemas</div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1583,6 +1338,15 @@
     </div>
 
     <script>
+        // Função para alternar a exibição das categorias
+        function toggleCategory(categoryId) {
+            const btn = document.querySelector(`.${categoryId}-btn`);
+            const tools = document.getElementById(`${categoryId}-tools`);
+            
+            btn.classList.toggle('expanded');
+            tools.classList.toggle('active');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const ViBot = {
                 config: {
@@ -1590,7 +1354,7 @@
                     apiKey: "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",
                     model: "llama3-70b-8192",
                     temperature: 0.7,
-                    maxTokens: 512,
+                    maxTokens: 16384,
                     systemPrompt: "Você é um assistente útil chamado ViBot. Responda de forma clara e concisa no idioma do usuário."
                 },
 
@@ -1634,9 +1398,9 @@
                         deleteAllConversationsBtn: document.getElementById("deleteAllConversationsBtn")
                     };
 
-                    // Lista de todas as 250 ferramentas
+                    // Lista de todas as ferramentas (500 no total)
                     this.tools = [
-                        // Produtividade (25)
+                        // Produtividade (50)
                         'generateEmailBtn', 'summarizeTextBtn', 'translateTextBtn', 
                         'improveTextBtn', 'generateCodeBtn', 'generateIdeasBtn', 
                         'analyzeDataBtn', 'createContentBtn', 'explainConceptBtn', 
@@ -1644,88 +1408,224 @@
                         'generatePresentationBtn', 'generateChecklistBtn', 'generateWorkflowBtn',
                         'generateBudgetBtn', 'generateInvoiceBtn', 'generateResumeBtn',
                         'generateCoverLetterBtn', 'generateJobDescriptionBtn', 'generatePerformanceReviewBtn',
-                        'generateKPIReportBtn', 'generateBusinessStrategyBtn',
+                        'generateKPIReportBtn', 'generateBusinessStrategyBtn', 'generateBusinessPlanBtn',
+                        'generatePitchBtn', 'generateInterviewBtn', 'generateCustomerServiceBtn',
+                        'generateNegotiationBtn', 'generateLeadershipBtn', 'generateTeamBuildingBtn',
+                        'generateStartupBtn', 'generateEcommerceBtn', 'generateSocialMediaMarketingBtn',
+                        'generateSEOStrategyBtn', 'generateBrandStrategyBtn', 'generateFinancialProjectionBtn',
+                        'generateSWOTBtn', 'generateMarketResearchBtn', 'generateSalesFunnelBtn',
+                        'generateCustomerPersonaBtn', 'generateCompetitiveAnalysisBtn', 'generateRiskAssessmentBtn',
+                        'generateExitStrategyBtn', 'generateFranchiseModelBtn', 'generateInvestorDeckBtn',
+                        'generateGrantProposalBtn', 'generatePartnershipAgreementBtn', 'generateNonDisclosureBtn',
+                        'generateEmployeeHandbookBtn', 'generateTrainingProgramBtn', 'generateMentorshipProgramBtn',
+                        'generateDiversityPolicyBtn', 'generateRemoteWorkPolicyBtn', 'generateSustainabilityPlanBtn',
+                        'generateCSRStrategyBtn',
                         
-                        // Criatividade (25)
+                        // Criatividade (50)
                         'generatePoemBtn', 'generateStoryBtn', 'generateJokeBtn',
                         'generateScriptBtn', 'generateSongBtn', 'generateSpeechBtn',
                         'generateArtBtn', 'generateDesignBtn', 'generateBrandingBtn',
                         'generateSloganBtn', 'generateCharacterBtn', 'generateWorldBuildingBtn',
                         'generatePlotTwistBtn', 'generateDialogueBtn', 'generateHaikuBtn',
                         'generateLimerickBtn', 'generateAcrosticBtn', 'generateMetaphorBtn',
-                        'generateRiddleBtn', 'generatePuzzleBtn',
+                        'generateRiddleBtn', 'generatePuzzleBtn', 'generateComicScriptBtn',
+                        'generateScreenplayBtn', 'generateTheaterPlayBtn', 'generateRadioDramaBtn',
+                        'generateChildrenStoryBtn', 'generateFairyTaleBtn', 'generateMythologyBtn',
+                        'generateUrbanLegendBtn', 'generateAllegoryBtn', 'generateParableBtn',
+                        'generateFableBtn', 'generateSatireBtn', 'generateParodyBtn',
+                        'generateSonnetBtn', 'generateOdeBtn', 'generateElegyBtn',
+                        'generateBalladBtn', 'generateEpicBtn', 'generateFreeVerseBtn',
+                        'generateConcretePoetryBtn', 'generateBlackoutPoetryBtn', 'generateFlashFictionBtn',
+                        'generateSixWordStoryBtn', 'generateTwitteratureBtn', 'generateInteractiveFictionBtn',
+                        'generateChooseYourAdventureBtn', 'generateDrabbleBtn', 'generateVignetteBtn',
+                        'generateStreamOfConsciousnessBtn', 'generateEpistolaryBtn', 'generateFoundPoetryBtn',
+                        'generateErasurePoetryBtn', 'generateVisualPoetryBtn', 'generateSoundPoetryBtn',
+                        'generatePerformancePoetryBtn', 'generateSpokenWordBtn', 'generateProsePoetryBtn',
+                        'generateExperimentalLiteratureBtn', 'generateSurrealWritingBtn', 'generateAbsurdistWritingBtn',
+                        'generateDadaistWritingBtn', 'generateBeatGenerationBtn', 'generatePostmodernWritingBtn',
+                        'generateMagicalRealismBtn', 'generateCyberpunkBtn', 'generateSteampunkBtn',
+                        'generateDieselpunkBtn', 'generateBiopunkBtn', 'generateSolarpunkBtn',
+                        'generateAtompunkBtn', 'generateRaypunkBtn', 'generateLovecraftianBtn',
+                        'generateGothicBtn', 'generateNoirBtn', 'generatePulpFictionBtn',
+                        'generateNewWeirdBtn', 'generateSlipstreamBtn', 'generateBizarroFictionBtn',
+                        'generateCliFiBtn', 'generateAfrofuturismBtn', 'generateIndigenousFuturismBtn',
+                        'generateHopepunkBtn', 'generateNoblebrightBtn', 'generateGrimdarkBtn',
+                        'generateFlintlockFantasyBtn', 'generateSwordAndSorceryBtn', 'generateHighFantasyBtn',
+                        'generateLowFantasyBtn', 'generateDarkFantasyBtn', 'generateUrbanFantasyBtn',
+                        'generateHistoricalFantasyBtn', 'generateMythicFantasyBtn', 'generateFairytaleFantasyBtn',
+                        'generatePortalFantasyBtn', 'generateScienceFantasyBtn',
                         
-                        // Vida Diária (25)
+                        // Vida Diária (50)
                         'generateRecipeBtn', 'generateWorkoutBtn', 'generateTravelBtn',
                         'generateAdviceBtn', 'generateParentingBtn', 'generateFinanceBtn',
                         'generateHealthBtn', 'generateDietBtn', 'generateShoppingBtn',
                         'generateHomeBtn', 'generateGardenBtn', 'generatePetCareBtn',
                         'generateCarMaintenanceBtn', 'generateHomeRepairBtn', 'generateCleaningBtn',
                         'generateOrganizationBtn', 'generateTimeManagementBtn', 'generateStressManagementBtn',
-                        'generateSleepTipsBtn', 'generateMeditationBtn',
+                        'generateSleepTipsBtn', 'generateMeditationBtn', 'generateMealPlanBtn',
+                        'generateGroceryListBtn', 'generateBudgetPlanBtn', 'generateSavingsPlanBtn',
+                        'generateDebtReductionBtn', 'generateInvestmentPlanBtn', 'generateRetirementPlanBtn',
+                        'generateInsuranceAdviceBtn', 'generateTaxPlanningBtn', 'generateEstatePlanningBtn',
+                        'generateHomeDecorBtn', 'generateDIYProjectBtn', 'generateMovingChecklistBtn',
+                        'generatePackingListBtn', 'generateVacationPlanBtn', 'generateTravelPackingBtn',
+                        'generateItineraryBtn', 'generateLanguageLearningBtn', 'generateCulturalTipsBtn',
+                        'generateLocalCustomsBtn', 'generateSafetyTipsBtn', 'generateEmergencyPlanBtn',
+                        'generateFirstAidGuideBtn', 'generateWellnessPlanBtn', 'generateMindfulnessBtn',
+                        'generateYogaRoutineBtn', 'generateExercisePlanBtn', 'generateNutritionPlanBtn',
+                        'generateWeightLossPlanBtn', 'generateMuscleGainPlanBtn', 'generateFitnessChallengeBtn',
+                        'generateHabitTrackerBtn', 'generateGoalSettingBtn', 'generateProductivitySystemBtn',
+                        'generateMorningRoutineBtn', 'generateEveningRoutineBtn', 'generateSleepScheduleBtn',
+                        'generateDigitalDetoxBtn', 'generateMinimalismGuideBtn', 'generateDeclutteringPlanBtn',
                         
-                        // Educação (25)
+                        // Educação (50)
                         'generateQuizBtn', 'generateFlashcardsBtn', 'generateLessonPlanBtn',
                         'generateStudyPlanBtn', 'generateHomeworkBtn', 'generateEssayBtn',
                         'generateThesisBtn', 'generateResearchBtn', 'generateSummaryBtn',
                         'generateMathProblemBtn', 'generateScienceExperimentBtn', 'generateHistoryTimelineBtn',
                         'generateLanguageLessonBtn', 'generateCodingExerciseBtn', 'generateArtProjectBtn',
                         'generateBookReportBtn', 'generateDebateTopicsBtn', 'generateCriticalThinkingBtn',
-                        'generateLearningStyleBtn',
+                        'generateLearningStyleBtn', 'generateStudyTechniquesBtn', 'generateMemoryTechniquesBtn',
+                        'generateNoteTakingBtn', 'generateTimeManagementEduBtn', 'generateTestPreparationBtn',
+                        'generateScholarshipEssayBtn', 'generateCollegeApplicationBtn', 'generateCareerPlanningBtn',
+                        'generateInterviewPreparationBtn', 'generateResumeWritingBtn', 'generateCoverLetterEduBtn',
+                        'generateLinkedInProfileBtn', 'generatePortfolioAdviceBtn', 'generatePresentationSkillsBtn',
+                        'generatePublicSpeakingBtn', 'generateWritingSkillsBtn', 'generateReadingComprehensionBtn',
+                        'generateVocabularyBuilderBtn', 'generateGrammarGuideBtn', 'generateLanguageImmersionBtn',
+                        'generateCulturalExchangeBtn', 'generateStudyAbroadBtn', 'generateExchangeProgramBtn',
+                        'generateInternshipAdviceBtn', 'generateVolunteeringIdeasBtn', 'generateExtracurricularBtn',
+                        'generateLeadershipSkillsBtn', 'generateTeamworkSkillsBtn', 'generateCommunicationSkillsBtn',
+                        'generateEmotionalIntelligenceBtn', 'generateGrowthMindsetBtn', 'generateMotivationTechniquesBtn',
+                        'generateStressManagementEduBtn', 'generateMindfulnessEduBtn', 'generateWellbeingStrategiesBtn',
+                        'generateDigitalLiteracyBtn', 'generateMediaLiteracyBtn', 'generateFinancialLiteracyBtn',
+                        'generateCivicEducationBtn', 'generateEnvironmentalEducationBtn', 'generateHealthEducationBtn',
                         
-                        // Negócios (25)
+                        // Negócios (50)
                         'generateBusinessBtn', 'generateMarketingBtn', 'generateSalesBtn',
                         'generateProposalBtn', 'generateContractBtn', 'generateReportBtn',
                         'generateSWOTBtn', 'generateBusinessPlanBtn', 'generatePitchBtn',
                         'generateInterviewBtn', 'generateCustomerServiceBtn', 'generateNegotiationBtn',
                         'generateLeadershipBtn', 'generateTeamBuildingBtn', 'generateStartupBtn',
                         'generateEcommerceBtn', 'generateSocialMediaMarketingBtn', 'generateSEOStrategyBtn',
-                        'generateBrandStrategyBtn', 'generateFinancialProjectionBtn',
+                        'generateBrandStrategyBtn', 'generateFinancialProjectionBtn', 'generateMarketResearchBtn',
+                        'generateCompetitiveAnalysisBtn', 'generateCustomerPersonaBtn', 'generateSalesFunnelBtn',
+                        'generateEmailMarketingBtn', 'generateContentMarketingBtn', 'generateInfluencerMarketingBtn',
+                        'generateViralMarketingBtn', 'generateGuerrillaMarketingBtn', 'generateAffiliateMarketingBtn',
+                        'generateReferralProgramBtn', 'generateLoyaltyProgramBtn', 'generatePricingStrategyBtn',
+                        'generateDistributionStrategyBtn', 'generateSupplyChainBtn', 'generateInventoryManagementBtn',
+                        'generateQualityControlBtn', 'generateRiskManagementBtn', 'generateCrisisManagementBtn',
+                        'generateChangeManagementBtn', 'generateProjectManagementBtn', 'generateAgileMethodologyBtn',
+                        'generateScrumFrameworkBtn', 'generateKanbanSystemBtn', 'generateLeanMethodologyBtn',
+                        'generateSixSigmaBtn', 'generateBusinessProcessBtn', 'generateWorkflowAutomationBtn',
+                        'generateCustomerJourneyBtn', 'generateUserExperienceBtn', 'generateProductDevelopmentBtn',
+                        'generateInnovationManagementBtn', 'generateIntellectualPropertyBtn', 'generateFranchisingBtn',
+                        'generateMergersAcquisitionsBtn', 'generateBusinessExitBtn', 'generateSuccessionPlanningBtn',
+                        'generateCorporateGovernanceBtn', 'generateBusinessEthicsBtn', 'generateSustainabilityBusinessBtn',
                         
-                        // Tecnologia (25)
+                        // Tecnologia (50)
                         'generateAPIBtn', 'generateAlgorithmBtn', 'generateDatabaseBtn',
                         'generateUIBtn', 'generateMobileAppBtn', 'generateWebsiteBtn',
                         'generateGameBtn', 'generateAIBtn', 'generateBlockchainBtn',
                         'generateSecurityBtn', 'generateDevOpsBtn', 'generateCloudComputingBtn',
-                        'generateDataScienceBtn', 'generateMachineLearningBtn', 'generateCybersecurityBtn',
-                        'generateIoTBtn', 'generateARVRBtn', 'generateAutomationBtn',
-                        'generateSoftwareArchitectureBtn', 'generateCodeReviewBtn',
+                        'generateDataScienceBtn', 'generateMachineLearningBtn', 'generateDeepLearningBtn',
+                        'generateNeuralNetworkBtn', 'generateComputerVisionBtn', 'generateNaturalLanguageBtn',
+                        'generateRoboticsBtn', 'generateIoTBtn', 'generateARVRBtn',
+                        'generateQuantumComputingBtn', 'generateCybersecurityBtn', 'generateEthicalHackingBtn',
+                        'generateDigitalForensicsBtn', 'generateCryptographyBtn', 'generateNetworkSecurityBtn',
+                        'generateApplicationSecurityBtn', 'generateCloudSecurityBtn', 'generateIncidentResponseBtn',
+                        'generateThreatModelingBtn', 'generateRiskAssessmentTechBtn', 'generateComplianceFrameworkBtn',
+                        'generatePrivacyPolicyBtn', 'generateGDPRComplianceBtn', 'generateSoftwareArchitectureBtn',
+                        'generateSystemDesignBtn', 'generateMicroservicesBtn', 'generateServerlessBtn',
+                        'generateContainerizationBtn', 'generateKubernetesBtn', 'generateCI_CDBtn',
+                        'generateTestingStrategyBtn', 'generateQAProcessBtn', 'generateCodeReviewBtn',
+                        'generateTechnicalDebtBtn', 'generateRefactoringBtn', 'generateLegacySystemBtn',
+                        'generateDocumentationBtn', 'generateTechnicalWritingBtn', 'generateDeveloperOnboardingBtn',
+                        'generateTechStackBtn', 'generateProgrammingLanguageBtn', 'generateFrameworkBtn',
+                        'generateLibraryBtn', 'generateToolingBtn', 'generateProductivityToolsBtn',
                         
-                        // Entretenimento (25)
+                        // Entretenimento (50)
                         'generateMovieBtn', 'generateTVShowBtn', 'generateBookBtn',
                         'generateGameIdeaBtn', 'generateTriviaBtn', 'generateDebateBtn',
                         'generatePodcastBtn', 'generateComedyBtn', 'generateHorrorBtn',
                         'generateFantasyBtn', 'generateSciFiBtn', 'generateRomanceBtn',
                         'generateMysteryBtn', 'generateAdventureBtn', 'generateFanFictionBtn',
                         'generateBoardGameBtn', 'generateCardGameBtn', 'generateRolePlayingBtn',
-                        'generateMagicTrickBtn',
+                        'generateVideoGameBtn', 'generateMobileGameBtn', 'generatePuzzleGameBtn',
+                        'generateStrategyGameBtn', 'generateSimulationGameBtn', 'generateSportsGameBtn',
+                        'generateFightingGameBtn', 'generateShooterGameBtn', 'generateRacingGameBtn',
+                        'generatePlatformerBtn', 'generateSandboxBtn', 'generateSurvivalGameBtn',
+                        'generateHorrorGameBtn', 'generateMMORPGBtn', 'generateMOBABtn',
+                        'generateBattleRoyaleBtn', 'generateCasualGameBtn', 'generateEducationalGameBtn',
+                        'generateArtGameBtn', 'generateNarrativeGameBtn', 'generateMusicGameBtn',
+                        'generatePartyGameBtn', 'generateTriviaGameBtn', 'generateWordGameBtn',
+                        'generateLogicGameBtn', 'generateMathGameBtn', 'generateScienceGameBtn',
+                        'generateHistoryGameBtn', 'generateGeographyGameBtn', 'generateLanguageGameBtn',
+                        'generateMemoryGameBtn', 'generateReactionGameBtn', 'generateSkillGameBtn',
+                        'generateDanceGameBtn', 'generateFitnessGameBtn', 'generateMeditationGameBtn',
+                        'generateSocialGameBtn', 'generateCollaborativeGameBtn', 'generateCompetitiveGameBtn',
                         
-                        // Especializadas (25)
+                        // Especializadas (50)
                         'chessHelperBtn', 'generateLegalBtn', 'generateMedicalBtn',
                         'generateEngineeringBtn', 'generateScienceBtn', 'generateMathBtn',
                         'generateHistoryBtn', 'generatePhilosophyBtn', 'generatePsychologyBtn',
                         'generateAstronomyBtn', 'generateChemistryBtn', 'generatePhysicsBtn',
                         'generateBiologyBtn', 'generateGeographyBtn', 'generateEconomicsBtn',
                         'generateSociologyBtn', 'generateAnthropologyBtn', 'generatePoliticalScienceBtn',
-                        'generateLinguisticsBtn', 'generateArchitectureBtn',
+                        'generateLinguisticsBtn', 'generateArchitectureBtn', 'generateUrbanPlanningBtn',
+                        'generateEnvironmentalScienceBtn', 'generateClimateScienceBtn', 'generateGeologyBtn',
+                        'generatePaleontologyBtn', 'generateArchaeologyBtn', 'generateMeteorologyBtn',
+                        'generateOceanographyBtn', 'generateEcologyBtn', 'generateZoologyBtn',
+                        'generateBotanyBtn', 'generateGeneticsBtn', 'generateNeuroscienceBtn',
+                        'generateBiotechnologyBtn', 'generatePharmacologyBtn', 'generateEpidemiologyBtn',
+                        'generatePublicHealthBtn', 'generateNutritionScienceBtn', 'generateSportsScienceBtn',
+                        'generateCognitiveScienceBtn', 'generateArtificialIntelligenceBtn', 'generateDataAnalysisBtn',
+                        'generateStatisticsBtn', 'generateActuarialScienceBtn', 'generateCryptologyBtn',
+                        'generateGameTheoryBtn', 'generateOperationsResearchBtn', 'generateSystemsTheoryBtn',
+                        'generateChaosTheoryBtn', 'generateComplexityScienceBtn', 'generateFuturismBtn',
+                        'generateScienceFictionBtn', 'generateSpeculativeFictionBtn', 'generateAlternateHistoryBtn',
+                        'generateUtopianFictionBtn', 'generateDystopianFictionBtn', 'generatePostApocalypticBtn',
                         
-                        // Social (25)
+                        // Social (50)
                         'generateSocialMediaBtn', 'generateDatingProfileBtn', 'generateInvitationBtn',
                         'generateApologyBtn', 'generateComplimentBtn', 'generateFeedbackBtn',
                         'generateNetworkingBtn', 'generateEventBtn', 'generateWeddingBtn',
                         'generateBirthdayBtn', 'generateThankYouNoteBtn', 'generateSympathyMessageBtn',
                         'generateRecommendationBtn', 'generateIcebreakerBtn', 'generateConflictResolutionBtn',
                         'generatePublicSpeakingBtn', 'generateEtiquetteBtn', 'generateCulturalTipsBtn',
-                        'generateFriendshipAdviceBtn',
+                        'generateFriendshipAdviceBtn', 'generateRelationshipAdviceBtn', 'generateParentingAdviceBtn',
+                        'generateFamilyMediationBtn', 'generateTeamBuildingSocialBtn', 'generateCommunityBuildingBtn',
+                        'generateVolunteerCoordinationBtn', 'generateFundraisingBtn', 'generateActivismBtn',
+                        'generateAdvocacyBtn', 'generateSocialJusticeBtn', 'generateDiversityInclusionBtn',
+                        'generateAccessibilityBtn', 'generateMentalHealthAwarenessBtn', 'generateWellnessCommunityBtn',
+                        'generateSupportGroupBtn', 'generateMentorshipProgramBtn', 'generateProfessionalNetworkBtn',
+                        'generateAlumniNetworkBtn', 'generateIndustryAssociationBtn', 'generateTradeUnionBtn',
+                        'generatePoliticalCampaignBtn', 'generateGrassrootsMovementBtn', 'generateSocialEnterpriseBtn',
+                        'generateNonprofitBtn', 'generateCharityBtn', 'generatePhilanthropyBtn',
+                        'generateCrowdfundingBtn', 'generateMicrofinanceBtn', 'generateSocialImpactBtn',
+                        'generateCorporateSocialBtn', 'generateSustainableDevelopmentBtn', 'generateGlobalCitizenshipBtn',
+                        'generateCulturalExchangeBtn', 'generateLanguageExchangeBtn', 'generateTravelCommunityBtn',
+                        'generateHobbyGroupBtn', 'generateBookClubBtn', 'generateFilmClubBtn',
                         
-                        // Diversos (25)
+                        // Diversos (50)
                         'generatePrayerBtn', 'generateAffirmationBtn', 'generateJournalBtn',
                         'generateBucketListBtn', 'generateGratitudeBtn', 'generateVisionBoardBtn',
                         'generateGoalSettingBtn', 'generateProductivityBtn', 'generateHobbyIdeasBtn',
                         'generateSelfCareBtn', 'generateMindfulnessBtn', 'generateMotivationBtn',
                         'generateInspirationBtn', 'generateQuotesBtn', 'generateRiddlesBtn',
                         'generateTriviaQuestionsBtn', 'generateWouldYouRatherBtn', 'generateIceCreamFlavorsBtn',
-                        'generateBabyNamesBtn', 'generatePetNamesBtn'
+                        'generateBabyNamesBtn', 'generatePetNamesBtn', 'generateBandNamesBtn',
+                        'generateBusinessNamesBtn', 'generateProductNamesBtn', 'generateBookTitlesBtn',
+                        'generateMovieTitlesBtn', 'generateSongTitlesBtn', 'generatePoemTitlesBtn',
+                        'generateArtworkTitlesBtn', 'generateExhibitNamesBtn', 'generateEventNamesBtn',
+                        'generateTeamNamesBtn', 'generateUsernameIdeasBtn', 'generatePasswordIdeasBtn',
+                        'generateHashtagIdeasBtn', 'generateSloganIdeasBtn', 'generateTaglineIdeasBtn',
+                        'generateMottoIdeasBtn', 'generateCatchphraseIdeasBtn', 'generateNicknameIdeasBtn',
+                        'generateSuperheroNamesBtn', 'generateVillainNamesBtn', 'generateFantasyNamesBtn',
+                        'generateSciFiNamesBtn', 'generateHorrorNamesBtn', 'generateMysteryNamesBtn',
+                        'generateRomanceNamesBtn', 'generateWesternNamesBtn', 'generateHistoricalNamesBtn',
+                        'generateMythologicalNamesBtn', 'generateCelestialNamesBtn', 'generateElementalNamesBtn',
+                        'generateColorNamesBtn', 'generatePlantNamesBtn', 'generateAnimalNamesBtn',
+                        'generateMineralNamesBtn', 'generateGemstoneNamesBtn', 'generateWeatherNamesBtn',
+                        'generateSeasonNamesBtn', 'generateTimeNamesBtn', 'generateSpaceNamesBtn'
                     ];
                     
                     // Cache all buttons
@@ -1769,7 +1669,7 @@
                     this.elements.toolsTabBtn.addEventListener('click', () => this.showTab('tools'));
                     this.elements.settingsTabBtn.addEventListener('click', () => this.showTab('settings'));
 
-                    // Tool buttons (250 tools)
+                    // Tool buttons (500 tools)
                     this.tools.forEach(tool => {
                         if (this.elements[tool]) {
                             this.elements[tool].addEventListener('click', () => this.handleToolClick(tool));
@@ -1940,7 +1840,7 @@
                     const conversation = this.conversations[this.currentConversationId];
                     
                     if (conversation.messages.length === 0) {
-                        this.addMessage("bot", "Olá! Sou o ViBot, seu assistente de IA com 250 ferramentas. Como posso te ajudar hoje?");
+                        this.addMessage("bot", "Olá! Sou o ViBot, seu assistente de IA com 500 ferramentas. Como posso te ajudar hoje?");
                     } else {
                         conversation.messages.forEach(msg => {
                             this.addMessageToChatbox(msg.role === "assistant" ? "bot" : "user", msg.content);
@@ -1973,7 +1873,7 @@
                         ];
                         
                         // Validação reforçada dos parâmetros
-                        const safeMaxTokens = Math.max(128, Math.min(parseInt(this.config.maxTokens), 1024));
+                        const safeMaxTokens = Math.max(128, Math.min(parseInt(this.config.maxTokens), 16384));
                         const safeTemperature = Math.max(0.1, Math.min(parseFloat(this.config.temperature), 2.0));
                         
                         const response = await fetch(this.config.apiUrl, {
@@ -2048,8 +1948,30 @@
                     };
                     actionsDiv.appendChild(copyBtn);
                     
+                    // Adiciona botão de download
+                    const downloadBtn = document.createElement("button");
+                    downloadBtn.className = "download-btn";
+                    downloadBtn.innerHTML = `<i class="fas fa-download"></i> Baixar`;
+                    downloadBtn.onclick = () => {
+                        this.downloadText(content);
+                    };
+                    actionsDiv.appendChild(downloadBtn);
+                    
                     messageDiv.appendChild(actionsDiv);
                     this.elements.chatbox.appendChild(messageDiv);
+                },
+
+                downloadText(content) {
+                    const text = this.getTextContent(content);
+                    const blob = new Blob([text], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `vibot-mensagem-${new Date().toISOString().slice(0, 10)}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
                 },
 
                 getTextContent(html) {
@@ -2060,7 +1982,7 @@
                 
                 handleToolClick(toolId) {
                     const toolPrompts = {
-                        // Produtividade (25)
+                        // Produtividade (50)
                         generateEmailBtn: `Por favor, gere um e-mail profissional com base nas informações que eu fornecer.`,
                         summarizeTextBtn: `Por favor, resuma o seguinte texto mantendo os pontos principais.`,
                         translateTextBtn: `Por favor, traduza o seguinte texto para o idioma que eu especificar.`,
@@ -2084,8 +2006,40 @@
                         generatePerformanceReviewBtn: `Por favor, ajude a preparar uma avaliação de desempenho construtiva.`,
                         generateKPIReportBtn: `Por favor, ajude a criar um relatório de KPIs com métricas relevantes.`,
                         generateBusinessStrategyBtn: `Por favor, ajude a desenvolver uma estratégia de negócios para o cenário que eu descrever.`,
+                        generateBusinessPlanBtn: `Por favor, ajude a estruturar um plano de negócios completo.`,
+                        generatePitchBtn: `Por favor, ajude a criar um pitch convincente para investidores.`,
+                        generateInterviewBtn: `Por favor, prepare perguntas para uma entrevista sobre o tópico que eu fornecer.`,
+                        generateCustomerServiceBtn: `Por favor, sugira abordagens para lidar com situações de atendimento ao cliente.`,
+                        generateNegotiationBtn: `Por favor, sugira estratégias de negociação para o cenário que eu descrever.`,
+                        generateLeadershipBtn: `Por favor, sugira técnicas de liderança para a situação que eu mencionar.`,
+                        generateTeamBuildingBtn: `Por favor, sugira dinâmicas de grupo para o objetivo que eu mencionar.`,
+                        generateStartupBtn: `Por favor, dê conselhos para startups no estágio que eu mencionar.`,
+                        generateEcommerceBtn: `Por favor, sugira estratégias para melhorar um e-commerce.`,
+                        generateSocialMediaMarketingBtn: `Por favor, sugira um plano de marketing digital para a plataforma que eu mencionar.`,
+                        generateSEOStrategyBtn: `Por favor, sugira estratégias de SEO para o site que eu mencionar.`,
+                        generateBrandStrategyBtn: `Por favor, ajude a desenvolver uma estratégia de marca para o negócio que eu descrever.`,
+                        generateFinancialProjectionBtn: `Por favor, ajude a criar projeções financeiras para o negócio que eu mencionar.`,
+                        generateSWOTBtn: `Por favor, faça uma análise SWOT para o negócio que eu descrever.`,
+                        generateMarketResearchBtn: `Por favor, ajude a planejar uma pesquisa de mercado eficaz.`,
+                        generateSalesFunnelBtn: `Por favor, ajude a desenhar um funil de vendas eficiente.`,
+                        generateCustomerPersonaBtn: `Por favor, ajude a criar personas de cliente realistas.`,
+                        generateCompetitiveAnalysisBtn: `Por favor, faça uma análise competitiva para o setor que eu mencionar.`,
+                        generateRiskAssessmentBtn: `Por favor, avalie os riscos para o projeto que eu descrever.`,
+                        generateExitStrategyBtn: `Por favor, sugira estratégias de saída para o negócio que eu mencionar.`,
+                        generateFranchiseModelBtn: `Por favor, ajude a desenvolver um modelo de franquia.`,
+                        generateInvestorDeckBtn: `Por favor, ajude a criar um deck de investidores persuasivo.`,
+                        generateGrantProposalBtn: `Por favor, ajude a escrever uma proposta de subsídio convincente.`,
+                        generatePartnershipAgreementBtn: `Por favor, ajude a estruturar um acordo de parceria.`,
+                        generateNonDisclosureBtn: `Por favor, ajude a redigir um acordo de confidencialidade.`,
+                        generateEmployeeHandbookBtn: `Por favor, ajude a criar um manual do funcionário abrangente.`,
+                        generateTrainingProgramBtn: `Por favor, ajude a desenvolver um programa de treinamento eficaz.`,
+                        generateMentorshipProgramBtn: `Por favor, ajude a estruturar um programa de mentoria.`,
+                        generateDiversityPolicyBtn: `Por favor, ajude a criar uma política de diversidade e inclusão.`,
+                        generateRemoteWorkPolicyBtn: `Por favor, ajude a desenvolver uma política de trabalho remoto.`,
+                        generateSustainabilityPlanBtn: `Por favor, ajude a criar um plano de sustentabilidade.`,
+                        generateCSRStrategyBtn: `Por favor, ajude a desenvolver uma estratégia de responsabilidade social corporativa.`,
                         
-                        // Criatividade (25)
+                        // Criatividade (50)
                         generatePoemBtn: `Por favor, escreva um poema sobre o tema que eu fornecer.`,
                         generateStoryBtn: `Por favor, crie uma história interessante com base no tema que eu fornecer.`,
                         generateJokeBtn: `Por favor, conte uma piada sobre o assunto que eu mencionar.`,
@@ -2106,8 +2060,83 @@
                         generateMetaphorBtn: `Por favor, crie metáforas criativas para descrever o conceito que eu mencionar.`,
                         generateRiddleBtn: `Por favor, crie charadas engenhosas sobre o tema que eu mencionar.`,
                         generatePuzzleBtn: `Por favor, crie quebra-cabeças ou enigmas interessantes.`,
+                        generateComicScriptBtn: `Por favor, escreva um roteiro para uma história em quadrinhos.`,
+                        generateScreenplayBtn: `Por favor, escreva um roteiro cinematográfico.`,
+                        generateTheaterPlayBtn: `Por favor, escreva uma peça teatral.`,
+                        generateRadioDramaBtn: `Por favor, escreva um roteiro para radionovela.`,
+                        generateChildrenStoryBtn: `Por favor, escreva uma história infantil.`,
+                        generateFairyTaleBtn: `Por favor, escreva um conto de fadas.`,
+                        generateMythologyBtn: `Por favor, crie um mito ou lenda original.`,
+                        generateUrbanLegendBtn: `Por favor, invente uma lenda urbana convincente.`,
+                        generateAllegoryBtn: `Por favor, escreva uma alegoria sobre o tema que eu mencionar.`,
+                        generateParableBtn: `Por favor, escreva uma parábola com uma lição moral.`,
+                        generateFableBtn: `Por favor, escreva uma fábula com animais personificados.`,
+                        generateSatireBtn: `Por favor, escreva uma sátira sobre o assunto que eu mencionar.`,
+                        generateParodyBtn: `Por favor, escreva uma paródia de uma obra conhecida.`,
+                        generateSonnetBtn: `Por favor, escreva um soneto no estilo shakespeariano.`,
+                        generateOdeBtn: `Por favor, escreva uma ode ao objeto ou conceito que eu mencionar.`,
+                        generateElegyBtn: `Por favor, escreva uma elegia melancólica.`,
+                        generateBalladBtn: `Por favor, escreva uma balada narrativa.`,
+                        generateEpicBtn: `Por favor, escreva um poema épico sobre o herói que eu descrever.`,
+                        generateFreeVerseBtn: `Por favor, escreva um poema em verso livre sobre o tema que eu mencionar.`,
+                        generateConcretePoetryBtn: `Por favor, crie um poema concreto com forma visual.`,
+                        generateBlackoutPoetryBtn: `Por favor, crie um poema de apagamento a partir do texto que eu fornecer.`,
+                        generateFlashFictionBtn: `Por favor, escreva um microconto (história muito curta).`,
+                        generateSixWordStoryBtn: `Por favor, crie uma história em apenas seis palavras.`,
+                        generateTwitteratureBtn: `Por favor, escreva uma história no estilo twitteratura (limitada a tweets).`,
+                        generateInteractiveFictionBtn: `Por favor, crie uma ficção interativa com múltiplos caminhos.`,
+                        generateChooseYourAdventureBtn: `Por favor, escreva uma história do tipo "Escolha sua Aventura".`,
+                        generateDrabbleBtn: `Por favor, escreva um drabble (história exatamente com 100 palavras).`,
+                        generateVignetteBtn: `Por favor, escreva uma vinheta literária (cena curta e impressionista).`,
+                        generateStreamOfConsciousnessBtn: `Por favor, escreva no estilo fluxo de consciência.`,
+                        generateEpistolaryBtn: `Por favor, escreva uma história em formato epistolar (cartas/diários).`,
+                        generateFoundPoetryBtn: `Por favor, crie um poema encontrado a partir do texto que eu fornecer.`,
+                        generateErasurePoetryBtn: `Por favor, crie um poema apagando palavras de um texto existente.`,
+                        generateVisualPoetryBtn: `Por favor, descreva um poema visual que combine texto e imagem.`,
+                        generateSoundPoetryBtn: `Por favor, descreva um poema que explore qualidades sonoras da linguagem.`,
+                        generatePerformancePoetryBtn: `Por favor, escreva um poema destinado à performance.`,
+                        generateSpokenWordBtn: `Por favor, escreva um poema no estilo spoken word.`,
+                        generateProsePoetryBtn: `Por favor, escreva um poema em prosa.`,
+                        generateExperimentalLiteratureBtn: `Por favor, crie um texto literário experimental.`,
+                        generateSurrealWritingBtn: `Por favor, escreva no estilo surrealista.`,
+                        generateAbsurdistWritingBtn: `Por favor, escreva no estilo absurdista.`,
+                        generateDadaistWritingBtn: `Por favor, crie um texto no estilo dadaísta.`,
+                        generateBeatGenerationBtn: `Por favor, escreva no estilo da Geração Beat.`,
+                        generatePostmodernWritingBtn: `Por favor, escreva no estilo pós-moderno.`,
+                        generateMagicalRealismBtn: `Por favor, escreva no estilo realismo mágico.`,
+                        generateCyberpunkBtn: `Por favor, escreva no estilo cyberpunk.`,
+                        generateSteampunkBtn: `Por favor, escreva no estilo steampunk.`,
+                        generateDieselpunkBtn: `Por favor, escreva no estilo dieselpunk.`,
+                        generateBiopunkBtn: `Por favor, escreva no estilo biopunk.`,
+                        generateSolarpunkBtn: `Por favor, escreva no estilo solarpunk.`,
+                        generateAtompunkBtn: `Por favor, escreva no estilo atompunk.`,
+                        generateRaypunkBtn: `Por favor, escreva no estilo raypunk.`,
+                        generateLovecraftianBtn: `Por favor, escreva no estilo lovecraftiano.`,
+                        generateGothicBtn: `Por favor, escreva no estilo gótico.`,
+                        generateNoirBtn: `Por favor, escreva no estilo noir.`,
+                        generatePulpFictionBtn: `Por favor, escreva no estilo ficção pulp.`,
+                        generateNewWeirdBtn: `Por favor, escreva no estilo New Weird.`,
+                        generateSlipstreamBtn: `Por favor, escreva no estilo slipstream.`,
+                        generateBizarroFictionBtn: `Por favor, escreva no estilo ficção bizarra.`,
+                        generateCliFiBtn: `Por favor, escreva ficção climática (Cli-Fi).`,
+                        generateAfrofuturismBtn: `Por favor, escreva no estilo afrofuturismo.`,
+                        generateIndigenousFuturismBtn: `Por favor, escreva no estilo futurismo indígena.`,
+                        generateHopepunkBtn: `Por favor, escreva no estilo hopepunk.`,
+                        generateNoblebrightBtn: `Por favor, escreva no estilo noblebright.`,
+                        generateGrimdarkBtn: `Por favor, escreva no estilo grimdark.`,
+                        generateFlintlockFantasyBtn: `Por favor, escreva fantasia flintlock.`,
+                        generateSwordAndSorceryBtn: `Por favor, escreva no estilo espada e feitiçaria.`,
+                        generateHighFantasyBtn: `Por favor, escreva alta fantasia.`,
+                        generateLowFantasyBtn: `Por favor, escreva baixa fantasia.`,
+                        generateDarkFantasyBtn: `Por favor, escreva fantasia sombria.`,
+                        generateUrbanFantasyBtn: `Por favor, escreva fantasia urbana.`,
+                        generateHistoricalFantasyBtn: `Por favor, escreva fantasia histórica.`,
+                        generateMythicFantasyBtn: `Por favor, escreva fantasia mítica.`,
+                        generateFairytaleFantasyBtn: `Por favor, escreva fantasia de contos de fadas.`,
+                        generatePortalFantasyBtn: `Por favor, escreva fantasia de portal.`,
+                        generateScienceFantasyBtn: `Por favor, escreva ficção científica fantástica.`,
                         
-                        // Vida Diária (25)
+                        // Vida Diária (50)
                         generateRecipeBtn: `Por favor, sugira uma receita com os ingredientes que eu mencionar.`,
                         generateWorkoutBtn: `Por favor, crie um plano de treino para o objetivo que eu especificar.`,
                         generateTravelBtn: `Por favor, planeje um roteiro de viagem para o destino que eu especificar.`,
@@ -2128,361 +2157,340 @@
                         generateStressManagementBtn: `Por favor, sugira técnicas para gerenciar o estresse na situação que eu descrever.`,
                         generateSleepTipsBtn: `Por favor, dê dicas para melhorar a qualidade do meu sono.`,
                         generateMeditationBtn: `Por favor, sugira uma meditação guiada para o objetivo que eu mencionar.`,
-                        
-                        // Educação (25)
-                        generateQuizBtn: `Por favor, crie um quiz sobre o tópico que eu mencionar.`,
-                        generateFlashcardsBtn: `Por favor, crie flashcards para ajudar no estudo do assunto que eu mencionar.`,
-                        generateLessonPlanBtn: `Por favor, crie um plano de aula para o tópico e nível que eu especificar.`,
-                        generateStudyPlanBtn: `Por favor, crie um plano de estudos para o objetivo que eu mencionar.`,
-                        generateHomeworkBtn: `Por favor, ajude a criar exercícios para o tópico que eu mencionar.`,
-                        generateEssayBtn: `Por favor, ajude a estruturar uma redação sobre o tema que eu fornecer.`,
-                        generateThesisBtn: `Por favor, ajude a estruturar uma tese sobre o tema que eu fornecer.`,
-                        generateResearchBtn: `Por favor, sugira métodos de pesquisa para o tema que eu fornecer.`,
-                        generateSummaryBtn: `Por favor, crie um resumo acadêmico do texto que eu fornecer.`,
-                        generateMathProblemBtn: `Por favor, crie problemas matemáticos com base no nível e tópico que eu mencionar.`,
-                        generateScienceExperimentBtn: `Por favor, sugira um experimento científico sobre o tema que eu mencionar.`,
-                        generateHistoryTimelineBtn: `Por favor, crie uma linha do tempo para o período histórico que eu mencionar.`,
-                        generateLanguageLessonBtn: `Por favor, crie uma aula de idioma para o nível e tópico que eu especificar.`,
-                        generateCodingExerciseBtn: `Por favor, crie um exercício de programação para o nível e linguagem que eu mencionar.`,
-                        generateArtProjectBtn: `Por favor, sugira um projeto de arte para a faixa etária e materiais que eu mencionar.`,
-                        generateBookReportBtn: `Por favor, ajude a estruturar uma resenha crítica do livro que eu mencionar.`,
-                        generateDebateTopicsBtn: `Por favor, sugira tópicos interessantes para debate sobre o assunto que eu mencionar.`,
-                        generateCriticalThinkingBtn: `Por favor, sugira exercícios para desenvolver pensamento crítico.`,
-                        generateLearningStyleBtn: `Por favor, sugira estratégias de estudo baseadas no meu estilo de aprendizagem.`,
-                        
-                        // Negócios (25)
-                        generateBusinessBtn: `Por favor, sugira ideias de negócios para o nicho que eu mencionar.`,
-                        generateMarketingBtn: `Por favor, crie um plano de marketing para o produto que eu descrever.`,
-                        generateSalesBtn: `Por favor, sugira estratégias de vendas para o produto que eu mencionar.`,
-                        generateProposalBtn: `Por favor, ajude a escrever uma proposta comercial profissional.`,
-                        generateContractBtn: `Por favor, ajude a estruturar um contrato para a situação que eu descrever.`,
-                        generateReportBtn: `Por favor, ajude a estruturar um relatório profissional.`,
-                        generateSWOTBtn: `Por favor, faça uma análise SWOT para o negócio que eu descrever.`,
-                        generateBusinessPlanBtn: `Por favor, ajude a estruturar um plano de negócios.`,
-                        generatePitchBtn: `Por favor, ajude a criar um pitch convincente para a ideia que eu descrever.`,
-                        generateInterviewBtn: `Por favor, prepare perguntas para uma entrevista sobre o tópico que eu fornecer.`,
-                        generateCustomerServiceBtn: `Por favor, sugira abordagens para lidar com situações de atendimento ao cliente.`,
-                        generateNegotiationBtn: `Por favor, sugira estratégias de negociação para o cenário que eu descrever.`,
-                        generateLeadershipBtn: `Por favor, sugira técnicas de liderança para a situação que eu mencionar.`,
-                        generateTeamBuildingBtn: `Por favor, sugira dinâmicas de grupo para o objetivo que eu mencionar.`,
-                        generateStartupBtn: `Por favor, dê conselhos para startups no estágio que eu mencionar.`,
-                        generateEcommerceBtn: `Por favor, sugira estratégias para melhorar um e-commerce.`,
-                        generateSocialMediaMarketingBtn: `Por favor, sugira um plano de marketing digital para a plataforma que eu mencionar.`,
-                        generateSEOStrategyBtn: `Por favor, sugira estratégias de SEO para o site que eu mencionar.`,
-                        generateBrandStrategyBtn: `Por favor, ajude a desenvolver uma estratégia de marca para o negócio que eu descrever.`,
-                        generateFinancialProjectionBtn: `Por favor, ajude a criar projeções financeiras para o negócio que eu mencionar.`,
-                        
-                        // Tecnologia (25)
-                        generateAPIBtn: `Por favor, ajude a projetar uma API para a funcionalidade que eu descrever.`,
-                        generateAlgorithmBtn: `Por favor, ajude a criar um algoritmo para resolver o problema que eu mencionar.`,
-                        generateDatabaseBtn: `Por favor, ajude a projetar um banco de dados para a aplicação que eu descrever.`,
-                        generateUIBtn: `Por favor, sugira um design de interface para a aplicação que eu mencionar.`,
-                        generateMobileAppBtn: `Por favor, ajude a planejar um aplicativo mobile com base na minha ideia.`,
-                        generateWebsiteBtn: `Por favor, ajude a planejar um website com base nos requisitos que eu fornecer.`,
-                        generateGameBtn: `Por favor, ajude a projetar um jogo com base na ideia que eu descrever.`,
-                        generateAIBtn: `Por favor, explique conceitos de IA ou ajude a implementar uma solução.`,
-                        generateBlockchainBtn: `Por favor, explique conceitos de blockchain ou ajude com implementação.`,
-                        generateSecurityBtn: `Por favor, sugira medidas de segurança para o sistema que eu descrever.`,
-                        generateDevOpsBtn: `Por favor, sugira práticas de DevOps para o projeto que eu mencionar.`,
-                        generateCloudComputingBtn: `Por favor, sugira soluções em nuvem para a aplicação que eu descrever.`,
-                        generateDataScienceBtn: `Por favor, sugira abordagens de ciência de dados para o problema que eu mencionar.`,
-                        generateMachineLearningBtn: `Por favor, sugira modelos de machine learning para a tarefa que eu descrever.`,
-                        generateCybersecurityBtn: `Por favor, sugira medidas de segurança cibernética para o sistema que eu mencionar.`,
-                        generateIoTBtn: `Por favor, sugira implementações de IoT para o cenário que eu descrever.`,
-                        generateARVRBtn: `Por favor, sugira aplicações de realidade aumentada/virtual para o caso de uso que eu mencionar.`,
-                        generateAutomationBtn: `Por favor, sugira processos para automação na situação que eu descrever.`,
-                        generateSoftwareArchitectureBtn: `Por favor, sugira uma arquitetura de software para o sistema que eu mencionar.`,
-                        generateCodeReviewBtn: `Por favor, analise o código que eu fornecer e sugira melhorias.`,
-                        
-                        // Entretenimento (25)
-                        generateMovieBtn: `Por favor, sugira um enredo para um filme com base no gênero que eu mencionar.`,
-                        generateTVShowBtn: `Por favor, sugira uma ideia para série de TV com base no tema que eu fornecer.`,
-                        generateBookBtn: `Por favor, sugira um enredo para um livro com base no gênero que eu mencionar.`,
-                        generateGameIdeaBtn: `Por favor, sugira uma ideia para jogo com base nos parâmetros que eu fornecer.`,
-                        generateTriviaBtn: `Por favor, crie perguntas de trivia sobre o tópico que eu mencionar.`,
-                        generateDebateBtn: `Por favor, ajude a estruturar argumentos para um debate sobre o tema que eu mencionar.`,
-                        generatePodcastBtn: `Por favor, sugira tópicos ou estrutura para um podcast sobre o tema que eu mencionar.`,
-                        generateComedyBtn: `Por favor, crie conteúdo cômico sobre o assunto que eu mencionar.`,
-                        generateHorrorBtn: `Por favor, crie uma história de terror com base nos elementos que eu fornecer.`,
-                        generateFantasyBtn: `Por favor, crie uma história de fantasia com base nos elementos que eu fornecer.`,
-                        generateSciFiBtn: `Por favor, crie uma história de ficção científica com base nos elementos que eu fornecer.`,
-                        generateRomanceBtn: `Por favor, crie uma história de romance com base nos elementos que eu fornecer.`,
-                        generateMysteryBtn: `Por favor, crie uma história de mistério com base nos elementos que eu fornecer.`,
-                        generateAdventureBtn: `Por favor, crie uma história de aventura com base nos elementos que eu fornecer.`,
-                        generateFanFictionBtn: `Por favor, crie uma fanfiction baseada na obra que eu mencionar.`,
-                        generateBoardGameBtn: `Por favor, sugira regras para um jogo de tabuleiro com o tema que eu mencionar.`,
-                        generateCardGameBtn: `Por favor, sugira regras para um jogo de cartas com o tema que eu mencionar.`,
-                        generateRolePlayingBtn: `Por favor, sugira elementos para um RPG com o tema que eu mencionar.`,
-                        generateMagicTrickBtn: `Por favor, ensine um truque de mágica que possa ser feito com os itens que eu mencionar.`,
-                        
-                        // Especializadas (25)
-                        chessHelperBtn: `Por favor, ajude-me com esta posição de xadrez. Analise jogadas, estratégias ou responda perguntas sobre o jogo.`,
-                        generateLegalBtn: `Por favor, forneça informações gerais sobre o tópico jurídico que eu mencionar.`,
-                        generateMedicalBtn: `Por favor, forneça informações gerais sobre o tópico médico que eu mencionar.`,
-                        generateEngineeringBtn: `Por favor, ajude com conceitos ou soluções de engenharia para o problema que eu descrever.`,
-                        generateScienceBtn: `Por favor, explique conceitos científicos sobre o tópico que eu mencionar.`,
-                        generateMathBtn: `Por favor, ajude a resolver o problema matemático que eu fornecer.`,
-                        generateHistoryBtn: `Por favor, forneça informações históricas sobre o tópico que eu mencionar.`,
-                        generatePhilosophyBtn: `Por favor, discuta conceitos filosóficos sobre o tema que eu mencionar.`,
-                        generatePsychologyBtn: `Por favor, discuta conceitos psicológicos sobre o tema que eu mencionar.`,
-                        generateAstronomyBtn: `Por favor, discuta conceitos astronômicos sobre o tema que eu mencionar.`,
-                        generateChemistryBtn: `Por favor, explique conceitos químicos ou ajude com problemas de química.`,
-                        generatePhysicsBtn: `Por favor, explique conceitos físicos ou ajude com problemas de física.`,
-                        generateBiologyBtn: `Por favor, explique conceitos biológicos sobre o tópico que eu mencionar.`,
-                        generateGeographyBtn: `Por favor, explique conceitos geográficos sobre o tópico que eu mencionar.`,
-                        generateEconomicsBtn: `Por favor, explique conceitos econômicos sobre o tópico que eu mencionar.`,
-                        generateSociologyBtn: `Por favor, discuta conceitos sociológicos sobre o tema que eu mencionar.`,
-                        generateAnthropologyBtn: `Por favor, discuta conceitos antropológicos sobre o tema que eu mencionar.`,
-                        generatePoliticalScienceBtn: `Por favor, discuta conceitos de ciência política sobre o tema que eu mencionar.`,
-                        generateLinguisticsBtn: `Por favor, discuta conceitos linguísticos sobre o tema que eu mencionar.`,
-                        generateArchitectureBtn: `Por favor, discuta conceitos arquitetônicos ou sugira soluções de design.`,
-                        
-                        // Social (25)
-                        generateSocialMediaBtn: `Por favor, sugira conteúdo para mídias sociais sobre o tópico que eu mencionar.`,
-                        generateDatingProfileBtn: `Por favor, ajude a criar um perfil de namoro atraente com base nas minhas características.`,
-                        generateInvitationBtn: `Por favor, ajude a criar um convite para o evento que eu descrever.`,
-                        generateApologyBtn: `Por favor, ajude a redigir um pedido de desculpas para a situação que eu descrever.`,
-                        generateComplimentBtn: `Por favor, ajude a criar um elogio genuíno para a pessoa/situação que eu descrever.`,
-                        generateFeedbackBtn: `Por favor, ajude a estruturar feedback construtivo para a situação que eu descrever.`,
-                        generateNetworkingBtn: `Por favor, sugira abordagens para networking na área que eu mencionar.`,
-                        generateEventBtn: `Por favor, ajude a planejar um evento com base nos parâmetros que eu fornecer.`,
-                        generateWeddingBtn: `Por favor, sugira ideias para um casamento com base no tema que eu mencionar.`,
-                        generateBirthdayBtn: `Por favor, sugira ideias para uma festa de aniversário com base no tema que eu mencionar.`,
-                        generateThankYouNoteBtn: `Por favor, ajude a redigir uma nota de agradecimento para a situação que eu descrever.`,
-                        generateSympathyMessageBtn: `Por favor, ajude a redigir uma mensagem de pêsames apropriada.`,
-                        generateRecommendationBtn: `Por favor, ajude a escrever uma carta de recomendação para a pessoa que eu descrever.`,
-                        generateIcebreakerBtn: `Por favor, sugira atividades quebra-gelo para o grupo que eu mencionar.`,
-                        generateConflictResolutionBtn: `Por favor, sugira abordagens para resolver o conflito que eu descrever.`,
-                        generatePublicSpeakingBtn: `Por favor, sugira técnicas para melhorar minhas habilidades de oratória.`,
-                        generateEtiquetteBtn: `Por favor, dê conselhos de etiqueta para a situação que eu mencionar.`,
-                        generateCulturalTipsBtn: `Por favor, dê dicas culturais para interagir com pessoas do país/região que eu mencionar.`,
-                        generateFriendshipAdviceBtn: `Por favor, dê conselhos sobre como lidar com a situação de amizade que eu descrever.`,
-                        
-                        // Diversos (25)
-                        generatePrayerBtn: `Por favor, ajude a redigir uma oração com base na intenção que eu mencionar.`,
-                        generateAffirmationBtn: `Por favor, crie afirmações positivas para a área da vida que eu mencionar.`,
-                        generateJournalBtn: `Por favor, sugira prompts para diário sobre o tópico que eu mencionar.`,
-                        generateBucketListBtn: `Por favor, sugira itens para uma lista de desejos com base nos meus interesses.`,
-                        generateGratitudeBtn: `Por favor, sugira exercícios de gratidão com base na minha situação.`,
-                        generateVisionBoardBtn: `Por favor, sugira elementos para um quadro de visão com base nos meus objetivos.`,
-                        generateGoalSettingBtn: `Por favor, ajude a definir metas SMART para a área que eu mencionar.`,
-                        generateProductivityBtn: `Por favor, sugira técnicas de produtividade para melhorar meu fluxo de trabalho.`,
-                        generateHobbyIdeasBtn: `Por favor, sugira hobbies interessantes com base nos meus interesses.`,
-                        generateSelfCareBtn: `Por favor, sugira uma rotina de autocuidado para minhas necessidades.`,
-                        generateMindfulnessBtn: `Por favor, sugira exercícios de mindfulness para o objetivo que eu mencionar.`,
-                        generateMotivationBtn: `Por favor, sugira técnicas para aumentar minha motivação na área que eu mencionar.`,
-                        generateInspirationBtn: `Por favor, compartilhe insights inspiradores sobre o tópico que eu mencionar.`,
-                        generateQuotesBtn: `Por favor, compartilhe citações relevantes sobre o tema que eu mencionar.`,
-                        generateRiddlesBtn: `Por favor, crie enigmas interessantes sobre o assunto que eu mencionar.`,
-                        generateTriviaQuestionsBtn: `Por favor, crie perguntas de trivia sobre o tópico que eu mencionar.`,
-                        generateWouldYouRatherBtn: `Por favor, crie perguntas "Você Prefere?" interessantes.`,
-                        generateIceCreamFlavorsBtn: `Por favor, sugira sabores criativos de sorvete com base nos ingredientes que eu mencionar.`,
-                        generateBabyNamesBtn: `Por favor, sugira nomes de bebê com base nos critérios que eu mencionar.`,
-                        generatePetNamesBtn: `Por favor, sugira nomes criativos para meu pet com base nas características que eu descrever.`
+                        generateMealPlanBtn: `Por favor, crie um plano de refeições para minhas necessidades.`,
+                        generateGroceryListBtn: `Por favor, crie uma lista de compras baseada no meu plano de refeições.`,
+                        generateBudgetPlanBtn: `Por favor, ajude a criar um plano orçamentário pessoal.`,
+                        generateSavingsPlanBtn: `Por favor, sugira estratégias para economizar dinheiro.`,
+                        generateDebtReductionBtn: `Por favor, sugira um plano para reduzir dívidas.`,
+                                               generateInvestmentPlanBtn: `Por favor, sugira estratégias de investimento baseadas no meu perfil.`,
+                        generateRetirementPlanBtn: `Por favor, ajude a planejar minha aposentadoria.`,
+                        generateInsuranceAdviceBtn: `Por favor, dê conselhos sobre seguros para minha situação.`,
+                        generateTaxPlanningBtn: `Por favor, sugira estratégias para planejamento tributário.`,
+                        generateEstatePlanningBtn: `Por favor, ajude com planejamento sucessório.`,
+                        generateHomeDecorBtn: `Por favor, sugira ideias de decoração para meu espaço.`,
+                        generateDIYProjectBtn: `Por favor, sugira projetos DIY com os materiais que eu tiver.`,
+                        generateMovingChecklistBtn: `Por favor, crie uma lista de tarefas para minha mudança.`,
+                        generatePackingListBtn: `Por favor, crie uma lista de itens para eu levar em minha viagem.`,
+                        generateVacationPlanBtn: `Por favor, ajude a planejar minhas férias.`,
+                        generateTravelPackingBtn: `Por favor, sugira itens para levar em minha viagem.`,
+                        generateItineraryBtn: `Por favor, crie um roteiro de viagem detalhado.`,
+                        generateLanguageLearningBtn: `Por favor, sugira métodos para aprender um novo idioma.`,
+                        generateCulturalTipsBtn: `Por favor, dê dicas culturais sobre o país que eu mencionar.`,
+                        generateLocalCustomsBtn: `Por favor, explique costumes locais do lugar que eu mencionar.`,
+                        generateSafetyTipsBtn: `Por favor, dê dicas de segurança para a situação que eu descrever.`,
+                        generateEmergencyPlanBtn: `Por favor, ajude a criar um plano de emergência.`,
+                        generateFirstAidGuideBtn: `Por favor, explique procedimentos de primeiros socorros.`,
+                        generateWellnessPlanBtn: `Por favor, ajude a criar um plano de bem-estar.`,
+                        generateMindfulnessBtn: `Por favor, sugira exercícios de mindfulness.`,
+                        generateYogaRoutineBtn: `Por favor, sugira uma rotina de yoga para meu nível.`,
+                        generateExercisePlanBtn: `Por favor, crie um plano de exercícios personalizado.`,
+                        generateNutritionPlanBtn: `Por favor, sugira um plano nutricional para minhas necessidades.`,
+                        generateWeightLossPlanBtn: `Por favor, sugira um plano para perda de peso saudável.`,
+                        generateMuscleGainPlanBtn: `Por favor, sugira um plano para ganho de massa muscular.`,
+                        generateFitnessChallengeBtn: `Por favor, crie um desafio fitness personalizado.`,
+                        generateHabitTrackerBtn: `Por favor, sugira métodos para rastrear hábitos.`,
+                        generateGoalSettingBtn: `Por favor, ajude a definir metas SMART.`,
+                        generateProductivitySystemBtn: `Por favor, sugira um sistema de produtividade para mim.`,
+                        generateMorningRoutineBtn: `Por favor, sugira uma rotina matinal produtiva.`,
+                        generateEveningRoutineBtn: `Por favor, sugira uma rotina noturna relaxante.`,
+                        generateSleepScheduleBtn: `Por favor, ajude a criar um cronograma de sono saudável.`,
+                        generateDigitalDetoxBtn: `Por favor, sugira um plano para desintoxicação digital.`,
+                        generateMinimalismGuideBtn: `Por favor, dê dicas para adotar um estilo de vida minimalista.`,
+                        generateDeclutteringPlanBtn: `Por favor, sugira um método para organizar e desapegar.`,
+
+                        // Xadrez (função especial)
+                        chessHelperBtn: `Vamos jogar xadrez! Você pode me ajudar analisando posições, sugerindo movimentos ou explicando conceitos. Digite "ajuda" para ver os comandos disponíveis.`
                     };
+
+                    const prompt = toolPrompts[toolId] || `Por favor, execute a ferramenta ${toolId.replace('Btn', '')} com base nas informações que eu fornecer.`;
                     
-                    const toolName = toolId.replace('Btn', '').replace(/([A-Z])/g, ' $1').trim();
-                    
-                    if (toolId === 'chessHelperBtn') {
-                        this.startChessHelper();
-                    } else {
-                        this.addMessage("user", `Quero usar a ferramenta: ${toolName}`);
-                        this.sendToolMessage(toolPrompts[toolId]);
-                    }
-                    
-                    // Fecha a barra de ferramentas após selecionar uma ferramenta
+                    // Mostra o prompt na área de entrada
+                    this.elements.userInput.value = prompt;
+                    this.elements.userInput.focus();
                     this.elements.toolsSidebar.classList.remove('active');
-                },
-                
-                startChessHelper() {
-                    const conversation = this.conversations[this.currentConversationId];
-                    this.addMessage("user", "Quero usar a ferramenta: Ajudante de Xadrez");
                     
-                    // Criar interface de xadrez
-                    const chessInterface = `
-                        <div class="chess-helper">
-                            <h3>Ajudante de Xadrez</h3>
-                            <p>Descreva a posição atual ou faça uma pergunta sobre xadrez:</p>
-                            
-                            <div class="chess-board" id="chessBoard">
-                                ${this.generateChessBoard()}
-                            </div>
-                            
-                            <div class="chess-move-input">
-                                <input type="text" id="chessMoveInput" placeholder="Ex: e4, xe5, roque pequeno...">
-                                <button id="submitChessMove">Enviar</button>
-                            </div>
-                            
-                            <p>Ou peça análise de posição, aberturas, finais de jogo, etc.</p>
-                        </div>
-                    `;
-                    
-                    this.addMessage("bot", chessInterface);
-                    
-                    // Configurar evento para enviar jogada
-                    const submitMove = () => {
-                        const moveInput = document.getElementById("chessMoveInput");
-                        if (moveInput) {
-                            const move = moveInput.value.trim();
-                            if (move) {
-                                this.addMessage("user", `Jogada: ${move}`);
-                                this.sendChessQuestion(`Analise esta jogada: ${move}. Qual seria a melhor resposta?`);
-                                moveInput.value = "";
-                            }
-                        }
-                    };
-                    
-                    // Adiciona event listener após o DOM ser atualizado
+                    // Rola para a área de entrada
                     setTimeout(() => {
-                        const submitBtn = document.getElementById("submitChessMove");
-                        const moveInput = document.getElementById("chessMoveInput");
-                        
-                        if (submitBtn && moveInput) {
-                            submitBtn.addEventListener('click', submitMove);
-                            moveInput.addEventListener('keypress', (e) => {
-                                if (e.key === 'Enter') {
-                                    submitMove();
-                                }
-                            });
-                        }
+                        this.elements.userInput.scrollIntoView({ behavior: 'smooth' });
                     }, 100);
                 },
 
-                generateChessBoard() {
-                    let boardHTML = '';
-                    const pieces = [
-                        '♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜',
-                        '♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟',
-                        '', '', '', '', '', '', '', '',
-                        '', '', '', '', '', '', '', '',
-                        '', '', '', '', '', '', '', '',
-                        '', '', '', '', '', '', '', '',
-                        '♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙',
-                        '♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖'
+                // Função especial para o assistente de xadrez
+                handleChessCommand(command) {
+                    if (!this.chessBoard) {
+                        this.chessBoard = this.createInitialChessBoard();
+                    }
+                    
+                    command = command.toLowerCase().trim();
+                    
+                    if (command === 'ajuda') {
+                        return `
+                            <h3>Assistente de Xadrez - Comandos Disponíveis:</h3>
+                            <ul>
+                                <li><strong>tabuleiro</strong>: Mostra a posição atual do tabuleiro</li>
+                                <li><strong>novo jogo</strong>: Reinicia o jogo</li>
+                                <li><strong>mover [origem]-[destino]</strong>: Exemplo: "mover e2-e4"</li>
+                                <li><strong>analisar</strong>: Analisa a posição atual</li>
+                                <li><strong>melhor movimento</strong>: Sugere o melhor movimento</li>
+                                <li><strong>aberturas</strong>: Explica aberturas de xadrez</li>
+                                <li><strong>finais</strong>: Explica finais de jogo</li>
+                                <li><strong>táticas</strong>: Explica táticas comuns</li>
+                                <li><strong>história</strong>: Conta sobre a história do xadrez</li>
+                            </ul>
+                        `;
+                    } else if (command === 'tabuleiro') {
+                        return this.renderChessBoard();
+                    } else if (command === 'novo jogo') {
+                        this.chessBoard = this.createInitialChessBoard();
+                        return 'Novo jogo iniciado! ' + this.renderChessBoard();
+                    } else if (command.startsWith('mover')) {
+                        const move = command.split(' ')[1];
+                        return this.handleChessMove(move);
+                    } else if (command === 'analisar') {
+                        return this.analyzeChessPosition();
+                    } else if (command === 'melhor movimento') {
+                        return this.suggestBestMove();
+                    } else if (command === 'aberturas') {
+                        return this.explainChessOpenings();
+                    } else if (command === 'finais') {
+                        return this.explainChessEndgames();
+                    } else if (command === 'táticas') {
+                        return this.explainChessTactics();
+                    } else if (command === 'história') {
+                        return this.tellChessHistory();
+                    } else {
+                        return 'Comando não reconhecido. Digite "ajuda" para ver os comandos disponíveis.';
+                    }
+                },
+
+                createInitialChessBoard() {
+                    // Cria um tabuleiro de xadrez inicial
+                    return {
+                        board: [
+                            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+                            ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+                            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                            ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+                            ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+                        ],
+                        turn: 'white',
+                        moveHistory: [],
+                        capturedPieces: {
+                            white: [],
+                            black: []
+                        }
+                    };
+                },
+
+                renderChessBoard() {
+                    const pieceSymbols = {
+                        'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
+                        'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
+                    };
+                    
+                    let boardHtml = '<div class="chess-board">';
+                    
+                    for (let i = 0; i < 8; i++) {
+                        for (let j = 0; j < 8; j++) {
+                            const piece = this.chessBoard.board[i][j];
+                            const pieceSymbol = pieceSymbols[piece] || ' ';
+                            const colorClass = (i + j) % 2 === 0 ? 'light' : 'dark';
+                            
+                            boardHtml += `
+                                <div class="chess-square ${colorClass}">
+                                    ${pieceSymbol}
+                                </div>
+                            `;
+                        }
+                    }
+                    
+                    boardHtml += '</div>';
+                    boardHtml += `
+                        <div class="chess-move-input">
+                            <input type="text" id="chessMoveInput" placeholder="Ex: e2-e4">
+                            <button onclick="ViBot.submitChessMove()">Mover</button>
+                        </div>
+                    `;
+                    
+                    return boardHtml;
+                },
+
+                submitChessMove() {
+                    const moveInput = document.getElementById('chessMoveInput');
+                    const move = moveInput.value.trim();
+                    
+                    if (move) {
+                        this.addMessage('user', `mover ${move}`);
+                        const response = this.handleChessMove(move);
+                        this.addMessage('bot', response);
+                    }
+                },
+
+                handleChessMove(move) {
+                    // Implementação simplificada - em um sistema real, seria mais complexo
+                    try {
+                        const [from, to] = move.split('-');
+                        
+                        if (!from || !to || from.length !== 2 || to.length !== 2) {
+                            return 'Formato inválido. Use "mover [origem]-[destino]", exemplo: "mover e2-e4"';
+                        }
+                        
+                        const fromCol = from.charCodeAt(0) - 'a'.charCodeAt(0);
+                        const fromRow = 8 - parseInt(from[1]);
+                        const toCol = to.charCodeAt(0) - 'a'.charCodeAt(0);
+                        const toRow = 8 - parseInt(to[1]);
+                        
+                        if (fromCol < 0 || fromCol > 7 || fromRow < 0 || fromRow > 7 ||
+                            toCol < 0 || toCol > 7 || toRow < 0 || toRow > 7) {
+                            return 'Posição inválida. As colunas vão de a-h e as linhas de 1-8.';
+                        }
+                        
+                        const piece = this.chessBoard.board[fromRow][fromCol];
+                        
+                        if (piece === ' ') {
+                            return 'Não há peça na posição de origem.';
+                        }
+                        
+                        // Verifica se é a vez do jogador correto
+                        const isWhiteTurn = this.chessBoard.turn === 'white';
+                        const isWhitePiece = piece === piece.toUpperCase();
+                        
+                        if ((isWhiteTurn && !isWhitePiece) || (!isWhiteTurn && isWhitePiece)) {
+                            return `Não é a vez das ${isWhitePiece ? 'brancas' : 'pretas'} jogarem.`;
+                        }
+                        
+                        // Move a peça (implementação simplificada)
+                        const capturedPiece = this.chessBoard.board[toRow][toCol];
+                        
+                        if (capturedPiece !== ' ') {
+                            const color = this.chessBoard.turn;
+                            this.chessBoard.capturedPieces[color].push(capturedPiece);
+                        }
+                        
+                        this.chessBoard.board[toRow][toCol] = piece;
+                        this.chessBoard.board[fromRow][fromCol] = ' ';
+                        this.chessBoard.moveHistory.push(move);
+                        this.chessBoard.turn = this.chessBoard.turn === 'white' ? 'black' : 'white';
+                        
+                        return `Movimento realizado: ${move}. ${this.renderChessBoard()}`;
+                    } catch (e) {
+                        return `Erro ao processar movimento: ${e.message}`;
+                    }
+                },
+
+                analyzeChessPosition() {
+                    // Análise simplificada da posição atual
+                    let analysis = '<h3>Análise da Posição Atual:</h3><ul>';
+                    
+                    // Conta peças
+                    const pieceCount = { white: 0, black: 0 };
+                    for (let i = 0; i < 8; i++) {
+                        for (let j = 0; j < 8; j++) {
+                            const piece = this.chessBoard.board[i][j];
+                            if (piece !== ' ') {
+                                if (piece === piece.toUpperCase()) {
+                                    pieceCount.white++;
+                                } else {
+                                    pieceCount.black++;
+                                }
+                            }
+                        }
+                    }
+                    
+                    analysis += `<li>Material: Brancas ${pieceCount.white} x ${pieceCount.black} Pretas</li>`;
+                    analysis += `<li>Vez: ${this.chessBoard.turn === 'white' ? 'Brancas' : 'Pretas'}</li>`;
+                    analysis += `<li>Movimentos realizados: ${this.chessBoard.moveHistory.length}</li>`;
+                    analysis += '</ul>';
+                    
+                    return analysis + this.renderChessBoard();
+                },
+
+                suggestBestMove() {
+                    // Sugere um movimento aleatório (em um sistema real, usaria um algoritmo)
+                    const possibleMoves = [
+                        'e2-e4', 'd2-d4', 'g1-f3', 'b1-c3', 'f2-f4',
+                        'e7-e5', 'd7-d5', 'g8-f6', 'b8-c6', 'f7-f5'
                     ];
                     
-                    for (let i = 0; i < 64; i++) {
-                        const row = Math.floor(i / 8);
-                        const col = i % 8;
-                        const isLight = (row + col) % 2 === 0;
-                        
-                        boardHTML += `
-                            <div class="chess-square ${isLight ? 'light' : 'dark'}" data-pos="${String.fromCharCode(97 + col)}${8 - row}">
-                                ${pieces[i]}
-                            </div>
-                        `;
-                    }
-                    
-                    return boardHTML;
+                    const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+                    return `Sugestão de movimento: ${randomMove}. Você pode executá-lo digitando "mover ${randomMove}".`;
                 },
 
-                async sendChessQuestion(question) {
-                    const conversation = this.conversations[this.currentConversationId];
-                    
-                    this.elements.chatbox.appendChild(this.typingIndicator);
-                    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
-                    
-                    try {
-                        const messages = [
-                            { 
-                                role: "system", 
-                                content: `Você é um especialista em xadrez chamado ViBot Chess. 
-                                Responda com análises precisas em português. 
-                                Use notação algébrica (ex: e4, xe5, 0-0). 
-                                Seja claro e dê explicações para jogadores intermediários.`
-                            },
-                            ...conversation.messages.map(msg => ({
-                                role: msg.role === "bot" ? "assistant" : msg.role,
-                                content: this.getTextContent(msg.content)
-                            })),
-                            { role: "user", content: question }
-                        ];
+                explainChessOpenings() {
+                    return `
+                        <h3>Aberturas de Xadrez</h3>
+                        <p>As aberturas são os primeiros movimentos do jogo, onde você desenvolve suas peças e controla o centro.</p>
                         
-                        const response = await fetch(this.config.apiUrl, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${this.config.apiKey}`
-                            },
-                            body: JSON.stringify({
-                                model: this.config.model,
-                                messages: messages,
-                                temperature: 0.3, // Menor temperatura para análises mais precisas
-                                max_tokens: 512,
-                                stream: false
-                            })
-                        });
+                        <h4>Aberturas Populares:</h4>
+                        <ul>
+                            <li><strong>Ruy López (1.e4 e5 2.Cf3 Cc6 3.Bb5)</strong>: Uma das aberturas mais antigas e analisadas.</li>
+                            <li><strong>Siciliana (1.e4 c5)</strong>: Defesa agressiva para as pretas contra 1.e4.</li>
+                            <li><strong>Francesa (1.e4 e6)</strong>: Defesa sólida que leva a estruturas de peões complexas.</li>
+                            <li><strong>Índia do Rei (1.d4 Cf6 2.c4 g6)</strong>: Defesa flexível que pode levar a ataques no flanco do rei.</li>
+                            <li><strong>Gambito da Dama (1.d4 d5 2.c4)</strong>: Abertura clássica onde as brancas sacrificam um peão para obter iniciativa.</li>
+                        </ul>
                         
-                        if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(`Erro na API: ${response.status} - ${errorData.error?.message || 'Sem detalhes'}`);
-                        }
-                        
-                        const data = await response.json();
-                        const botMessage = data.choices[0].message.content;
-                        
-                        this.typingIndicator.remove();
-                        this.addMessage("bot", botMessage);
-                        
-                        this.totalTokens += data.usage?.total_tokens || 0;
-                    } catch (error) {
-                        this.typingIndicator.remove();
-                        this.addMessage("bot", `⚠️ Erro: ${error.message}`, "error");
-                        console.error("Erro completo:", error);
-                    }
+                        <p>Dica: Estude algumas aberturas básicas e tente entender os planos estratégicos por trás delas.</p>
+                    `;
                 },
 
-                async sendToolMessage(prompt) {
-                    const conversation = this.conversations[this.currentConversationId];
-                    
-                    this.elements.chatbox.appendChild(this.typingIndicator);
-                    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
-                    
-                    try {
-                        const messages = [
-                            { role: "system", content: this.config.systemPrompt },
-                            ...conversation.messages.map(msg => ({
-                                role: msg.role === "bot" ? "assistant" : msg.role,
-                                content: this.getTextContent(msg.content)
-                            })),
-                            { role: "user", content: prompt }
-                        ];
+                explainChessEndgames() {
+                    return `
+                        <h3>Finais de Xadrez</h3>
+                        <p>Os finais ocorrem quando poucas peças restam no tabuleiro. Conhecimento de finais é crucial para converter vantagens.</p>
                         
-                        const safeMaxTokens = Math.max(128, Math.min(parseInt(this.config.maxTokens), 1024));
-                        const safeTemperature = Math.max(0.1, Math.min(parseFloat(this.config.temperature), 2.0));
+                        <h4>Finais Básicos:</h4>
+                        <ul>
+                            <li><strong>Rei e Dama vs Rei</strong>: O mais simples, mate em no máximo 10 movimentos.</li>
+                            <li><strong>Rei e Torre vs Rei</strong>: Mate em no máximo 16 movimentos.</li>
+                            <li><strong>Rei e 2 Bispos vs Rei</strong>: Mate forçado, requer precisão.</li>
+                            <li><strong>Rei, Bispo e Cavalo vs Rei</strong>: Mate mais complexo, limite de 33 movimentos.</li>
+                            <li><strong>Peões</strong>: Finais de peões dependem da capacidade de promoção.</li>
+                        </ul>
                         
-                        const response = await fetch(this.config.apiUrl, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${this.config.apiKey}`
-                            },
-                            body: JSON.stringify({
-                                model: this.config.model,
-                                messages: messages,
-                                temperature: safeTemperature,
-                                max_tokens: safeMaxTokens,
-                                stream: false
-                            })
-                        });
+                        <p>Dica: Pratique finais básicos regularmente - eles podem decidir muitas partidas.</p>
+                    `;
+                },
+
+                explainChessTactics() {
+                    return `
+                        <h3>Táticas de Xadrez</h3>
+                        <p>Táticas são manobras de curto prazo que aproveitam erros do oponente para ganhar vantagem material ou posicional.</p>
                         
-                        if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(`Erro na API: ${response.status} - ${errorData.error?.message || 'Sem detalhes'}`);
-                        }
+                        <h4>Táticas Comuns:</h4>
+                        <ul>
+                            <li><strong>Garfo</strong>: Uma peça ataca duas ou mais peças inimigas simultaneamente.</li>
+                            <li><strong>Pino</strong>: Uma peça é "preso" porque mover-se exporia uma peça mais valiosa.</li>
+                            <li><strong>Descoberta</strong>: Mover uma peça revela um ataque de outra peça.</li>
+                            <li><strong>Xeque descoberto</strong>: Tipo especial de descoberta que resulta em xeque.</li>
+                            <li><strong>Skewer</strong>: Similar ao pino, mas a peça mais valiosa está na frente.</li>
+                            <li><strong>Defesa insuficiente</strong>: Uma peça está defendendo múltiplas ameaças.</li>
+                            <li><strong>Sacrifício</strong>: Dar material para obter vantagem posicional ou ataque.</li>
+                        </ul>
                         
-                        const data = await response.json();
-                        const botMessage = data.choices[0].message.content;
+                        <p>Dica: Resolver problemas táticos diariamente é uma das melhores formas de melhorar seu xadrez.</p>
+                    `;
+                },
+
+                tellChessHistory() {
+                    return `
+                        <h3>História do Xadrez</h3>
+                        <p>O xadrez tem uma história rica que remonta mais de 1500 anos:</p>
                         
-                        this.typingIndicator.remove();
-                        this.addMessage("bot", botMessage);
+                        <ul>
+                            <li><strong>Origens (século VI)</strong>: Surgiu na Índia como "Chaturanga", um jogo que simulava guerra.</li>
+                            <li><strong>Pérsia (século VII)</strong>: Transformou-se em "Shatranj" e se espalhou pelo mundo islâmico.</li>
+                            <li><strong>Europa (século X)</strong>: Chegou à Europa através da Espanha moura e da Rússia.</li>
+                            <li><strong>Regras modernas (século XV)</strong>: Na Espanha e Itália, a rainha e o bispo ganharam movimentos mais poderosos.</li>
+                            <li><strong>Primeiros campeonatos (século XIX)</strong>: Wilhelm Steinitz tornou-se o primeiro Campeão Mundial oficial em 1886.</li>
+                            <li><strong>Era moderna</strong>: Computadores como Deep Blue (1997) e AlphaZero revolucionaram o xadrez.</li>
+                        </ul>
                         
-                        this.totalTokens += data.usage?.total_tokens || 0;
-                    } catch (error) {
-                        this.typingIndicator.remove();
-                        this.addMessage("bot", `⚠️ Erro: ${error.message}`, "error");
-                        console.error("Erro completo:", error);
-                    }
+                        <p>Curiosidade: O xadrez é considerado esporte em mais de 100 países e é reconhecido pelo Comitê Olímpico Internacional.</p>
+                    `;
                 }
             };
 
