@@ -1840,7 +1840,7 @@
                     const conversation = this.conversations[this.currentConversationId];
                     
                     if (conversation.messages.length === 0) {
-                        this.addMessage("bot", "Olá! Sou o ViBot, seu assistente de IA com 500 ferramentas. Como posso te ajudar hoje?");
+                        this.addMessage("bot", "Olá! Sou o ViBot, seu assistente de IA com 100 ferramentas. Como posso te ajudar hoje?");
                     } else {
                         conversation.messages.forEach(msg => {
                             this.addMessageToChatbox(msg.role === "assistant" ? "bot" : "user", msg.content);
