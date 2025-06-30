@@ -740,14 +740,11 @@
                         <span>Modelo:</span>
                     </div>
                     <select id="modelSelector" class="model-selector">
-                        <option value="llama3-70b-8192">ViBot Pro (Alta Performance, 8K)</option>
-                        <option value="llama3-8b-8192">ViBot Standard (Balanço, 8K)</option>
-                        <option value="llama-3.1-8b-instant">ViBot Instant (8B, 131K)</option>
-                        <option value="llama-3.3-70b-versatile">ViBot Versátil (70B, 32K)</option>
-                        <option value="gemma2-9b-it">ViBot Gemma (9B, 8K)</option>
-                        <option value="meta-llama/llama-guard-4-12b">ViBot Guard (Segurança, 1K)</option>
-                    </select>
-                </div>
+    <option value="mistral-tiny">ViBot Tiny (Rápido)</option>
+    <option value="mistral-small">ViBot Small (Balanço)</option>
+    <option value="mistral-medium">ViBot Medium (Poderoso)</option>
+    <!-- Removi o large pois não está disponível no free tier -->
+</select>
                 
                 <div class="slider-container">
                     <div class="slider-label">
@@ -1348,30 +1345,24 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const ViBot = {
-                config: {
-                    apiUrl: "https://api.groq.com/openai/v1/chat/completions",
-                    apiKeys: [
-                        "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",
-                        "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",
-                        "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",
-                        "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"
-                    ],
-                    currentApiKeyIndex: 0,
-                    model: "llama3-70b-8192",
-                    temperature: 0.7,
-                    maxTokens: 8192,
-                    systemPrompt: "Você é um assistente útil chamado ViBot. Responda de forma clara e concisa no idioma do usuário."
-                },
+     config: {
+    apiKeys: [
+        "qvoMH8VXJ83lO6vVITjsUIGqZsYLKCI7",  // Sua chave principal
+        "G9h4jBiZ2XXb8IDwq6G15vxNuFw7CB63",  // Fallback 1
+        "sl7gXtaKfUVBHWfbWt5BryOndlpGZ8TR"   // Fallback 2
+    ],
+    currentApiKeyIndex: 0,
+    model: "mistral-tiny",
+    temperature: 0.7,
+    maxTokens: 2000,
+    systemPrompt: "Você é um assistente útil chamado ViBot. Responda de forma clara e concisa no idioma do usuário."
+},
 
                 modelNames: {
-                    "llama3-70b-8192": "ViBot Pro",
-                    "llama3-8b-8192": "ViBot Standard",
-                    "llama-3.1-8b-instant": "ViBot Instant",
-                    "llama-3.3-70b-versatile": "ViBot Versátil",
-                    "gemma2-9b-it": "ViBot Gemma",
-                    "meta-llama/llama-guard-4-12b": "ViBot Guard"
-                },
+    "mistral-tiny": "ViBot Tiny",
+    "mistral-small": "ViBot Small", 
+    "mistral-medium": "ViBot Medium"
+},
 
                 init() {
                     this.cacheElements();
@@ -1645,15 +1636,7 @@
                 },
 
                 setupEventListeners() {
-                    // Core functionality
-                    this.elements.sendBtn.addEventListener('click', () => this.sendMessage());
-                    this.elements.userInput.addEventListener('keydown', e => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            this.sendMessage();
-                        }
-                    });
-                    
+                    this.elements.modelSelector.addEventListener('change', e => this.updateModel(e.target.value));
                     // Auto-resize textarea
                     this.elements.userInput.addEventListener('input', () => {
                         this.elements.userInput.style.height = 'auto';
@@ -1740,8 +1723,22 @@
                 },
 
                 updateModel(model) {
-                    this.config.model = model;
-                },
+    // Verifica se o modelo é suportado
+    if (Object.keys(this.modelNames).includes(model)) {
+        this.config.model = model;
+        
+        // Ajusta maxTokens baseado no modelo
+        if (model === "mistral-tiny") {
+            this.config.maxTokens = 2000;
+        } else {
+            this.config.maxTokens = 4000; // Aumenta para modelos maiores
+        }
+        
+        // Atualiza o slider na UI
+        this.elements.maxTokensSlider.value = this.config.maxTokens;
+        this.elements.maxTokensValue.textContent = this.config.maxTokens;
+    }
+},
 
                 updateTemperature(value) {
                     this.config.temperature = parseFloat(value);
@@ -1938,20 +1935,81 @@
                     }
                 },
 
-                addMessage(role, content, type = null) {
-                    const conversation = this.conversations[this.currentConversationId];
-                    const apiRole = role === "bot" ? "assistant" : role;
-                    const message = { role: apiRole, content, type, timestamp: Date.now() };
-                    
-                    conversation.messages.push(message);
-                    
-                    if (role === "user" && conversation.messages.length === 1) {
-                        conversation.title = content.length > 30 ? content.substring(0, 30) + "..." : content;
-                        this.renderConversationsList();
-                    }
-                    
-                    this.addMessageToChatbox(role, content, type);
-                    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
+                
+    
+    const conversation = this.conversations[this.currentConversationId];
+    
+    this.addMessage("user", message);
+    this.elements.userInput.value = "";
+    this.elements.userInput.style.height = 'auto';
+    
+    this.elements.chatbox.appendChild(this.typingIndicator);
+    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
+    
+    try {
+        const messages = [
+            { role: "system", content: this.config.systemPrompt },
+            ...conversation.messages.map(msg => ({
+                role: msg.role === "bot" ? "assistant" : msg.role,
+                content: this.getTextContent(msg.content)
+            }))
+        ];
+        
+        // Tentar com cada API até obter sucesso
+        let response;
+        let lastError;
+        
+        for (let i = 0; i < this.config.apiKeys.length; i++) {
+            this.config.currentApiKeyIndex = i;
+            const currentApiKey = this.config.apiKeys[i];
+            
+            try {
+                response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${currentApiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: this.config.model,
+                        messages: messages,
+                        temperature: this.config.temperature,
+                        max_tokens: this.config.maxTokens,
+                        stream: false
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    lastError = new Error(`Erro na API (chave ${i+1}): ${response.status} - ${errorData.error?.message || 'Sem detalhes'}`);
+                    continue; // Tenta a próxima API
+                }
+                
+                // Se chegou aqui, a resposta foi bem-sucedida
+                break;
+            } catch (error) {
+                lastError = error;
+                continue; // Tenta a próxima API
+            }
+        }
+        
+        if (!response || !response.ok) {
+            throw lastError || new Error("Todas as tentativas com as APIs falharam");
+        }
+        
+        const data = await response.json();
+        const botMessage = data.choices[0].message.content;
+        
+        this.typingIndicator.remove();
+        this.addMessage("bot", botMessage);
+        
+        this.totalTokens += data.usage?.total_tokens || 0;
+    } catch (error) {
+        this.typingIndicator.remove();
+        this.addMessage("bot", `⚠️ Erro: ${error.message}`, "error");
+        console.error("Erro completo:", error);
+    }
+},
                 },
 
                 addMessageToChatbox(role, content, type = null) {
