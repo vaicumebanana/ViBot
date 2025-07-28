@@ -740,11 +740,11 @@
                         <span>Modelo:</span>
                     </div>
                     <select id="modelSelector" class="model-selector">
-    <option value="mistral-tiny">ViBot Tiny (Rápido)</option>
-    <option value="mistral-small">ViBot Small (Balanço)</option>
-    <option value="mistral-medium">ViBot Medium (Poderoso)</option>
-    <!-- Removi o large pois não está disponível no free tier -->
-</select>
+                        <option value="mistral-tiny">ViBot Tiny (Rápido)</option>
+                        <option value="mistral-small">ViBot Small (Balanço)</option>
+                        <option value="mistral-medium">ViBot Medium (Poderoso)</option>
+                    </select>
+                </div>
                 
                 <div class="slider-container">
                     <div class="slider-label">
@@ -759,7 +759,7 @@
                         <span>Tamanho da Resposta</span>
                         <span class="slider-value" id="maxTokensValue">2000</span>
                     </div>
-                    <input type="range" id="maxTokensSlider" min="100" max="2000" step="100" value="2000" />
+                    <input type="range" id="maxTokensSlider" min="100" max="4000" step="100" value="2000" />
                 </div>
             </div>
         </div>
@@ -1344,1241 +1344,916 @@
             tools.classList.toggle('active');
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-     config: {
-    apiKeys: [
-        "qvoMH8VXJ83lO6vVITjsUIGqZsYLKCI7",  // Sua chave principal
-        "G9h4jBiZ2XXb8IDwq6G15vxNuFw7CB63",  // Fallback 1
-        "sl7gXtaKfUVBHWfbWt5BryOndlpGZ8TR"   // Fallback 2
-    ],
-    currentApiKeyIndex: 0,
-    model: "mistral-tiny",
-    temperature: 0.7,
-    maxTokens: 2000,
-    systemPrompt: "Você é um assistente útil chamado ViBot. Responda de forma clara e concisa no idioma do usuário."
-},
+        const ViBot = {
+            config: {
+                apiKeys: [
+                    "qvoMH8VXJ83lO6vVITjsUIGqZsYLKCI7",  // Sua chave principal
+                    "G9h4jBiZ2XXb8IDwq6G15vxNuFw7CB63",  // Fallback 1
+                    "sl7gXtaKfUVBHWfbWt5BryOndlpGZ8TR"   // Fallback 2
+                ],
+                currentApiKeyIndex: 0,
+                model: "mistral-tiny",
+                temperature: 0.7,
+                maxTokens: 2000,
+                systemPrompt: "Você é um assistente útil chamado ViBot. Responda de forma clara e concisa no idioma do usuário.",
+                apiUrl: "https://api.mistral.ai/v1/chat/completions"
+            },
 
-                modelNames: {
-    "mistral-tiny": "ViBot Tiny",
-    "mistral-small": "ViBot Small", 
-    "mistral-medium": "ViBot Medium"
-},
+            modelNames: {
+                "mistral-tiny": "ViBot Tiny",
+                "mistral-small": "ViBot Small", 
+                "mistral-medium": "ViBot Medium"
+            },
 
-                init() {
-                    this.cacheElements();
-                    this.setupEventListeners();
-                    this.setupInitialState();
-                    this.updateUI();
-                },
+            init() {
+                this.cacheElements();
+                this.setupEventListeners();
+                this.setupInitialState();
+                this.updateUI();
+            },
 
-                cacheElements() {
-                    this.elements = {
-                        chatbox: document.getElementById("chatbox"),
-                        userInput: document.getElementById("userInput"),
-                        sendBtn: document.getElementById("sendBtn"),
-                        newConversationBtn: document.getElementById("newConversationBtn"),
-                        conversationList: document.getElementById("conversationList"),
-                        toggleThemeBtn: document.getElementById("toggleTheme"),
-                        menuBtn: document.getElementById("menuBtn"),
-                        toolsBtn: document.getElementById("toolsBtn"),
-                        sidebar: document.getElementById("sidebar"),
-                        toolsSidebar: document.getElementById("tools-sidebar"),
-                        modelSelector: document.getElementById("modelSelector"),
-                        temperatureSlider: document.getElementById("temperatureSlider"),
-                        temperatureValue: document.getElementById("temperatureValue"),
-                        maxTokensSlider: document.getElementById("maxTokensSlider"),
-                        maxTokensValue: document.getElementById("maxTokensValue"),
-                        settingsPanel: document.getElementById("settingsPanel"),
-                        chatTabBtn: document.getElementById("chatTabBtn"),
-                        toolsTabBtn: document.getElementById("toolsTabBtn"),
-                        settingsTabBtn: document.getElementById("settingsTabBtn"),
-                        deleteAllConversationsBtn: document.getElementById("deleteAllConversationsBtn")
-                    };
+            cacheElements() {
+                this.elements = {
+                    chatbox: document.getElementById("chatbox"),
+                    userInput: document.getElementById("userInput"),
+                    sendBtn: document.getElementById("sendBtn"),
+                    newConversationBtn: document.getElementById("newConversationBtn"),
+                    conversationList: document.getElementById("conversationList"),
+                    toggleThemeBtn: document.getElementById("toggleTheme"),
+                    menuBtn: document.getElementById("menuBtn"),
+                    toolsBtn: document.getElementById("toolsBtn"),
+                    sidebar: document.getElementById("sidebar"),
+                    toolsSidebar: document.getElementById("tools-sidebar"),
+                    modelSelector: document.getElementById("modelSelector"),
+                    temperatureSlider: document.getElementById("temperatureSlider"),
+                    temperatureValue: document.getElementById("temperatureValue"),
+                    maxTokensSlider: document.getElementById("maxTokensSlider"),
+                    maxTokensValue: document.getElementById("maxTokensValue"),
+                    settingsPanel: document.getElementById("settingsPanel"),
+                    chatTabBtn: document.getElementById("chatTabBtn"),
+                    toolsTabBtn: document.getElementById("toolsTabBtn"),
+                    settingsTabBtn: document.getElementById("settingsTabBtn"),
+                    deleteAllConversationsBtn: document.getElementById("deleteAllConversationsBtn")
+                };
 
-                    // Lista de todas as ferramentas (500 no total)
-                    this.tools = [
-                        // Produtividade (50)
-                        'generateEmailBtn', 'summarizeTextBtn', 'translateTextBtn', 
-                        'improveTextBtn', 'generateCodeBtn', 'generateIdeasBtn', 
-                        'analyzeDataBtn', 'createContentBtn', 'explainConceptBtn', 
-                        'solveProblemBtn', 'generateScheduleBtn', 'generateMeetingBtn',
-                        'generatePresentationBtn', 'generateChecklistBtn', 'generateWorkflowBtn',
-                        'generateBudgetBtn', 'generateInvoiceBtn', 'generateResumeBtn',
-                        'generateCoverLetterBtn', 'generateJobDescriptionBtn', 'generatePerformanceReviewBtn',
-                        'generateKPIReportBtn', 'generateBusinessStrategyBtn', 'generateBusinessPlanBtn',
-                        'generatePitchBtn', 'generateInterviewBtn', 'generateCustomerServiceBtn',
-                        'generateNegotiationBtn', 'generateLeadershipBtn', 'generateTeamBuildingBtn',
-                        'generateStartupBtn', 'generateEcommerceBtn', 'generateSocialMediaMarketingBtn',
-                        'generateSEOStrategyBtn', 'generateBrandStrategyBtn', 'generateFinancialProjectionBtn',
-                        'generateSWOTBtn', 'generateMarketResearchBtn', 'generateSalesFunnelBtn',
-                        'generateCustomerPersonaBtn', 'generateCompetitiveAnalysisBtn', 'generateRiskAssessmentBtn',
-                        'generateExitStrategyBtn', 'generateFranchiseModelBtn', 'generateInvestorDeckBtn',
-                        'generateGrantProposalBtn', 'generatePartnershipAgreementBtn', 'generateNonDisclosureBtn',
-                        'generateEmployeeHandbookBtn', 'generateTrainingProgramBtn', 'generateMentorshipProgramBtn',
-                        'generateDiversityPolicyBtn', 'generateRemoteWorkPolicyBtn', 'generateSustainabilityPlanBtn',
-                        'generateCSRStrategyBtn',
-                        
-                        // Criatividade (50)
-                        'generatePoemBtn', 'generateStoryBtn', 'generateJokeBtn',
-                        'generateScriptBtn', 'generateSongBtn', 'generateSpeechBtn',
-                        'generateArtBtn', 'generateDesignBtn', 'generateBrandingBtn',
-                        'generateSloganBtn', 'generateCharacterBtn', 'generateWorldBuildingBtn',
-                        'generatePlotTwistBtn', 'generateDialogueBtn', 'generateHaikuBtn',
-                        'generateLimerickBtn', 'generateAcrosticBtn', 'generateMetaphorBtn',
-                        'generateRiddleBtn', 'generatePuzzleBtn', 'generateComicScriptBtn',
-                        'generateScreenplayBtn', 'generateTheaterPlayBtn', 'generateRadioDramaBtn',
-                        'generateChildrenStoryBtn', 'generateFairyTaleBtn', 'generateMythologyBtn',
-                        'generateUrbanLegendBtn', 'generateAllegoryBtn', 'generateParableBtn',
-                        'generateFableBtn', 'generateSatireBtn', 'generateParodyBtn',
-                        'generateSonnetBtn', 'generateOdeBtn', 'generateElegyBtn',
-                        'generateBalladBtn', 'generateEpicBtn', 'generateFreeVerseBtn',
-                        'generateConcretePoetryBtn', 'generateBlackoutPoetryBtn', 'generateFlashFictionBtn',
-                        'generateSixWordStoryBtn', 'generateTwitteratureBtn', 'generateInteractiveFictionBtn',
-                        'generateChooseYourAdventureBtn', 'generateDrabbleBtn', 'generateVignetteBtn',
-                        'generateStreamOfConsciousnessBtn', 'generateEpistolaryBtn', 'generateFoundPoetryBtn',
-                        'generateErasurePoetryBtn', 'generateVisualPoetryBtn', 'generateSoundPoetryBtn',
-                        'generatePerformancePoetryBtn', 'generateSpokenWordBtn', 'generateProsePoetryBtn',
-                        'generateExperimentalLiteratureBtn', 'generateSurrealWritingBtn', 'generateAbsurdistWritingBtn',
-                        'generateDadaistWritingBtn', 'generateBeatGenerationBtn', 'generatePostmodernWritingBtn',
-                        'generateMagicalRealismBtn', 'generateCyberpunkBtn', 'generateSteampunkBtn',
-                        'generateDieselpunkBtn', 'generateBiopunkBtn', 'generateSolarpunkBtn',
-                        'generateAtompunkBtn', 'generateRaypunkBtn', 'generateLovecraftianBtn',
-                        'generateGothicBtn', 'generateNoirBtn', 'generatePulpFictionBtn',
-                        'generateNewWeirdBtn', 'generateSlipstreamBtn', 'generateBizarroFictionBtn',
-                        'generateCliFiBtn', 'generateAfrofuturismBtn', 'generateIndigenousFuturismBtn',
-                        'generateHopepunkBtn', 'generateNoblebrightBtn', 'generateGrimdarkBtn',
-                        'generateFlintlockFantasyBtn', 'generateSwordAndSorceryBtn', 'generateHighFantasyBtn',
-                        'generateLowFantasyBtn', 'generateDarkFantasyBtn', 'generateUrbanFantasyBtn',
-                        'generateHistoricalFantasyBtn', 'generateMythicFantasyBtn', 'generateFairytaleFantasyBtn',
-                        'generatePortalFantasyBtn', 'generateScienceFantasyBtn',
-                        
-                        // Vida Diária (50)
-                        'generateRecipeBtn', 'generateWorkoutBtn', 'generateTravelBtn',
-                        'generateAdviceBtn', 'generateParentingBtn', 'generateFinanceBtn',
-                        'generateHealthBtn', 'generateDietBtn', 'generateShoppingBtn',
-                        'generateHomeBtn', 'generateGardenBtn', 'generatePetCareBtn',
-                        'generateCarMaintenanceBtn', 'generateHomeRepairBtn', 'generateCleaningBtn',
-                        'generateOrganizationBtn', 'generateTimeManagementBtn', 'generateStressManagementBtn',
-                        'generateSleepTipsBtn', 'generateMeditationBtn', 'generateMealPlanBtn',
-                        'generateGroceryListBtn', 'generateBudgetPlanBtn', 'generateSavingsPlanBtn',
-                        'generateDebtReductionBtn', 'generateInvestmentPlanBtn', 'generateRetirementPlanBtn',
-                        'generateInsuranceAdviceBtn', 'generateTaxPlanningBtn', 'generateEstatePlanningBtn',
-                        'generateHomeDecorBtn', 'generateDIYProjectBtn', 'generateMovingChecklistBtn',
-                        'generatePackingListBtn', 'generateVacationPlanBtn', 'generateTravelPackingBtn',
-                        'generateItineraryBtn', 'generateLanguageLearningBtn', 'generateCulturalTipsBtn',
-                        'generateLocalCustomsBtn', 'generateSafetyTipsBtn', 'generateEmergencyPlanBtn',
-                        'generateFirstAidGuideBtn', 'generateWellnessPlanBtn', 'generateMindfulnessBtn',
-                        'generateYogaRoutineBtn', 'generateExercisePlanBtn', 'generateNutritionPlanBtn',
-                        'generateWeightLossPlanBtn', 'generateMuscleGainPlanBtn', 'generateFitnessChallengeBtn',
-                        'generateHabitTrackerBtn', 'generateGoalSettingBtn', 'generateProductivitySystemBtn',
-                        'generateMorningRoutineBtn', 'generateEveningRoutineBtn', 'generateSleepScheduleBtn',
-                        'generateDigitalDetoxBtn', 'generateMinimalismGuideBtn', 'generateDeclutteringPlanBtn',
-                        
-                        // Educação (50)
-                        'generateQuizBtn', 'generateFlashcardsBtn', 'generateLessonPlanBtn',
-                        'generateStudyPlanBtn', 'generateHomeworkBtn', 'generateEssayBtn',
-                        'generateThesisBtn', 'generateResearchBtn', 'generateSummaryBtn',
-                        'generateMathProblemBtn', 'generateScienceExperimentBtn', 'generateHistoryTimelineBtn',
-                        'generateLanguageLessonBtn', 'generateCodingExerciseBtn', 'generateArtProjectBtn',
-                        'generateBookReportBtn', 'generateDebateTopicsBtn', 'generateCriticalThinkingBtn',
-                        'generateLearningStyleBtn', 'generateStudyTechniquesBtn', 'generateMemoryTechniquesBtn',
-                        'generateNoteTakingBtn', 'generateTimeManagementEduBtn', 'generateTestPreparationBtn',
-                        'generateScholarshipEssayBtn', 'generateCollegeApplicationBtn', 'generateCareerPlanningBtn',
-                        'generateInterviewPreparationBtn', 'generateResumeWritingBtn', 'generateCoverLetterEduBtn',
-                        'generateLinkedInProfileBtn', 'generatePortfolioAdviceBtn', 'generatePresentationSkillsBtn',
-                        'generatePublicSpeakingBtn', 'generateWritingSkillsBtn', 'generateReadingComprehensionBtn',
-                        'generateVocabularyBuilderBtn', 'generateGrammarGuideBtn', 'generateLanguageImmersionBtn',
-                        'generateCulturalExchangeBtn', 'generateStudyAbroadBtn', 'generateExchangeProgramBtn',
-                        'generateInternshipAdviceBtn', 'generateVolunteeringIdeasBtn', 'generateExtracurricularBtn',
-                        'generateLeadershipSkillsBtn', 'generateTeamworkSkillsBtn', 'generateCommunicationSkillsBtn',
-                        'generateEmotionalIntelligenceBtn', 'generateGrowthMindsetBtn', 'generateMotivationTechniquesBtn',
-                        'generateStressManagementEduBtn', 'generateMindfulnessEduBtn', 'generateWellbeingStrategiesBtn',
-                        'generateDigitalLiteracyBtn', 'generateMediaLiteracyBtn', 'generateFinancialLiteracyBtn',
-                        'generateCivicEducationBtn', 'generateEnvironmentalEducationBtn', 'generateHealthEducationBtn',
-                        
-                        // Negócios (50)
-                        'generateBusinessBtn', 'generateMarketingBtn', 'generateSalesBtn',
-                        'generateProposalBtn', 'generateContractBtn', 'generateReportBtn',
-                        'generateSWOTBtn', 'generateBusinessPlanBtn', 'generatePitchBtn',
-                        'generateInterviewBtn', 'generateCustomerServiceBtn', 'generateNegotiationBtn',
-                        'generateLeadershipBtn', 'generateTeamBuildingBtn', 'generateStartupBtn',
-                        'generateEcommerceBtn', 'generateSocialMediaMarketingBtn', 'generateSEOStrategyBtn',
-                        'generateBrandStrategyBtn', 'generateFinancialProjectionBtn', 'generateMarketResearchBtn',
-                        'generateCompetitiveAnalysisBtn', 'generateCustomerPersonaBtn', 'generateSalesFunnelBtn',
-                        'generateEmailMarketingBtn', 'generateContentMarketingBtn', 'generateInfluencerMarketingBtn',
-                        'generateViralMarketingBtn', 'generateGuerrillaMarketingBtn', 'generateAffiliateMarketingBtn',
-                        'generateReferralProgramBtn', 'generateLoyaltyProgramBtn', 'generatePricingStrategyBtn',
-                        'generateDistributionStrategyBtn', 'generateSupplyChainBtn', 'generateInventoryManagementBtn',
-                        'generateQualityControlBtn', 'generateRiskManagementBtn', 'generateCrisisManagementBtn',
-                        'generateChangeManagementBtn', 'generateProjectManagementBtn', 'generateAgileMethodologyBtn',
-                        'generateScrumFrameworkBtn', 'generateKanbanSystemBtn', 'generateLeanMethodologyBtn',
-                        'generateSixSigmaBtn', 'generateBusinessProcessBtn', 'generateWorkflowAutomationBtn',
-                        'generateCustomerJourneyBtn', 'generateUserExperienceBtn', 'generateProductDevelopmentBtn',
-                        'generateInnovationManagementBtn', 'generateIntellectualPropertyBtn', 'generateFranchisingBtn',
-                        'generateMergersAcquisitionsBtn', 'generateBusinessExitBtn', 'generateSuccessionPlanningBtn',
-                        'generateCorporateGovernanceBtn', 'generateBusinessEthicsBtn', 'generateSustainabilityBusinessBtn',
-                        
-                        // Tecnologia (50)
-                        'generateAPIBtn', 'generateAlgorithmBtn', 'generateDatabaseBtn',
-                        'generateUIBtn', 'generateMobileAppBtn', 'generateWebsiteBtn',
-                        'generateGameBtn', 'generateAIBtn', 'generateBlockchainBtn',
-                        'generateSecurityBtn', 'generateDevOpsBtn', 'generateCloudComputingBtn',
-                        'generateDataScienceBtn', 'generateMachineLearningBtn', 'generateDeepLearningBtn',
-                        'generateNeuralNetworkBtn', 'generateComputerVisionBtn', 'generateNaturalLanguageBtn',
-                        'generateRoboticsBtn', 'generateIoTBtn', 'generateARVRBtn',
-                        'generateQuantumComputingBtn', 'generateCybersecurityBtn', 'generateEthicalHackingBtn',
-                        'generateDigitalForensicsBtn', 'generateCryptographyBtn', 'generateNetworkSecurityBtn',
-                        'generateApplicationSecurityBtn', 'generateCloudSecurityBtn', 'generateIncidentResponseBtn',
-                        'generateThreatModelingBtn', 'generateRiskAssessmentTechBtn', 'generateComplianceFrameworkBtn',
-                        'generatePrivacyPolicyBtn', 'generateGDPRComplianceBtn', 'generateSoftwareArchitectureBtn',
-                        'generateSystemDesignBtn', 'generateMicroservicesBtn', 'generateServerlessBtn',
-                        'generateContainerizationBtn', 'generateKubernetesBtn', 'generateCI_CDBtn',
-                        'generateTestingStrategyBtn', 'generateQAProcessBtn', 'generateCodeReviewBtn',
-                        'generateTechnicalDebtBtn', 'generateRefactoringBtn', 'generateLegacySystemBtn',
-                        'generateDocumentationBtn', 'generateTechnicalWritingBtn', 'generateDeveloperOnboardingBtn',
-                        'generateTechStackBtn', 'generateProgrammingLanguageBtn', 'generateFrameworkBtn',
-                        'generateLibraryBtn', 'generateToolingBtn', 'generateProductivityToolsBtn',
-                        
-                        // Entretenimento (50)
-                        'generateMovieBtn', 'generateTVShowBtn', 'generateBookBtn',
-                        'generateGameIdeaBtn', 'generateTriviaBtn', 'generateDebateBtn',
-                        'generatePodcastBtn', 'generateComedyBtn', 'generateHorrorBtn',
-                        'generateFantasyBtn', 'generateSciFiBtn', 'generateRomanceBtn',
-                        'generateMysteryBtn', 'generateAdventureBtn', 'generateFanFictionBtn',
-                        'generateBoardGameBtn', 'generateCardGameBtn', 'generateRolePlayingBtn',
-                        'generateVideoGameBtn', 'generateMobileGameBtn', 'generatePuzzleGameBtn',
-                        'generateStrategyGameBtn', 'generateSimulationGameBtn', 'generateSportsGameBtn',
-                        'generateFightingGameBtn', 'generateShooterGameBtn', 'generateRacingGameBtn',
-                        'generatePlatformerBtn', 'generateSandboxBtn', 'generateSurvivalGameBtn',
-                        'generateHorrorGameBtn', 'generateMMORPGBtn', 'generateMOBABtn',
-                        'generateBattleRoyaleBtn', 'generateCasualGameBtn', 'generateEducationalGameBtn',
-                        'generateArtGameBtn', 'generateNarrativeGameBtn', 'generateMusicGameBtn',
-                        'generatePartyGameBtn', 'generateTriviaGameBtn', 'generateWordGameBtn',
-                        'generateLogicGameBtn', 'generateMathGameBtn', 'generateScienceGameBtn',
-                        'generateHistoryGameBtn', 'generateGeographyGameBtn', 'generateLanguageGameBtn',
-                        'generateMemoryGameBtn', 'generateReactionGameBtn', 'generateSkillGameBtn',
-                        'generateDanceGameBtn', 'generateFitnessGameBtn', 'generateMeditationGameBtn',
-                        'generateSocialGameBtn', 'generateCollaborativeGameBtn', 'generateCompetitiveGameBtn',
-                        
-                        // Especializadas (50)
-                        'chessHelperBtn', 'generateLegalBtn', 'generateMedicalBtn',
-                        'generateEngineeringBtn', 'generateScienceBtn', 'generateMathBtn',
-                        'generateHistoryBtn', 'generatePhilosophyBtn', 'generatePsychologyBtn',
-                        'generateAstronomyBtn', 'generateChemistryBtn', 'generatePhysicsBtn',
-                        'generateBiologyBtn', 'generateGeographyBtn', 'generateEconomicsBtn',
-                        'generateSociologyBtn', 'generateAnthropologyBtn', 'generatePoliticalScienceBtn',
-                        'generateLinguisticsBtn', 'generateArchitectureBtn', 'generateUrbanPlanningBtn',
-                        'generateEnvironmentalScienceBtn', 'generateClimateScienceBtn', 'generateGeologyBtn',
-                        'generatePaleontologyBtn', 'generateArchaeologyBtn', 'generateMeteorologyBtn',
-                        'generateOceanographyBtn', 'generateEcologyBtn', 'generateZoologyBtn',
-                        'generateBotanyBtn', 'generateGeneticsBtn', 'generateNeuroscienceBtn',
-                        'generateBiotechnologyBtn', 'generatePharmacologyBtn', 'generateEpidemiologyBtn',
-                        'generatePublicHealthBtn', 'generateNutritionScienceBtn', 'generateSportsScienceBtn',
-                        'generateCognitiveScienceBtn', 'generateArtificialIntelligenceBtn', 'generateDataAnalysisBtn',
-                        'generateStatisticsBtn', 'generateActuarialScienceBtn', 'generateCryptologyBtn',
-                        'generateGameTheoryBtn', 'generateOperationsResearchBtn', 'generateSystemsTheoryBtn',
-                        'generateChaosTheoryBtn', 'generateComplexityScienceBtn', 'generateFuturismBtn',
-                        'generateScienceFictionBtn', 'generateSpeculativeFictionBtn', 'generateAlternateHistoryBtn',
-                        'generateUtopianFictionBtn', 'generateDystopianFictionBtn', 'generatePostApocalypticBtn',
-                        
-                        // Social (50)
-                        'generateSocialMediaBtn', 'generateDatingProfileBtn', 'generateInvitationBtn',
-                        'generateApologyBtn', 'generateComplimentBtn', 'generateFeedbackBtn',
-                        'generateNetworkingBtn', 'generateEventBtn', 'generateWeddingBtn',
-                        'generateBirthdayBtn', 'generateThankYouNoteBtn', 'generateSympathyMessageBtn',
-                        'generateRecommendationBtn', 'generateIcebreakerBtn', 'generateConflictResolutionBtn',
-                        'generatePublicSpeakingBtn', 'generateEtiquetteBtn', 'generateCulturalTipsBtn',
-                        'generateFriendshipAdviceBtn', 'generateRelationshipAdviceBtn', 'generateParentingAdviceBtn',
-                        'generateFamilyMediationBtn', 'generateTeamBuildingSocialBtn', 'generateCommunityBuildingBtn',
-                        'generateVolunteerCoordinationBtn', 'generateFundraisingBtn', 'generateActivismBtn',
-                        'generateAdvocacyBtn', 'generateSocialJusticeBtn', 'generateDiversityInclusionBtn',
-                        'generateAccessibilityBtn', 'generateMentalHealthAwarenessBtn', 'generateWellnessCommunityBtn',
-                        'generateSupportGroupBtn', 'generateMentorshipProgramBtn', 'generateProfessionalNetworkBtn',
-                        'generateAlumniNetworkBtn', 'generateIndustryAssociationBtn', 'generateTradeUnionBtn',
-                        'generatePoliticalCampaignBtn', 'generateGrassrootsMovementBtn', 'generateSocialEnterpriseBtn',
-                        'generateNonprofitBtn', 'generateCharityBtn', 'generatePhilanthropyBtn',
-                        'generateCrowdfundingBtn', 'generateMicrofinanceBtn', 'generateSocialImpactBtn',
-                        'generateCorporateSocialBtn', 'generateSustainableDevelopmentBtn', 'generateGlobalCitizenshipBtn',
-                        'generateCulturalExchangeBtn', 'generateLanguageExchangeBtn', 'generateTravelCommunityBtn',
-                        'generateHobbyGroupBtn', 'generateBookClubBtn', 'generateFilmClubBtn',
-                        
-                        // Diversos (50)
-                        'generatePrayerBtn', 'generateAffirmationBtn', 'generateJournalBtn',
-                        'generateBucketListBtn', 'generateGratitudeBtn', 'generateVisionBoardBtn',
-                        'generateGoalSettingBtn', 'generateProductivityBtn', 'generateHobbyIdeasBtn',
-                        'generateSelfCareBtn', 'generateMindfulnessBtn', 'generateMotivationBtn',
-                        'generateInspirationBtn', 'generateQuotesBtn', 'generateRiddlesBtn',
-                        'generateTriviaQuestionsBtn', 'generateWouldYouRatherBtn', 'generateIceCreamFlavorsBtn',
-                        'generateBabyNamesBtn', 'generatePetNamesBtn', 'generateBandNamesBtn',
-                        'generateBusinessNamesBtn', 'generateProductNamesBtn', 'generateBookTitlesBtn',
-                        'generateMovieTitlesBtn', 'generateSongTitlesBtn', 'generatePoemTitlesBtn',
-                        'generateArtworkTitlesBtn', 'generateExhibitNamesBtn', 'generateEventNamesBtn',
-                        'generateTeamNamesBtn', 'generateUsernameIdeasBtn', 'generatePasswordIdeasBtn',
-                        'generateHashtagIdeasBtn', 'generateSloganIdeasBtn', 'generateTaglineIdeasBtn',
-                        'generateMottoIdeasBtn', 'generateCatchphraseIdeasBtn', 'generateNicknameIdeasBtn',
-                        'generateSuperheroNamesBtn', 'generateVillainNamesBtn', 'generateFantasyNamesBtn',
-                        'generateSciFiNamesBtn', 'generateHorrorNamesBtn', 'generateMysteryNamesBtn',
-                        'generateRomanceNamesBtn', 'generateWesternNamesBtn', 'generateHistoricalNamesBtn',
-                        'generateMythologicalNamesBtn', 'generateCelestialNamesBtn', 'generateElementalNamesBtn',
-                        'generateColorNamesBtn', 'generatePlantNamesBtn', 'generateAnimalNamesBtn',
-                        'generateMineralNamesBtn', 'generateGemstoneNamesBtn', 'generateWeatherNamesBtn',
-                        'generateSeasonNamesBtn', 'generateTimeNamesBtn', 'generateSpaceNamesBtn'
-                    ];
-                    
-                    // Cache all buttons
-                    this.tools.forEach(button => {
-                        this.elements[button] = document.getElementById(button);
-                    });
-
-                    this.typingIndicator = document.createElement("div");
-                    this.typingIndicator.className = "message bot typing";
-                    this.typingIndicator.textContent = "ViBot está digitando...";
-                },
-
-                setupEventListeners() {
-                    this.elements.modelSelector.addEventListener('change', e => this.updateModel(e.target.value));
-                    // Auto-resize textarea
-                    this.elements.userInput.addEventListener('input', () => {
-                        this.elements.userInput.style.height = 'auto';
-                        this.elements.userInput.style.height = Math.min(this.elements.userInput.scrollHeight, 150) + 'px';
-                    });
-                    
-                    // Navigation
-                    this.elements.newConversationBtn.addEventListener('click', () => this.createNewConversation());
-                    this.elements.toggleThemeBtn.addEventListener('click', () => this.toggleTheme());
-                    this.elements.menuBtn.addEventListener('click', () => this.toggleSidebar());
-                    this.elements.toolsBtn.addEventListener('click', () => this.toggleToolsSidebar());
-                    this.elements.modelSelector.addEventListener('change', e => this.updateModel(e.target.value));
-                    this.elements.temperatureSlider.addEventListener('input', e => this.updateTemperature(e.target.value));
-                    this.elements.maxTokensSlider.addEventListener('input', e => this.updateMaxTokens(e.target.value));
-                    this.elements.deleteAllConversationsBtn.addEventListener('click', () => this.deleteAllConversations());
-                    
-                    // Tabs
-                    this.elements.chatTabBtn.addEventListener('click', () => this.showTab('chat'));
-                    this.elements.toolsTabBtn.addEventListener('click', () => this.showTab('tools'));
-                    this.elements.settingsTabBtn.addEventListener('click', () => this.showTab('settings'));
-
-                    // Tool buttons (500 tools)
-                    this.tools.forEach(tool => {
-                        if (this.elements[tool]) {
-                            this.elements[tool].addEventListener('click', () => this.handleToolClick(tool));
-                        }
-                    });
-                },
-
-                setupInitialState() {
-                    this.conversations = {};
-                    this.currentConversationId = null;
-                    this.totalTokens = 0;
-
-                    this.loadTheme();
-                    this.createNewConversation();
-                },
-
-                updateUI() {
-                    this.elements.temperatureValue.textContent = this.config.temperature;
-                    this.elements.maxTokensValue.textContent = this.config.maxTokens;
-                },
-
-                loadTheme() {
-                    const theme = localStorage.getItem("vibot_theme") || "light";
-                    document.documentElement.setAttribute("data-theme", theme);
-                    
-                    // Update theme icon
-                    const icon = this.elements.toggleThemeBtn.querySelector('i');
-                    if (theme === "dark") {
-                        icon.classList.remove('fa-moon');
-                        icon.classList.add('fa-sun');
-                    } else {
-                        icon.classList.remove('fa-sun');
-                        icon.classList.add('fa-moon');
-                    }
-                },
-
-                toggleTheme() {
-                    const currentTheme = document.documentElement.getAttribute("data-theme");
-                    const newTheme = currentTheme === "dark" ? "light" : "dark";
-                    document.documentElement.setAttribute("data-theme", newTheme);
-                    localStorage.setItem("vibot_theme", newTheme);
-                    
-                    // Update theme icon
-                    const icon = this.elements.toggleThemeBtn.querySelector('i');
-                    if (newTheme === "dark") {
-                        icon.classList.remove('fa-moon');
-                        icon.classList.add('fa-sun');
-                    } else {
-                        icon.classList.remove('fa-sun');
-                        icon.classList.add('fa-moon');
-                    }
-                },
-
-                toggleSidebar() {
-                    this.elements.sidebar.classList.toggle('active');
-                    this.elements.toolsSidebar.classList.remove('active');
-                },
-
-                toggleToolsSidebar() {
-                    this.elements.toolsSidebar.classList.toggle('active');
-                    this.elements.sidebar.classList.remove('active');
-                },
-
-                updateModel(model) {
-    // Verifica se o modelo é suportado
-    if (Object.keys(this.modelNames).includes(model)) {
-        this.config.model = model;
-        
-        // Ajusta maxTokens baseado no modelo
-        if (model === "mistral-tiny") {
-            this.config.maxTokens = 2000;
-        } else {
-            this.config.maxTokens = 4000; // Aumenta para modelos maiores
-        }
-        
-        // Atualiza o slider na UI
-        this.elements.maxTokensSlider.value = this.config.maxTokens;
-        this.elements.maxTokensValue.textContent = this.config.maxTokens;
-    }
-},
-
-                updateTemperature(value) {
-                    this.config.temperature = parseFloat(value);
-                    this.elements.temperatureValue.textContent = this.config.temperature;
-                },
-
-                updateMaxTokens(value) {
-                    this.config.maxTokens = parseInt(value);
-                    this.elements.maxTokensValue.textContent = this.config.maxTokens;
-                },
-
-                showTab(tabName) {
-                    if (tabName === 'tools') {
-                        this.toggleToolsSidebar();
-                    } else if (tabName === 'settings') {
-                        this.toggleSidebar();
-                    } else {
-                        this.elements.userInput.focus();
-                    }
-                },
-
-                createNewConversation() {
-                    const id = "conv_" + Date.now();
-                    this.conversations[id] = {
-                        id,
-                        title: "Nova Conversa",
-                        messages: [],
-                        createdAt: Date.now()
-                    };
-                    
-                    this.currentConversationId = id;
-                    this.renderConversationsList();
-                    this.renderCurrentConversation();
-                    this.elements.userInput.focus();
-                },
-
-                deleteAllConversations() {
-                    if (confirm("Tem certeza que deseja excluir TODAS as conversas? Esta ação não pode ser desfeita.")) {
-                        this.conversations = {};
-                        this.createNewConversation();
-                        this.elements.sidebar.classList.remove('active');
-                    }
-                },
-
-                deleteConversation(id) {
-                    if (confirm("Tem certeza que deseja excluir esta conversa?")) {
-                        delete this.conversations[id];
-                        
-                        if (this.currentConversationId === id) {
-                            if (Object.keys(this.conversations).length > 0) {
-                                this.currentConversationId = Object.keys(this.conversations)[0];
-                            } else {
-                                this.createNewConversation();
-                            }
-                        }
-                        
-                        this.renderConversationsList();
-                        this.renderCurrentConversation();
-                    }
-                },
-
-                renderConversationsList() {
-                    this.elements.conversationList.innerHTML = "";
-                    
-                    Object.values(this.conversations)
-                        .sort((a, b) => b.createdAt - a.createdAt)
-                        .forEach(conversation => {
-                            const btn = document.createElement("button");
-                            btn.className = `conversation-btn ${conversation.id === this.currentConversationId ? "active" : ""}`;
-                            btn.innerHTML = `
-                                <i class="fas fa-comment conversation-icon"></i>
-                                <span>${conversation.title}</span>
-                                <button class="conversation-delete" data-id="${conversation.id}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            `;
-                            
-                            btn.onclick = () => {
-                                this.switchConversation(conversation.id);
-                                this.elements.sidebar.classList.remove('active');
-                            };
-                            
-                            const deleteBtn = btn.querySelector('.conversation-delete');
-                            deleteBtn.onclick = (e) => {
-                                e.stopPropagation();
-                                this.deleteConversation(conversation.id);
-                            };
-                            
-                            this.elements.conversationList.appendChild(btn);
-                        });
-                },
-
-                switchConversation(id) {
-                    this.currentConversationId = id;
-                    this.renderConversationsList();
-                    this.renderCurrentConversation();
-                },
-
-                renderCurrentConversation() {
-                    this.elements.chatbox.innerHTML = "";
-                    
-                    const conversation = this.conversations[this.currentConversationId];
-                    
-                    if (conversation.messages.length === 0) {
-                        this.addMessage("bot", "Olá! Sou o ViBot, seu assistente de IA com 100 ferramentas. Como posso te ajudar hoje?");
-                    } else {
-                        conversation.messages.forEach(msg => {
-                            this.addMessageToChatbox(msg.role === "assistant" ? "bot" : "user", msg.content);
-                        });
-                    }
-                    
-                    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
-                },
-
-                async sendMessage() {
-                    const message = this.elements.userInput.value.trim();
-                    if (!message) return;
-                    
-                    const conversation = this.conversations[this.currentConversationId];
-                    
-                    this.addMessage("user", message);
-                    this.elements.userInput.value = "";
-                    this.elements.userInput.style.height = 'auto';
-                    
-                    this.elements.chatbox.appendChild(this.typingIndicator);
-                    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
-                    
-                    try {
-                        const messages = [
-                            { role: "system", content: this.config.systemPrompt },
-                            ...conversation.messages.map(msg => ({
-                                role: msg.role === "bot" ? "assistant" : msg.role,
-                                content: this.getTextContent(msg.content)
-                            }))
-                        ];
-                        
-                        // Validação reforçada dos parâmetros
-                        const safeMaxTokens = Math.max(128, Math.min(parseInt(this.config.maxTokens), 16384));
-                        const safeTemperature = Math.max(0.1, Math.min(parseFloat(this.config.temperature), 2.0));
-                        
-                        // Tentar com cada API até obter sucesso
-                        let response;
-                        let lastError;
-                        
-                        for (let i = 0; i < this.config.apiKeys.length; i++) {
-                            this.config.currentApiKeyIndex = i;
-                            const currentApiKey = this.config.apiKeys[i];
-                            
-                            try {
-                                response = await fetch(this.config.apiUrl, {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                        "Authorization": `Bearer ${currentApiKey}`
-                                    },
-                                    body: JSON.stringify({
-                                        model: this.config.model,
-                                        messages: messages,
-                                        temperature: safeTemperature,
-                                        max_tokens: safeMaxTokens,
-                                        stream: false
-                                    })
-                                });
-                                
-                                if (!response.ok) {
-                                    const errorData = await response.json();
-                                    lastError = new Error(`Erro na API (chave ${i+1}): ${response.status} - ${errorData.error?.message || 'Sem detalhes'}`);
-                                    continue; // Tenta a próxima API
-                                }
-                                
-                                // Se chegou aqui, a resposta foi bem-sucedida
-                                break;
-                            } catch (error) {
-                                lastError = error;
-                                continue; // Tenta a próxima API
-                            }
-                        }
-                        
-                        if (!response || !response.ok) {
-                            throw lastError || new Error("Todas as tentativas com as APIs falharam");
-                        }
-                        
-                        const data = await response.json();
-                        const botMessage = data.choices[0].message.content;
-                        
-                        this.typingIndicator.remove();
-                        this.addMessage("bot", botMessage);
-                        
-                        this.totalTokens += data.usage?.total_tokens || 0;
-                    } catch (error) {
-                        this.typingIndicator.remove();
-                        this.addMessage("bot", `⚠️ Erro: ${error.message}`, "error");
-                        console.error("Erro completo:", error);
-                    }
-                },
-
+                // Lista de todas as ferramentas
+                this.tools = [
+                    'generateEmailBtn', 'summarizeTextBtn', 'translateTextBtn', 
+                    'improveTextBtn', 'generateCodeBtn', 'generateIdeasBtn', 
+                    'analyzeDataBtn', 'createContentBtn', 'explainConceptBtn', 
+                    'solveProblemBtn', 'generateRecipeBtn', 'generateWorkoutBtn',
+                    'generateTravelBtn', 'generateAdviceBtn', 'generateParentingBtn',
+                    'generateFinanceBtn', 'generateHealthBtn', 'generateDietBtn',
+                    'generateShoppingBtn', 'generateHomeBtn', 'generateQuizBtn',
+                    'generateFlashcardsBtn', 'generateLessonPlanBtn', 'generateStudyPlanBtn',
+                    'generateHomeworkBtn', 'generateEssayBtn', 'generateThesisBtn',
+                    'generateResearchBtn', 'generateSummaryBtn', 'generateMathProblemBtn',
+                    'generateBusinessBtn', 'generateMarketingBtn', 'generateSalesBtn',
+                    'generateProposalBtn', 'generateContractBtn', 'generateReportBtn',
+                    'generateSWOTBtn', 'generateBusinessPlanBtn', 'generatePitchBtn',
+                    'generateInterviewBtn', 'generateAPIBtn', 'generateAlgorithmBtn',
+                    'generateDatabaseBtn', 'generateUIBtn', 'generateMobileAppBtn',
+                    'generateWebsiteBtn', 'generateGameBtn', 'generateAIBtn',
+                    'generateBlockchainBtn', 'generateSecurityBtn', 'generateMovieBtn',
+                    'generateTVShowBtn', 'generateBookBtn', 'generateGameIdeaBtn',
+                    'generateTriviaBtn', 'generateDebateBtn', 'generatePodcastBtn',
+                    'generateComedyBtn', 'generateHorrorBtn', 'generateFantasyBtn',
+                    'chessHelperBtn', 'generateLegalBtn', 'generateMedicalBtn',
+                    'generateEngineeringBtn', 'generateScienceBtn', 'generateMathBtn',
+                    'generateHistoryBtn', 'generatePhilosophyBtn', 'generatePsychologyBtn',
+                    'generateAstronomyBtn', 'generateSocialMediaBtn', 'generateDatingProfileBtn',
+                    'generateInvitationBtn', 'generateApologyBtn', 'generateComplimentBtn',
+                    'generateFeedbackBtn', 'generateNetworkingBtn', 'generateEventBtn',
+                    'generateWeddingBtn', 'generateBirthdayBtn', 'generatePrayerBtn',
+                    'generateAffirmationBtn', 'generateJournalBtn', 'generateBucketListBtn',
+                    'generateGratitudeBtn', 'generateVisionBoardBtn', 'generateGoalSettingBtn',
+                    'generateProductivityBtn', 'generateHobbyIdeasBtn', 'generateSelfCareBtn',
+                    'generatePoemBtn', 'generateStoryBtn', 'generateJokeBtn',
+                    'generateScriptBtn', 'generateSongBtn', 'generateSpeechBtn',
+                    'generateArtBtn', 'generateDesignBtn', 'generateBrandingBtn',
+                    'generateSloganBtn'
+                ];
                 
-    
-    const conversation = this.conversations[this.currentConversationId];
-    
-    this.addMessage("user", message);
-    this.elements.userInput.value = "";
-    this.elements.userInput.style.height = 'auto';
-    
-    this.elements.chatbox.appendChild(this.typingIndicator);
-    this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
-    
-    try {
-        const messages = [
-            { role: "system", content: this.config.systemPrompt },
-            ...conversation.messages.map(msg => ({
-                role: msg.role === "bot" ? "assistant" : msg.role,
-                content: this.getTextContent(msg.content)
-            }))
-        ];
-        
-        // Tentar com cada API até obter sucesso
-        let response;
-        let lastError;
-        
-        for (let i = 0; i < this.config.apiKeys.length; i++) {
-            this.config.currentApiKeyIndex = i;
-            const currentApiKey = this.config.apiKeys[i];
-            
-            try {
-                response = await fetch("https://api.mistral.ai/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${currentApiKey}`
-                    },
-                    body: JSON.stringify({
-                        model: this.config.model,
-                        messages: messages,
-                        temperature: this.config.temperature,
-                        max_tokens: this.config.maxTokens,
-                        stream: false
-                    })
+                // Cache all buttons
+                this.tools.forEach(button => {
+                    this.elements[button] = document.getElementById(button);
+                });
+
+                this.typingIndicator = document.createElement("div");
+                this.typingIndicator.className = "message bot typing";
+                this.typingIndicator.textContent = "ViBot está digitando...";
+            },
+
+            setupEventListeners() {
+                // Enviar mensagem ao pressionar Enter (mas Shift+Enter para nova linha)
+                this.elements.userInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                // Enviar mensagem ao clicar no botão
+                this.elements.sendBtn.addEventListener('click', () => this.sendMessage());
+                
+                // Auto-resize textarea
+                this.elements.userInput.addEventListener('input', () => {
+                    this.elements.userInput.style.height = 'auto';
+                    this.elements.userInput.style.height = Math.min(this.elements.userInput.scrollHeight, 150) + 'px';
                 });
                 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    lastError = new Error(`Erro na API (chave ${i+1}): ${response.status} - ${errorData.error?.message || 'Sem detalhes'}`);
-                    continue; // Tenta a próxima API
+                // Navigation
+                this.elements.newConversationBtn.addEventListener('click', () => this.createNewConversation());
+                this.elements.toggleThemeBtn.addEventListener('click', () => this.toggleTheme());
+                this.elements.menuBtn.addEventListener('click', () => this.toggleSidebar());
+                this.elements.toolsBtn.addEventListener('click', () => this.toggleToolsSidebar());
+                this.elements.modelSelector.addEventListener('change', e => this.updateModel(e.target.value));
+                this.elements.temperatureSlider.addEventListener('input', e => this.updateTemperature(e.target.value));
+                this.elements.maxTokensSlider.addEventListener('input', e => this.updateMaxTokens(e.target.value));
+                this.elements.deleteAllConversationsBtn.addEventListener('click', () => this.deleteAllConversations());
+                
+                // Tabs
+                this.elements.chatTabBtn.addEventListener('click', () => this.showTab('chat'));
+                this.elements.toolsTabBtn.addEventListener('click', () => this.showTab('tools'));
+                this.elements.settingsTabBtn.addEventListener('click', () => this.showTab('settings'));
+
+                // Tool buttons
+                this.tools.forEach(tool => {
+                    if (this.elements[tool]) {
+                        this.elements[tool].addEventListener('click', () => this.handleToolClick(tool));
+                    }
+                });
+            },
+
+            setupInitialState() {
+                this.conversations = {};
+                this.currentConversationId = null;
+                this.totalTokens = 0;
+                this.chessBoard = null;
+
+                this.loadTheme();
+                this.createNewConversation();
+            },
+
+            updateUI() {
+                this.elements.temperatureValue.textContent = this.config.temperature;
+                this.elements.maxTokensValue.textContent = this.config.maxTokens;
+            },
+
+            loadTheme() {
+                const theme = localStorage.getItem("vibot_theme") || "light";
+                document.documentElement.setAttribute("data-theme", theme);
+                
+                // Update theme icon
+                const icon = this.elements.toggleThemeBtn.querySelector('i');
+                if (theme === "dark") {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            },
+
+            toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute("data-theme");
+                const newTheme = currentTheme === "dark" ? "light" : "dark";
+                document.documentElement.setAttribute("data-theme", newTheme);
+                localStorage.setItem("vibot_theme", newTheme);
+                
+                // Update theme icon
+                const icon = this.elements.toggleThemeBtn.querySelector('i');
+                if (newTheme === "dark") {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            },
+
+            toggleSidebar() {
+                this.elements.sidebar.classList.toggle('active');
+                this.elements.toolsSidebar.classList.remove('active');
+            },
+
+            toggleToolsSidebar() {
+                this.elements.toolsSidebar.classList.toggle('active');
+                this.elements.sidebar.classList.remove('active');
+            },
+
+            updateModel(model) {
+                // Verifica se o modelo é suportado
+                if (Object.keys(this.modelNames).includes(model)) {
+                    this.config.model = model;
+                    
+                    // Ajusta maxTokens baseado no modelo
+                    if (model === "mistral-tiny") {
+                        this.config.maxTokens = 2000;
+                    } else {
+                        this.config.maxTokens = 4000; // Aumenta para modelos maiores
+                    }
+                    
+                    // Atualiza o slider na UI
+                    this.elements.maxTokensSlider.value = this.config.maxTokens;
+                    this.elements.maxTokensValue.textContent = this.config.maxTokens;
+                }
+            },
+
+            updateTemperature(value) {
+                this.config.temperature = parseFloat(value);
+                this.elements.temperatureValue.textContent = this.config.temperature;
+            },
+
+            updateMaxTokens(value) {
+                this.config.maxTokens = parseInt(value);
+                this.elements.maxTokensValue.textContent = this.config.maxTokens;
+            },
+
+            showTab(tabName) {
+                if (tabName === 'tools') {
+                    this.toggleToolsSidebar();
+                } else if (tabName === 'settings') {
+                    this.toggleSidebar();
+                } else {
+                    this.elements.userInput.focus();
+                }
+            },
+
+            createNewConversation() {
+                const id = "conv_" + Date.now();
+                this.conversations[id] = {
+                    id,
+                    title: "Nova Conversa",
+                    messages: [],
+                    createdAt: Date.now()
+                };
+                
+                this.currentConversationId = id;
+                this.renderConversationsList();
+                this.renderCurrentConversation();
+                this.elements.userInput.focus();
+            },
+
+            deleteAllConversations() {
+                if (confirm("Tem certeza que deseja excluir TODAS as conversas? Esta ação não pode ser desfeita.")) {
+                    this.conversations = {};
+                    this.createNewConversation();
+                    this.elements.sidebar.classList.remove('active');
+                }
+            },
+
+            deleteConversation(id) {
+                if (confirm("Tem certeza que deseja excluir esta conversa?")) {
+                    delete this.conversations[id];
+                    
+                    if (this.currentConversationId === id) {
+                        if (Object.keys(this.conversations).length > 0) {
+                            this.currentConversationId = Object.keys(this.conversations)[0];
+                        } else {
+                            this.createNewConversation();
+                        }
+                    }
+                    
+                    this.renderConversationsList();
+                    this.renderCurrentConversation();
+                }
+            },
+
+            renderConversationsList() {
+                this.elements.conversationList.innerHTML = "";
+                
+                Object.values(this.conversations)
+                    .sort((a, b) => b.createdAt - a.createdAt)
+                    .forEach(conversation => {
+                        const btn = document.createElement("button");
+                        btn.className = `conversation-btn ${conversation.id === this.currentConversationId ? "active" : ""}`;
+                        btn.innerHTML = `
+                            <i class="fas fa-comment conversation-icon"></i>
+                            <span>${conversation.title}</span>
+                            <button class="conversation-delete" data-id="${conversation.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        `;
+                        
+                        btn.onclick = () => {
+                            this.switchConversation(conversation.id);
+                            this.elements.sidebar.classList.remove('active');
+                        };
+                        
+                        const deleteBtn = btn.querySelector('.conversation-delete');
+                        deleteBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            this.deleteConversation(conversation.id);
+                        };
+                        
+                        this.elements.conversationList.appendChild(btn);
+                    });
+            },
+
+            switchConversation(id) {
+                this.currentConversationId = id;
+                this.renderConversationsList();
+                this.renderCurrentConversation();
+            },
+
+            renderCurrentConversation() {
+                this.elements.chatbox.innerHTML = "";
+                
+                const conversation = this.conversations[this.currentConversationId];
+                
+                if (conversation.messages.length === 0) {
+                    this.addMessage("bot", "Olá! Sou o ViBot, seu assistente de IA com 100 ferramentas. Como posso te ajudar hoje?");
+                } else {
+                    conversation.messages.forEach(msg => {
+                        this.addMessageToChatbox(msg.role === "assistant" ? "bot" : "user", msg.content);
+                    });
                 }
                 
-                // Se chegou aqui, a resposta foi bem-sucedida
-                break;
-            } catch (error) {
-                lastError = error;
-                continue; // Tenta a próxima API
-            }
-        }
-        
-        if (!response || !response.ok) {
-            throw lastError || new Error("Todas as tentativas com as APIs falharam");
-        }
-        
-        const data = await response.json();
-        const botMessage = data.choices[0].message.content;
-        
-        this.typingIndicator.remove();
-        this.addMessage("bot", botMessage);
-        
-        this.totalTokens += data.usage?.total_tokens || 0;
-    } catch (error) {
-        this.typingIndicator.remove();
-        this.addMessage("bot", `⚠️ Erro: ${error.message}`, "error");
-        console.error("Erro completo:", error);
-    }
-},
-                },
+                this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
+            },
 
-                addMessageToChatbox(role, content, type = null) {
-                    const messageDiv = document.createElement("div");
-                    messageDiv.className = `message ${role}`;
-                    if (type) messageDiv.classList.add(type);
-                    messageDiv.innerHTML = content;
-                    
-                    const actionsDiv = document.createElement("div");
-                    actionsDiv.className = "message-actions";
-                    
-                    const copyBtn = document.createElement("button");
-                    copyBtn.className = "action-btn";
-                    copyBtn.innerHTML = `<i class="fas fa-copy"></i> Copiar`;
-                    copyBtn.onclick = () => {
-                        navigator.clipboard.writeText(this.getTextContent(content));
-                        copyBtn.innerHTML = `<i class="fas fa-check"></i> Copiado!`;
-                        setTimeout(() => {
-                            copyBtn.innerHTML = `<i class="fas fa-copy"></i> Copiar`;
-                        }, 2000);
-                    };
-                    actionsDiv.appendChild(copyBtn);
-                    
-                    // Adiciona botão de download
-                    const downloadBtn = document.createElement("button");
-                    downloadBtn.className = "download-btn";
-                    downloadBtn.innerHTML = `<i class="fas fa-download"></i> Baixar`;
-                    downloadBtn.onclick = () => {
-                        this.downloadText(content);
-                    };
-                    actionsDiv.appendChild(downloadBtn);
-                    
-                    messageDiv.appendChild(actionsDiv);
-                    this.elements.chatbox.appendChild(messageDiv);
-                },
-
-                downloadText(content) {
-                    const text = this.getTextContent(content);
-                    const blob = new Blob([text], { type: 'text/plain' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `vibot-mensagem-${new Date().toISOString().slice(0, 10)}.txt`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                },
-
-                getTextContent(html) {
-                    const temp = document.createElement('div');
-                    temp.innerHTML = html;
-                    return temp.textContent || temp.innerText || '';
-                },
+            async sendMessage() {
+                const message = this.elements.userInput.value.trim();
+                if (!message) return;
                 
-                handleToolClick(toolId) {
-                    const toolPrompts = {
-                        // Produtividade (50)
-                        generateEmailBtn: `Por favor, gere um e-mail profissional com base nas informações que eu fornecer.`,
-                        summarizeTextBtn: `Por favor, resuma o seguinte texto mantendo os pontos principais.`,
-                        translateTextBtn: `Por favor, traduza o seguinte texto para o idioma que eu especificar.`,
-                        improveTextBtn: `Por favor, revise e melhore o seguinte texto, tornando-o mais claro e profissional.`,
-                        generateCodeBtn: `Por favor, gere código com base nas especificações que eu fornecer.`,
-                        generateIdeasBtn: `Por favor, gere ideias criativas com base no tema que eu fornecer.`,
-                        analyzeDataBtn: `Por favor, analise os dados que eu fornecer e extraia insights relevantes.`,
-                        createContentBtn: `Por favor, crie conteúdo de qualidade com base no tópico que eu fornecer.`,
-                        explainConceptBtn: `Por favor, explique este conceito de forma clara e didática.`,
-                        solveProblemBtn: `Por favor, me ajude a solucionar este problema com uma abordagem passo a passo.`,
-                        generateScheduleBtn: `Por favor, crie um cronograma eficiente com base nos parâmetros que eu fornecer.`,
-                        generateMeetingBtn: `Por favor, ajude a planejar uma reunião produtiva com agenda e tópicos de discussion.`,
-                        generatePresentationBtn: `Por favor, ajude a criar uma apresentação profissional sobre o tópico que eu mencionar.`,
-                        generateChecklistBtn: `Por favor, crie uma lista de verificação abrangente para a tarefa que eu descrever.`,
-                        generateWorkflowBtn: `Por favor, desenhe um fluxo de trabalho eficiente para o processo que eu mencionar.`,
-                        generateBudgetBtn: `Por favor, ajude a criar um orçamento detalhado com base nos parâmetros que eu fornecer.`,
-                        generateInvoiceBtn: `Por favor, gere uma fatura profissional com base nos dados que eu fornecer.`,
-                        generateResumeBtn: `Por favor, ajude a criar um currículo impressionante com base na minha experiência.`,
-                        generateCoverLetterBtn: `Por favor, ajude a escrever uma carta de apresentação convincente para a vaga que eu mencionar.`,
-                        generateJobDescriptionBtn: `Por favor, ajude a criar uma descrição de vaga detalhada para a posição que eu mencionar.`,
-                        generatePerformanceReviewBtn: `Por favor, ajude a preparar uma avaliação de desempenho construtiva.`,
-                        generateKPIReportBtn: `Por favor, ajude a criar um relatório de KPIs com métricas relevantes.`,
-                        generateBusinessStrategyBtn: `Por favor, ajude a desenvolver uma estratégia de negócios para o cenário que eu descrever.`,
-                        generateBusinessPlanBtn: `Por favor, ajude a estruturar um plano de negócios completo.`,
-                        generatePitchBtn: `Por favor, ajude a criar um pitch convincente para investidores.`,
-                        generateInterviewBtn: `Por favor, prepare perguntas para uma entrevista sobre o tópico que eu fornecer.`,
-                        generateCustomerServiceBtn: `Por favor, sugira abordagens para lidar com situações de atendimento ao cliente.`,
-                        generateNegotiationBtn: `Por favor, sugira estratégias de negociação para o cenário que eu descrever.`,
-                        generateLeadershipBtn: `Por favor, sugira técnicas de liderança para a situação que eu mencionar.`,
-                        generateTeamBuildingBtn: `Por favor, sugira dinâmicas de grupo para o objetivo que eu mencionar.`,
-                        generateStartupBtn: `Por favor, dê conselhos para startups no estágio que eu mencionar.`,
-                        generateEcommerceBtn: `Por favor, sugira estratégias para melhorar um e-commerce.`,
-                        generateSocialMediaMarketingBtn: `Por favor, sugira um plano de marketing digital para a plataforma que eu mencionar.`,
-                        generateSEOStrategyBtn: `Por favor, sugira estratégias de SEO para o site que eu mencionar.`,
-                        generateBrandStrategyBtn: `Por favor, ajude a desenvolver uma estratégia de marca para o negócio que eu descrever.`,
-                        generateFinancialProjectionBtn: `Por favor, ajude a criar projeções financeiras para o negócio que eu mencionar.`,
-                        generateSWOTBtn: `Por favor, faça uma análise SWOT para o negócio que eu descrever.`,
-                        generateMarketResearchBtn: `Por favor, ajude a planejar uma pesquisa de mercado eficaz.`,
-                        generateSalesFunnelBtn: `Por favor, ajude a desenhar um funil de vendas eficiente.`,
-                        generateCustomerPersonaBtn: `Por favor, ajude a criar personas de cliente realistas.`,
-                        generateCompetitiveAnalysisBtn: `Por favor, faça uma análise competitiva para o setor que eu mencionar.`,
-                        generateRiskAssessmentBtn: `Por favor, avalie os riscos para o projeto que eu descrever.`,
-                        generateExitStrategyBtn: `Por favor, sugira estratégias de saída para o negócio que eu mencionar.`,
-                        generateFranchiseModelBtn: `Por favor, ajude a desenvolver um modelo de franquia.`,
-                        generateInvestorDeckBtn: `Por favor, ajude a criar um deck de investidores persuasivo.`,
-                        generateGrantProposalBtn: `Por favor, ajude a escrever uma proposta de subsídio convincente.`,
-                        generatePartnershipAgreementBtn: `Por favor, ajude a estruturar um acordo de parceria.`,
-                        generateNonDisclosureBtn: `Por favor, ajude a redigir um acordo de confidencialidade.`,
-                        generateEmployeeHandbookBtn: `Por favor, ajude a criar um manual do funcionário abrangente.`,
-                        generateTrainingProgramBtn: `Por favor, ajude a desenvolver um programa de treinamento eficaz.`,
-                        generateMentorshipProgramBtn: `Por favor, ajude a estruturar um programa de mentoria.`,
-                        generateDiversityPolicyBtn: `Por favor, ajude a criar uma política de diversidade e inclusão.`,
-                        generateRemoteWorkPolicyBtn: `Por favor, ajude a desenvolver uma política de trabalho remoto.`,
-                        generateSustainabilityPlanBtn: `Por favor, ajude a criar um plano de sustentabilidade.`,
-                        generateCSRStrategyBtn: `Por favor, ajude a desenvolver uma estratégia de responsabilidade social corporativa.`,
-                        
-                        // Criatividade (50)
-                        generatePoemBtn: `Por favor, escreva um poema sobre o tema que eu fornecer.`,
-                        generateStoryBtn: `Por favor, crie uma história interessante com base no tema que eu fornecer.`,
-                        generateJokeBtn: `Por favor, conte uma piada sobre o assunto que eu mencionar.`,
-                        generateScriptBtn: `Por favor, escreva um roteiro para o cenário que eu descrever.`,
-                        generateSongBtn: `Por favor, componha uma letra de música no estilo que eu especificar.`,
-                        generateSpeechBtn: `Por favor, escreva um discurso sobre o tema que eu mencionar.`,
-                        generateArtBtn: `Por favor, descreva uma obra de arte baseada na minha descrição.`,
-                        generateDesignBtn: `Por favor, sugira um design com base nos requisitos que eu fornecer.`,
-                        generateBrandingBtn: `Por favor, crie uma identidade de marca para o negócio que eu descrever.`,
-                        generateSloganBtn: `Por favor, crie slogans criativos para o produto/marca que eu mencionar.`,
-                        generateCharacterBtn: `Por favor, crie um personagem detalhado com base nas características que eu fornecer.`,
-                        generateWorldBuildingBtn: `Por favor, ajude a construir um mundo ficcional rico e detalhado.`,
-                        generatePlotTwistBtn: `Por favor, sugira reviravoltas criativas para a história que eu descrever.`,
-                        generateDialogueBtn: `Por favor, escreva um diálogo convincente entre os personagens que eu descrever.`,
-                        generateHaikuBtn: `Por favor, escreva um haicai sobre o tema que eu mencionar.`,
-                        generateLimerickBtn: `Por favor, escreva um limerique divertido sobre o assunto que eu mencionar.`,
-                        generateAcrosticBtn: `Por favor, crie um acróstico usando a palavra que eu fornecer.`,
-                        generateMetaphorBtn: `Por favor, crie metáforas criativas para descrever o conceito que eu mencionar.`,
-                        generateRiddleBtn: `Por favor, crie charadas engenhosas sobre o tema que eu mencionar.`,
-                        generatePuzzleBtn: `Por favor, crie quebra-cabeças ou enigmas interessantes.`,
-                        generateComicScriptBtn: `Por favor, escreva um roteiro para uma história em quadrinhos.`,
-                        generateScreenplayBtn: `Por favor, escreva um roteiro cinematográfico.`,
-                        generateTheaterPlayBtn: `Por favor, escreva uma peça teatral.`,
-                        generateRadioDramaBtn: `Por favor, escreva um roteiro para radionovela.`,
-                        generateChildrenStoryBtn: `Por favor, escreva uma história infantil.`,
-                        generateFairyTaleBtn: `Por favor, escreva um conto de fadas.`,
-                        generateMythologyBtn: `Por favor, crie um mito ou lenda original.`,
-                        generateUrbanLegendBtn: `Por favor, invente uma lenda urbana convincente.`,
-                        generateAllegoryBtn: `Por favor, escreva uma alegoria sobre o tema que eu mencionar.`,
-                        generateParableBtn: `Por favor, escreva uma parábola com uma lição moral.`,
-                        generateFableBtn: `Por favor, escreva uma fábula com animais personificados.`,
-                        generateSatireBtn: `Por favor, escreva uma sátira sobre o assunto que eu mencionar.`,
-                        generateParodyBtn: `Por favor, escreva uma paródia de uma obra conhecida.`,
-                        generateSonnetBtn: `Por favor, escreva um soneto no estilo shakespeariano.`,
-                        generateOdeBtn: `Por favor, escreva uma ode ao objeto ou conceito que eu mencionar.`,
-                        generateElegyBtn: `Por favor, escreva uma elegia melancólica.`,
-                        generateBalladBtn: `Por favor, escreva uma balada narrativa.`,
-                        generateEpicBtn: `Por favor, escreva um poema épico sobre o herói que eu descrever.`,
-                        generateFreeVerseBtn: `Por favor, escreva um poema em verso livre sobre o tema que eu mencionar.`,
-                        generateConcretePoetryBtn: `Por favor, crie um poema concreto com forma visual.`,
-                        generateBlackoutPoetryBtn: `Por favor, crie um poema de apagamento a partir do texto que eu fornecer.`,
-                        generateFlashFictionBtn: `Por favor, escreva um microconto (história muito curta).`,
-                        generateSixWordStoryBtn: `Por favor, crie uma história em apenas seis palavras.`,
-                        generateTwitteratureBtn: `Por favor, escreva uma história no estilo twitteratura (limitada a tweets).`,
-                        generateInteractiveFictionBtn: `Por favor, crie uma ficção interativa com múltiplos caminhos.`,
-                        generateChooseYourAdventureBtn: `Por favor, escreva uma história do tipo "Escolha sua Aventura".`,
-                        generateDrabbleBtn: `Por favor, escreva um drabble (história exatamente com 100 palavras).`,
-                        generateVignetteBtn: `Por favor, escreva uma vinheta literária (cena curta e impressionista).`,
-                        generateStreamOfConsciousnessBtn: `Por favor, escreva no estilo fluxo de consciência.`,
-                        generateEpistolaryBtn: `Por favor, escreva uma história em formato epistolar (cartas/diários).`,
-                        generateFoundPoetryBtn: `Por favor, crie um poema encontrado a partir do texto que eu fornecer.`,
-                        generateErasurePoetryBtn: `Por favor, crie um poema apagando palavras de um texto existente.`,
-                        generateVisualPoetryBtn: `Por favor, descreva um poema visual que combine texto e imagem.`,
-                        generateSoundPoetryBtn: `Por favor, descreva um poema que explore qualidades sonoras da linguagem.`,
-                        generatePerformancePoetryBtn: `Por favor, escreva um poema destinado à performance.`,
-                        generateSpokenWordBtn: `Por favor, escreva um poema no estilo spoken word.`,
-                        generateProsePoetryBtn: `Por favor, escreva um poema em prosa.`,
-                        generateExperimentalLiteratureBtn: `Por favor, crie um texto literário experimental.`,
-                        generateSurrealWritingBtn: `Por favor, escreva no estilo surrealista.`,
-                        generateAbsurdistWritingBtn: `Por favor, escreva no estilo absurdista.`,
-                        generateDadaistWritingBtn: `Por favor, crie um texto no estilo dadaísta.`,
-                        generateBeatGenerationBtn: `Por favor, escreva no estilo da Geração Beat.`,
-                        generatePostmodernWritingBtn: `Por favor, escreva no estilo pós-moderno.`,
-                        generateMagicalRealismBtn: `Por favor, escreva no estilo realismo mágico.`,
-                        generateCyberpunkBtn: `Por favor, escreva no estilo cyberpunk.`,
-                        generateSteampunkBtn: `Por favor, escreva no estilo steampunk.`,
-                        generateDieselpunkBtn: `Por favor, escreva no estilo dieselpunk.`,
-                        generateBiopunkBtn: `Por favor, escreva no estilo biopunk.`,
-                        generateSolarpunkBtn: `Por favor, escreva no estilo solarpunk.`,
-                        generateAtompunkBtn: `Por favor, escreva no estilo atompunk.`,
-                        generateRaypunkBtn: `Por favor, escreva no estilo raypunk.`,
-                        generateLovecraftianBtn: `Por favor, escreva no estilo lovecraftiano.`,
-                        generateGothicBtn: `Por favor, escreva no estilo gótico.`,
-                        generateNoirBtn: `Por favor, escreva no estilo noir.`,
-                        generatePulpFictionBtn: `Por favor, escreva no estilo ficção pulp.`,
-                        generateNewWeirdBtn: `Por favor, escreva no estilo New Weird.`,
-                        generateSlipstreamBtn: `Por favor, escreva no estilo slipstream.`,
-                        generateBizarroFictionBtn: `Por favor, escreva no estilo ficção bizarra.`,
-                        generateCliFiBtn: `Por favor, escreva ficção climática (Cli-Fi).`,
-                        generateAfrofuturismBtn: `Por favor, escreva no estilo afrofuturismo.`,
-                        generateIndigenousFuturismBtn: `Por favor, escreva no estilo futurismo indígena.`,
-                        generateHopepunkBtn: `Por favor, escreva no estilo hopepunk.`,
-                        generateNoblebrightBtn: `Por favor, escreva no estilo noblebright.`,
-                        generateGrimdarkBtn: `Por favor, escreva no estilo grimdark.`,
-                        generateFlintlockFantasyBtn: `Por favor, escreva fantasia flintlock.`,
-                        generateSwordAndSorceryBtn: `Por favor, escreva no estilo espada e feitiçaria.`,
-                        generateHighFantasyBtn: `Por favor, escreva alta fantasia.`,
-                        generateLowFantasyBtn: `Por favor, escreva baixa fantasia.`,
-                        generateDarkFantasyBtn: `Por favor, escreva fantasia sombria.`,
-                        generateUrbanFantasyBtn: `Por favor, escreva fantasia urbana.`,
-                        generateHistoricalFantasyBtn: `Por favor, escreva fantasia histórica.`,
-                        generateMythicFantasyBtn: `Por favor, escreva fantasia mítica.`,
-                        generateFairytaleFantasyBtn: `Por favor, escreva fantasia de contos de fadas.`,
-                        generatePortalFantasyBtn: `Por favor, escreva fantasia de portal.`,
-                        generateScienceFantasyBtn: `Por favor, escreva ficção científica fantástica.`,
-                        
-                        // Vida Diária (50)
-                        generateRecipeBtn: `Por favor, sugira uma receita com os ingredientes que eu mencionar.`,
-                        generateWorkoutBtn: `Por favor, crie um plano de treino para o objetivo que eu especificar.`,
-                        generateTravelBtn: `Por favor, planeje um roteiro de viagem para o destino que eu especificar.`,
-                        generateAdviceBtn: `Por favor, dê um conselho útil sobre a situação que eu descrever.`,
-                        generateParentingBtn: `Por favor, dê conselhos para pais sobre o tópico que eu mencionar.`,
-                        generateFinanceBtn: `Por favor, dê conselhos financeiros para a situação que eu descrever.`,
-                        generateHealthBtn: `Por favor, dê conselhos de saúde para a condição que eu mencionar.`,
-                        generateDietBtn: `Por favor, sugira um plano alimentar para o objetivo que eu especificar.`,
-                        generateShoppingBtn: `Por favor, sugira itens para comprar com base nas minhas necessidades.`,
-                        generateHomeBtn: `Por favor, dê dicas para organizar/decoração da casa com base no meu espaço.`,
-                        generateGardenBtn: `Por favor, dê conselhos para cuidar de um jardim com as plantas que eu mencionar.`,
-                        generatePetCareBtn: `Por favor, dê dicas para cuidar do meu pet (espécie, idade, necessidades especiais).`,
-                        generateCarMaintenanceBtn: `Por favor, dê dicas de manutenção para meu veículo (modelo, ano, quilometragem).`,
-                        generateHomeRepairBtn: `Por favor, sugira soluções para problemas domésticos que eu descrever.`,
-                        generateCleaningBtn: `Por favor, sugira um plano de limpeza eficiente para o espaço que eu descrever.`,
-                        generateOrganizationBtn: `Por favor, sugira métodos para organizar o espaço/rotina que eu mencionar.`,
-                        generateTimeManagementBtn: `Por favor, sugira técnicas para melhor gerenciar meu tempo.`,
-                        generateStressManagementBtn: `Por favor, sugira técnicas para gerenciar o estresse na situação que eu descrever.`,
-                        generateSleepTipsBtn: `Por favor, dê dicas para melhorar a qualidade do meu sono.`,
-                        generateMeditationBtn: `Por favor, sugira uma meditação guiada para o objetivo que eu mencionar.`,
-                        generateMealPlanBtn: `Por favor, crie um plano de refeições para minhas necessidades.`,
-                        generateGroceryListBtn: `Por favor, crie uma lista de compras baseada no meu plano de refeições.`,
-                        generateBudgetPlanBtn: `Por favor, ajude a criar um plano orçamentário pessoal.`,
-                        generateSavingsPlanBtn: `Por favor, sugira estratégias para economizar dinheiro.`,
-                        generateDebtReductionBtn: `Por favor, sugira um plano para reduzir dívidas.`,
-                                               generateInvestmentPlanBtn: `Por favor, sugira estratégias de investimento baseadas no meu perfil.`,
-                        generateRetirementPlanBtn: `Por favor, ajude a planejar minha aposentadoria.`,
-                        generateInsuranceAdviceBtn: `Por favor, dê conselhos sobre seguros para minha situação.`,
-                        generateTaxPlanningBtn: `Por favor, sugira estratégias para planejamento tributário.`,
-                        generateEstatePlanningBtn: `Por favor, ajude com planejamento sucessório.`,
-                        generateHomeDecorBtn: `Por favor, sugira ideias de decoração para meu espaço.`,
-                        generateDIYProjectBtn: `Por favor, sugira projetos DIY com os materiais que eu tiver.`,
-                        generateMovingChecklistBtn: `Por favor, crie uma lista de tarefas para minha mudança.`,
-                        generatePackingListBtn: `Por favor, crie uma lista de itens para eu levar em minha viagem.`,
-                        generateVacationPlanBtn: `Por favor, ajude a planejar minhas férias.`,
-                        generateTravelPackingBtn: `Por favor, sugira itens para levar em minha viagem.`,
-                        generateItineraryBtn: `Por favor, crie um roteiro de viagem detalhado.`,
-                        generateLanguageLearningBtn: `Por favor, sugira métodos para aprender um novo idioma.`,
-                        generateCulturalTipsBtn: `Por favor, dê dicas culturais sobre o país que eu mencionar.`,
-                        generateLocalCustomsBtn: `Por favor, explique costumes locais do lugar que eu mencionar.`,
-                        generateSafetyTipsBtn: `Por favor, dê dicas de segurança para a situação que eu descrever.`,
-                        generateEmergencyPlanBtn: `Por favor, ajude a criar um plano de emergência.`,
-                        generateFirstAidGuideBtn: `Por favor, explique procedimentos de primeiros socorros.`,
-                        generateWellnessPlanBtn: `Por favor, ajude a criar um plano de bem-estar.`,
-                        generateMindfulnessBtn: `Por favor, sugira exercícios de mindfulness.`,
-                        generateYogaRoutineBtn: `Por favor, sugira uma rotina de yoga para meu nível.`,
-                        generateExercisePlanBtn: `Por favor, crie um plano de exercícios personalizado.`,
-                        generateNutritionPlanBtn: `Por favor, sugira um plano nutricional para minhas necessidades.`,
-                        generateWeightLossPlanBtn: `Por favor, sugira um plano para perda de peso saudável.`,
-                        generateMuscleGainPlanBtn: `Por favor, sugira um plano para ganho de massa muscular.`,
-                        generateFitnessChallengeBtn: `Por favor, crie um desafio fitness personalizado.`,
-                        generateHabitTrackerBtn: `Por favor, sugira métodos para rastrear hábitos.`,
-                        generateGoalSettingBtn: `Por favor, ajude a definir metas SMART.`,
-                        generateProductivitySystemBtn: `Por favor, sugira um sistema de produtividade para mim.`,
-                        generateMorningRoutineBtn: `Por favor, sugira uma rotina matinal produtiva.`,
-                        generateEveningRoutineBtn: `Por favor, sugira uma rotina noturna relaxante.`,
-                        generateSleepScheduleBtn: `Por favor, ajude a criar um cronograma de sono saudável.`,
-                        generateDigitalDetoxBtn: `Por favor, sugira um plano para desintoxicação digital.`,
-                        generateMinimalismGuideBtn: `Por favor, dê dicas para adotar um estilo de vida minimalista.`,
-                        generateDeclutteringPlanBtn: `Por favor, sugira um método para organizar e desapegar.`,
-
-                        // Xadrez (função especial)
-                        chessHelperBtn: `Vamos jogar xadrez! Você pode me ajudar analisando posições, sugerindo movimentos ou explicando conceitos. Digite "ajuda" para ver os comandos disponíveis.`
-                    };
-
-                    const prompt = toolPrompts[toolId] || `Por favor, execute a ferramenta ${toolId.replace('Btn', '')} com base nas informações que eu fornecer.`;
-                    
-                    // Mostra o prompt na área de entrada
-                    this.elements.userInput.value = prompt;
-                    this.elements.userInput.focus();
-                    this.elements.toolsSidebar.classList.remove('active');
-                    
-                    // Rola para a área de entrada
-                    setTimeout(() => {
-                        this.elements.userInput.scrollIntoView({ behavior: 'smooth' });
-                    }, 100);
-                },
-
-                // Função especial para o assistente de xadrez
-                handleChessCommand(command) {
-                    if (!this.chessBoard) {
-                        this.chessBoard = this.createInitialChessBoard();
+                const conversation = this.conversations[this.currentConversationId];
+                
+                this.addMessage("user", message);
+                this.elements.userInput.value = "";
+                this.elements.userInput.style.height = 'auto';
+                
+                this.elements.chatbox.appendChild(this.typingIndicator);
+                this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
+                
+                try {
+                    // Verifica se é um comando de xadrez
+                    if (message.toLowerCase().startsWith("xadrez") || message.toLowerCase().startsWith("chess")) {
+                        const command = message.substring(message.indexOf(" ") + 1);
+                        const response = this.handleChessCommand(command);
+                        this.typingIndicator.remove();
+                        this.addMessage("bot", response);
+                        return;
                     }
-                    
-                    command = command.toLowerCase().trim();
-                    
-                    if (command === 'ajuda') {
-                        return `
-                            <h3>Assistente de Xadrez - Comandos Disponíveis:</h3>
-                            <ul>
-                                <li><strong>tabuleiro</strong>: Mostra a posição atual do tabuleiro</li>
-                                <li><strong>novo jogo</strong>: Reinicia o jogo</li>
-                                <li><strong>mover [origem]-[destino]</strong>: Exemplo: "mover e2-e4"</li>
-                                <li><strong>analisar</strong>: Analisa a posição atual</li>
-                                <li><strong>melhor movimento</strong>: Sugere o melhor movimento</li>
-                                <li><strong>aberturas</strong>: Explica aberturas de xadrez</li>
-                                <li><strong>finais</strong>: Explica finais de jogo</li>
-                                <li><strong>táticas</strong>: Explica táticas comuns</li>
-                                <li><strong>história</strong>: Conta sobre a história do xadrez</li>
-                            </ul>
-                        `;
-                    } else if (command === 'tabuleiro') {
-                        return this.renderChessBoard();
-                    } else if (command === 'novo jogo') {
-                        this.chessBoard = this.createInitialChessBoard();
-                        return 'Novo jogo iniciado! ' + this.renderChessBoard();
-                    } else if (command.startsWith('mover')) {
-                        const move = command.split(' ')[1];
-                        return this.handleChessMove(move);
-                    } else if (command === 'analisar') {
-                        return this.analyzeChessPosition();
-                    } else if (command === 'melhor movimento') {
-                        return this.suggestBestMove();
-                    } else if (command === 'aberturas') {
-                        return this.explainChessOpenings();
-                    } else if (command === 'finais') {
-                        return this.explainChessEndgames();
-                    } else if (command === 'táticas') {
-                        return this.explainChessTactics();
-                    } else if (command === 'história') {
-                        return this.tellChessHistory();
-                    } else {
-                        return 'Comando não reconhecido. Digite "ajuda" para ver os comandos disponíveis.';
-                    }
-                },
 
-                createInitialChessBoard() {
-                    // Cria um tabuleiro de xadrez inicial
-                    return {
-                        board: [
-                            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
-                            ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
-                            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-                            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-                            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-                            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-                            ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
-                            ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
-                        ],
-                        turn: 'white',
-                        moveHistory: [],
-                        capturedPieces: {
-                            white: [],
-                            black: []
-                        }
-                    };
-                },
-
-                renderChessBoard() {
-                    const pieceSymbols = {
-                        'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
-                        'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
-                    };
+                    const messages = [
+                        { role: "system", content: this.config.systemPrompt },
+                        ...conversation.messages.map(msg => ({
+                            role: msg.role === "bot" ? "assistant" : msg.role,
+                            content: this.getTextContent(msg.content)
+                        }))
+                    ];
                     
-                    let boardHtml = '<div class="chess-board">';
+                    // Validação reforçada dos parâmetros
+                    const safeMaxTokens = Math.max(128, Math.min(parseInt(this.config.maxTokens), 16384));
+                    const safeTemperature = Math.max(0.1, Math.min(parseFloat(this.config.temperature), 2.0));
                     
-                    for (let i = 0; i < 8; i++) {
-                        for (let j = 0; j < 8; j++) {
-                            const piece = this.chessBoard.board[i][j];
-                            const pieceSymbol = pieceSymbols[piece] || ' ';
-                            const colorClass = (i + j) % 2 === 0 ? 'light' : 'dark';
+                    // Tentar com cada API até obter sucesso
+                    let response;
+                    let lastError;
+                    
+                    for (let i = 0; i < this.config.apiKeys.length; i++) {
+                        this.config.currentApiKeyIndex = i;
+                        const currentApiKey = this.config.apiKeys[i];
+                        
+                        try {
+                            response = await fetch(this.config.apiUrl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "Authorization": `Bearer ${currentApiKey}`
+                                },
+                                body: JSON.stringify({
+                                    model: this.config.model,
+                                    messages: messages,
+                                    temperature: safeTemperature,
+                                    max_tokens: safeMaxTokens,
+                                    stream: false
+                                })
+                            });
                             
-                            boardHtml += `
-                                <div class="chess-square ${colorClass}">
-                                    ${pieceSymbol}
-                                </div>
-                            `;
+                            if (!response.ok) {
+                                const errorData = await response.json();
+                                lastError = new Error(`Erro na API (chave ${i+1}): ${response.status} - ${errorData.error?.message || 'Sem detalhes'}`);
+                                continue; // Tenta a próxima API
+                            }
+                            
+                            // Se chegou aqui, a resposta foi bem-sucedida
+                            break;
+                        } catch (error) {
+                            lastError = error;
+                            continue; // Tenta a próxima API
                         }
                     }
                     
-                    boardHtml += '</div>';
-                    boardHtml += `
-                        <div class="chess-move-input">
-                            <input type="text" id="chessMoveInput" placeholder="Ex: e2-e4">
-                            <button onclick="ViBot.submitChessMove()">Mover</button>
-                        </div>
+                    if (!response || !response.ok) {
+                        throw lastError || new Error("Todas as tentativas com as APIs falharam");
+                    }
+                    
+                    const data = await response.json();
+                    const botMessage = data.choices[0].message.content;
+                    
+                    this.typingIndicator.remove();
+                    this.addMessage("bot", botMessage);
+                    
+                    this.totalTokens += data.usage?.total_tokens || 0;
+                } catch (error) {
+                    this.typingIndicator.remove();
+                    this.addMessage("bot", `⚠️ Erro: ${error.message}`, "error");
+                    console.error("Erro completo:", error);
+                }
+            },
+
+            addMessage(role, content, type = null) {
+                const conversation = this.conversations[this.currentConversationId];
+                const messageObj = {
+                    role: role === "bot" ? "assistant" : "user",
+                    content: content,
+                    timestamp: Date.now()
+                };
+                
+                conversation.messages.push(messageObj);
+                
+                // Atualiza o título da conversa se for a primeira mensagem do usuário
+                if (role === "user" && conversation.messages.length === 1) {
+                    conversation.title = content.length > 30 ? content.substring(0, 30) + "..." : content;
+                    this.renderConversationsList();
+                }
+                
+                this.addMessageToChatbox(role, content, type);
+                this.elements.chatbox.scrollTop = this.elements.chatbox.scrollHeight;
+            },
+
+            addMessageToChatbox(role, content, type = null) {
+                const messageDiv = document.createElement("div");
+                messageDiv.className = `message ${role}`;
+                if (type) messageDiv.classList.add(type);
+                messageDiv.innerHTML = content;
+                
+                const actionsDiv = document.createElement("div");
+                actionsDiv.className = "message-actions";
+                
+                const copyBtn = document.createElement("button");
+                copyBtn.className = "action-btn";
+                copyBtn.innerHTML = `<i class="fas fa-copy"></i> Copiar`;
+                copyBtn.onclick = () => {
+                    navigator.clipboard.writeText(this.getTextContent(content));
+                    copyBtn.innerHTML = `<i class="fas fa-check"></i> Copiado!`;
+                    setTimeout(() => {
+                        copyBtn.innerHTML = `<i class="fas fa-copy"></i> Copiar`;
+                    }, 2000);
+                };
+                actionsDiv.appendChild(copyBtn);
+                
+                // Adiciona botão de download
+                const downloadBtn = document.createElement("button");
+                downloadBtn.className = "download-btn";
+                downloadBtn.innerHTML = `<i class="fas fa-download"></i> Baixar`;
+                downloadBtn.onclick = () => {
+                    this.downloadText(content);
+                };
+                actionsDiv.appendChild(downloadBtn);
+                
+                messageDiv.appendChild(actionsDiv);
+                this.elements.chatbox.appendChild(messageDiv);
+            },
+
+            downloadText(content) {
+                const text = this.getTextContent(content);
+                const blob = new Blob([text], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `vibot-mensagem-${new Date().toISOString().slice(0, 10)}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            },
+
+            getTextContent(html) {
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                return temp.textContent || temp.innerText || '';
+            },
+            
+            handleToolClick(toolId) {
+                const toolPrompts = {
+                    // Produtividade
+                    generateEmailBtn: `Por favor, gere um e-mail profissional com base nas informações que eu fornecer.`,
+                    summarizeTextBtn: `Por favor, resuma o seguinte texto mantendo os pontos principais.`,
+                    translateTextBtn: `Por favor, traduza o seguinte texto para o idioma que eu especificar.`,
+                    improveTextBtn: `Por favor, revise e melhore o seguinte texto, tornando-o mais claro e profissional.`,
+                    generateCodeBtn: `Por favor, gere código com base nas especificações que eu fornecer.`,
+                    generateIdeasBtn: `Por favor, gere ideias criativas com base no tema que eu fornecer.`,
+                    analyzeDataBtn: `Por favor, analise os dados que eu fornecer e extraia insights relevantes.`,
+                    createContentBtn: `Por favor, crie conteúdo de qualidade com base no tópico que eu fornecer.`,
+                    explainConceptBtn: `Por favor, explique este conceito de forma clara e didática.`,
+                    solveProblemBtn: `Por favor, me ajude a solucionar este problema com uma abordagem passo a passo.`,
+                    
+                    // Vida Diária
+                    generateRecipeBtn: `Por favor, sugira uma receita com os ingredientes que eu mencionar.`,
+                    generateWorkoutBtn: `Por favor, crie um plano de treino para o objetivo que eu especificar.`,
+                    generateTravelBtn: `Por favor, planeje um roteiro de viagem para o destino que eu especificar.`,
+                    generateAdviceBtn: `Por favor, dê um conselho útil sobre a situação que eu descrever.`,
+                    generateParentingBtn: `Por favor, dê conselhos para pais sobre o tópico que eu mencionar.`,
+                    generateFinanceBtn: `Por favor, dê conselhos financeiros para a situação que eu descrever.`,
+                    generateHealthBtn: `Por favor, dê conselhos de saúde para a condição que eu mencionar.`,
+                    generateDietBtn: `Por favor, sugira um plano alimentar para o objetivo que eu especificar.`,
+                    generateShoppingBtn: `Por favor, sugira itens para comprar com base nas minhas necessidades.`,
+                    generateHomeBtn: `Por favor, dê dicas para organizar/decoração da casa com base no meu espaço.`,
+                    
+                    // Educação
+                    generateQuizBtn: `Por favor, crie um quiz sobre o tópico que eu mencionar.`,
+                    generateFlashcardsBtn: `Por favor, crie flashcards para ajudar no estudo do assunto que eu mencionar.`,
+                    generateLessonPlanBtn: `Por favor, ajude a criar um plano de aula para o tópico que eu mencionar.`,
+                    generateStudyPlanBtn: `Por favor, ajude a criar um plano de estudos personalizado.`,
+                    generateHomeworkBtn: `Por favor, sugira exercícios para praticar o tópico que eu mencionar.`,
+                    generateEssayBtn: `Por favor, ajude a estruturar uma redação sobre o tema que eu mencionar.`,
+                    generateThesisBtn: `Por favor, ajude a estruturar uma tese acadêmica.`,
+                    generateResearchBtn: `Por favor, sugira metodologias de pesquisa para o tema que eu mencionar.`,
+                    generateSummaryBtn: `Por favor, resuma o conteúdo que eu fornecer.`,
+                    generateMathProblemBtn: `Por favor, crie problemas matemáticos sobre o tópico que eu mencionar.`,
+                    
+                    // Negócios
+                    generateBusinessBtn: `Por favor, dê conselhos para o negócio que eu descrever.`,
+                    generateMarketingBtn: `Por favor, sugira estratégias de marketing para o produto/serviço que eu mencionar.`,
+                    generateSalesBtn: `Por favor, sugira técnicas de vendas para o cenário que eu descrever.`,
+                    generateProposalBtn: `Por favor, ajude a criar uma proposta comercial.`,
+                    generateContractBtn: `Por favor, ajude a redigir um contrato para a situação que eu descrever.`,
+                    generateReportBtn: `Por favor, ajude a estruturar um relatório sobre o assunto que eu mencionar.`,
+                    generateSWOTBtn: `Por favor, faça uma análise SWOT para o negócio que eu descrever.`,
+                    generateBusinessPlanBtn: `Por favor, ajude a estruturar um plano de negócios.`,
+                    generatePitchBtn: `Por favor, ajude a criar um pitch para investidores.`,
+                    generateInterviewBtn: `Por favor, prepare perguntas para uma entrevista sobre o tópico que eu fornecer.`,
+                    
+                    // Tecnologia
+                    generateAPIBtn: `Por favor, ajude a projetar uma API para o sistema que eu descrever.`,
+                    generateAlgorithmBtn: `Por favor, sugira algoritmos para resolver o problema que eu descrever.`,
+                    generateDatabaseBtn: `Por favor, ajude a modelar um banco de dados para o sistema que eu mencionar.`,
+                    generateUIBtn: `Por favor, sugira designs de interface para o aplicativo que eu descrever.`,
+                    generateMobileAppBtn: `Por favor, ajude a planejar um aplicativo móvel.`,
+                    generateWebsiteBtn: `Por favor, ajude a planejar um website.`,
+                    generateGameBtn: `Por favor, ajude a projetar um jogo.`,
+                    generateAIBtn: `Por favor, sugira abordagens de IA para o problema que eu descrever.`,
+                    generateBlockchainBtn: `Por favor, explique como blockchain poderia ser aplicado ao cenário que eu mencionar.`,
+                    generateSecurityBtn: `Por favor, sugira medidas de segurança para o sistema que eu descrever.`,
+                    
+                    // Entretenimento
+                    generateMovieBtn: `Por favor, sugira ideias para um filme baseado no tema que eu mencionar.`,
+                    generateTVShowBtn: `Por favor, sugira ideias para uma série de TV.`,
+                    generateBookBtn: `Por favor, sugira ideias para um livro.`,
+                    generateGameIdeaBtn: `Por favor, sugira ideias para um jogo.`,
+                    generateTriviaBtn: `Por favor, crie perguntas de trivia sobre o tópico que eu mencionar.`,
+                    generateDebateBtn: `Por favor, sugira tópicos para debate sobre o assunto que eu mencionar.`,
+                    generatePodcastBtn: `Por favor, sugira ideias para um podcast.`,
+                    generateComedyBtn: `Por favor, crie conteúdo humorístico sobre o tema que eu mencionar.`,
+                    generateHorrorBtn: `Por favor, crie uma história de terror.`,
+                    generateFantasyBtn: `Por favor, crie uma história de fantasia.`,
+                    
+                    // Especializadas
+                    chessHelperBtn: `Vamos jogar xadrez! Você pode me ajudar analisando posições, sugerindo movimentos ou explicando conceitos. Digite "ajuda" para ver os comandos disponíveis.`,
+                    generateLegalBtn: `Por favor, dê orientações jurídicas sobre o assunto que eu mencionar.`,
+                    generateMedicalBtn: `Por favor, dê informações médicas sobre o sintoma/condição que eu mencionar.`,
+                    generateEngineeringBtn: `Por favor, sugira soluções de engenharia para o problema que eu descrever.`,
+                    generateScienceBtn: `Por favor, explique o conceito científico que eu mencionar.`,
+                    generateMathBtn: `Por favor, explique o conceito matemático que eu mencionar.`,
+                    generateHistoryBtn: `Por favor, conte sobre o evento histórico que eu mencionar.`,
+                    generatePhilosophyBtn: `Por favor, discuta o conceito filosófico que eu mencionar.`,
+                    generatePsychologyBtn: `Por favor, explique o conceito psicológico que eu mencionar.`,
+                    generateAstronomyBtn: `Por favor, explique o conceito astronômico que eu mencionar.`,
+                    
+                    // Social
+                    generateSocialMediaBtn: `Por favor, sugira conteúdo para mídias sociais sobre o tópico que eu mencionar.`,
+                    generateDatingProfileBtn: `Por favor, ajude a criar um perfil de namoro atraente.`,
+                    generateInvitationBtn: `Por favor, ajude a redigir um convite para o evento que eu mencionar.`,
+                    generateApologyBtn: `Por favor, ajude a redigir um pedido de desculpas.`,
+                    generateComplimentBtn: `Por favor, ajude a formular um elogio.`,
+                    generateFeedbackBtn: `Por favor, ajude a estruturar um feedback construtivo.`,
+                    generateNetworkingBtn: `Por favor, sugira abordagens para networking no contexto que eu mencionar.`,
+                    generateEventBtn: `Por favor, ajude a planejar um evento.`,
+                    generateWeddingBtn: `Por favor, ajude a planejar um casamento.`,
+                    generateBirthdayBtn: `Por favor, ajude a planejar uma festa de aniversário.`,
+                    
+                    // Diversos
+                    generatePrayerBtn: `Por favor, ajude a redigir uma oração sobre o tema que eu mencionar.`,
+                    generateAffirmationBtn: `Por favor, crie afirmações positivas sobre o tema que eu mencionar.`,
+                    generateJournalBtn: `Por favor, sugira tópicos para registro em diário.`,
+                    generateBucketListBtn: `Por favor, sugira itens para uma lista de coisas para fazer antes de morrer.`,
+                    generateGratitudeBtn: `Por favor, sugira coisas pelas quais ser grato.`,
+                    generateVisionBoardBtn: `Por favor, sugira elementos para um quadro de visão.`,
+                    generateGoalSettingBtn: `Por favor, ajude a definir metas SMART.`,
+                    generateProductivityBtn: `Por favor, sugira técnicas de produtividade.`,
+                    generateHobbyIdeasBtn: `Por favor, sugira hobbies baseados nos meus interesses.`,
+                    generateSelfCareBtn: `Por favor, sugira práticas de autocuidado.`,
+                    
+                    // Criatividade
+                    generatePoemBtn: `Por favor, escreva um poema sobre o tema que eu fornecer.`,
+                    generateStoryBtn: `Por favor, crie uma história interessante com base no tema que eu fornecer.`,
+                    generateJokeBtn: `Por favor, conte uma piada sobre o assunto que eu mencionar.`,
+                    generateScriptBtn: `Por favor, escreva um roteiro para o cenário que eu descrever.`,
+                    generateSongBtn: `Por favor, componha uma letra de música no estilo que eu especificar.`,
+                    generateSpeechBtn: `Por favor, escreva um discurso sobre o tema que eu mencionar.`,
+                    generateArtBtn: `Por favor, descreva uma obra de arte baseada na minha descrição.`,
+                    generateDesignBtn: `Por favor, sugira um design com base nos requisitos que eu fornecer.`,
+                    generateBrandingBtn: `Por favor, crie uma identidade de marca para o negócio que eu descrever.`,
+                    generateSloganBtn: `Por favor, crie slogans criativos para o produto/marca que eu mencionar.`
+                };
+
+                const prompt = toolPrompts[toolId] || `Por favor, execute a ferramenta ${toolId.replace('Btn', '')} com base nas informações que eu fornecer.`;
+                
+                // Mostra o prompt na área de entrada
+                this.elements.userInput.value = prompt;
+                this.elements.userInput.focus();
+                this.elements.toolsSidebar.classList.remove('active');
+                
+                // Rola para a área de entrada
+                setTimeout(() => {
+                    this.elements.userInput.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            },
+
+            // Função especial para o assistente de xadrez
+            handleChessCommand(command) {
+                if (!this.chessBoard) {
+                    this.chessBoard = this.createInitialChessBoard();
+                }
+                
+                command = command.toLowerCase().trim();
+                
+                if (command === 'ajuda') {
+                    return `
+                        <h3>Assistente de Xadrez - Comandos Disponíveis:</h3>
+                        <ul>
+                            <li><strong>tabuleiro</strong>: Mostra a posição atual do tabuleiro</li>
+                            <li><strong>novo jogo</strong>: Reinicia o jogo</li>
+                            <li><strong>mover [origem]-[destino]</strong>: Exemplo: "mover e2-e4"</li>
+                            <li><strong>analisar</strong>: Analisa a posição atual</li>
+                            <li><strong>melhor movimento</strong>: Sugere o melhor movimento</li>
+                            <li><strong>aberturas</strong>: Explica aberturas de xadrez</li>
+                            <li><strong>finais</strong>: Explica finais de jogo</li>
+                            <li><strong>táticas</strong>: Explica táticas comuns</li>
+                            <li><strong>história</strong>: Conta sobre a história do xadrez</li>
+                        </ul>
                     `;
-                    
-                    return boardHtml;
-                },
+                } else if (command === 'tabuleiro') {
+                    return this.renderChessBoard();
+                } else if (command === 'novo jogo') {
+                    this.chessBoard = this.createInitialChessBoard();
+                    return 'Novo jogo iniciado! ' + this.renderChessBoard();
+                } else if (command.startsWith('mover')) {
+                    const move = command.split(' ')[1];
+                    return this.handleChessMove(move);
+                } else if (command === 'analisar') {
+                    return this.analyzeChessPosition();
+                } else if (command === 'melhor movimento') {
+                    return this.suggestBestMove();
+                } else if (command === 'aberturas') {
+                    return this.explainChessOpenings();
+                } else if (command === 'finais') {
+                    return this.explainChessEndgames();
+                } else if (command === 'táticas') {
+                    return this.explainChessTactics();
+                } else if (command === 'história') {
+                    return this.tellChessHistory();
+                } else {
+                    return 'Comando não reconhecido. Digite "ajuda" para ver os comandos disponíveis.';
+                }
+            },
 
-                submitChessMove() {
-                    const moveInput = document.getElementById('chessMoveInput');
-                    const move = moveInput.value.trim();
-                    
-                    if (move) {
-                        this.addMessage('user', `mover ${move}`);
-                        const response = this.handleChessMove(move);
-                        this.addMessage('bot', response);
+            createInitialChessBoard() {
+                // Cria um tabuleiro de xadrez inicial
+                return {
+                    board: [
+                        ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+                        ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+                        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                        ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+                        ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+                    ],
+                    turn: 'white',
+                    moveHistory: [],
+                    capturedPieces: {
+                        white: [],
+                        black: []
                     }
-                },
+                };
+            },
 
-                handleChessMove(move) {
-                    // Implementação simplificada - em um sistema real, seria mais complexo
-                    try {
-                        const [from, to] = move.split('-');
+            renderChessBoard() {
+                const pieceSymbols = {
+                    'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
+                    'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
+                };
+                
+                let boardHtml = '<div class="chess-board">';
+                
+                for (let i = 0; i < 8; i++) {
+                    for (let j = 0; j < 8; j++) {
+                        const piece = this.chessBoard.board[i][j];
+                        const pieceSymbol = pieceSymbols[piece] || ' ';
+                        const colorClass = (i + j) % 2 === 0 ? 'light' : 'dark';
                         
-                        if (!from || !to || from.length !== 2 || to.length !== 2) {
-                            return 'Formato inválido. Use "mover [origem]-[destino]", exemplo: "mover e2-e4"';
-                        }
-                        
-                        const fromCol = from.charCodeAt(0) - 'a'.charCodeAt(0);
-                        const fromRow = 8 - parseInt(from[1]);
-                        const toCol = to.charCodeAt(0) - 'a'.charCodeAt(0);
-                        const toRow = 8 - parseInt(to[1]);
-                        
-                        if (fromCol < 0 || fromCol > 7 || fromRow < 0 || fromRow > 7 ||
-                            toCol < 0 || toCol > 7 || toRow < 0 || toRow > 7) {
-                            return 'Posição inválida. As colunas vão de a-h e as linhas de 1-8.';
-                        }
-                        
-                        const piece = this.chessBoard.board[fromRow][fromCol];
-                        
-                        if (piece === ' ') {
-                            return 'Não há peça na posição de origem.';
-                        }
-                        
-                        // Verifica se é a vez do jogador correto
-                        const isWhiteTurn = this.chessBoard.turn === 'white';
-                        const isWhitePiece = piece === piece.toUpperCase();
-                        
-                        if ((isWhiteTurn && !isWhitePiece) || (!isWhiteTurn && isWhitePiece)) {
-                            return `Não é a vez das ${isWhitePiece ? 'brancas' : 'pretas'} jogarem.`;
-                        }
-                        
-                        // Move a peça (implementação simplificada)
-                        const capturedPiece = this.chessBoard.board[toRow][toCol];
-                        
-                        if (capturedPiece !== ' ') {
-                            const color = this.chessBoard.turn;
-                            this.chessBoard.capturedPieces[color].push(capturedPiece);
-                        }
-                        
-                        this.chessBoard.board[toRow][toCol] = piece;
-                        this.chessBoard.board[fromRow][fromCol] = ' ';
-                        this.chessBoard.moveHistory.push(move);
-                        this.chessBoard.turn = this.chessBoard.turn === 'white' ? 'black' : 'white';
-                        
-                        return `Movimento realizado: ${move}. ${this.renderChessBoard()}`;
-                    } catch (e) {
-                        return `Erro ao processar movimento: ${e.message}`;
+                        boardHtml += `
+                            <div class="chess-square ${colorClass}">
+                                ${pieceSymbol}
+                            </div>
+                        `;
                     }
-                },
+                }
+                
+                boardHtml += '</div>';
+                boardHtml += `
+                    <div class="chess-move-input">
+                        <input type="text" id="chessMoveInput" placeholder="Ex: e2-e4">
+                        <button onclick="ViBot.submitChessMove()">Mover</button>
+                    </div>
+                `;
+                
+                return boardHtml;
+            },
 
-                analyzeChessPosition() {
-                    // Análise simplificada da posição atual
-                    let analysis = '<h3>Análise da Posição Atual:</h3><ul>';
+            submitChessMove() {
+                const moveInput = document.getElementById('chessMoveInput');
+                const move = moveInput.value.trim();
+                
+                if (move) {
+                    this.addMessage('user', `mover ${move}`);
+                    const response = this.handleChessMove(move);
+                    this.addMessage('bot', response);
+                }
+            },
+
+            handleChessMove(move) {
+                // Implementação simplificada - em um sistema real, seria mais complexo
+                try {
+                    const [from, to] = move.split('-');
                     
-                    // Conta peças
-                    const pieceCount = { white: 0, black: 0 };
-                    for (let i = 0; i < 8; i++) {
-                        for (let j = 0; j < 8; j++) {
-                            const piece = this.chessBoard.board[i][j];
-                            if (piece !== ' ') {
-                                if (piece === piece.toUpperCase()) {
-                                    pieceCount.white++;
-                                } else {
-                                    pieceCount.black++;
-                                }
+                    if (!from || !to || from.length !== 2 || to.length !== 2) {
+                        return 'Formato inválido. Use "mover [origem]-[destino]", exemplo: "mover e2-e4"';
+                    }
+                    
+                    const fromCol = from.charCodeAt(0) - 'a'.charCodeAt(0);
+                    const fromRow = 8 - parseInt(from[1]);
+                    const toCol = to.charCodeAt(0) - 'a'.charCodeAt(0);
+                    const toRow = 8 - parseInt(to[1]);
+                    
+                    if (fromCol < 0 || fromCol > 7 || fromRow < 0 || fromRow > 7 ||
+                        toCol < 0 || toCol > 7 || toRow < 0 || toRow > 7) {
+                        return 'Posição inválida. As colunas vão de a-h e as linhas de 1-8.';
+                    }
+                    
+                    const piece = this.chessBoard.board[fromRow][fromCol];
+                    
+                    if (piece === ' ') {
+                        return 'Não há peça na posição de origem.';
+                    }
+                    
+                    // Verifica se é a vez do jogador correto
+                    const isWhiteTurn = this.chessBoard.turn === 'white';
+                    const isWhitePiece = piece === piece.toUpperCase();
+                    
+                    if ((isWhiteTurn && !isWhitePiece) || (!isWhiteTurn && isWhitePiece)) {
+                        return `Não é a vez das ${isWhitePiece ? 'brancas' : 'pretas'} jogarem.`;
+                    }
+                    
+                    // Move a peça (implementação simplificada)
+                    const capturedPiece = this.chessBoard.board[toRow][toCol];
+                    
+                    if (capturedPiece !== ' ') {
+                        const color = this.chessBoard.turn;
+                        this.chessBoard.capturedPieces[color].push(capturedPiece);
+                    }
+                    
+                    this.chessBoard.board[toRow][toCol] = piece;
+                    this.chessBoard.board[fromRow][fromCol] = ' ';
+                    this.chessBoard.moveHistory.push(move);
+                    this.chessBoard.turn = this.chessBoard.turn === 'white' ? 'black' : 'white';
+                    
+                    return `Movimento realizado: ${move}. ${this.renderChessBoard()}`;
+                } catch (e) {
+                    return `Erro ao processar movimento: ${e.message}`;
+                }
+            },
+
+            analyzeChessPosition() {
+                // Análise simplificada da posição atual
+                let analysis = '<h3>Análise da Posição Atual:</h3><ul>';
+                
+                // Conta peças
+                const pieceCount = { white: 0, black: 0 };
+                for (let i = 0; i < 8; i++) {
+                    for (let j = 0; j < 8; j++) {
+                        const piece = this.chessBoard.board[i][j];
+                        if (piece !== ' ') {
+                            if (piece === piece.toUpperCase()) {
+                                pieceCount.white++;
+                            } else {
+                                pieceCount.black++;
                             }
                         }
                     }
-                    
-                    analysis += `<li>Material: Brancas ${pieceCount.white} x ${pieceCount.black} Pretas</li>`;
-                    analysis += `<li>Vez: ${this.chessBoard.turn === 'white' ? 'Brancas' : 'Pretas'}</li>`;
-                    analysis += `<li>Movimentos realizados: ${this.chessBoard.moveHistory.length}</li>`;
-                    analysis += '</ul>';
-                    
-                    return analysis + this.renderChessBoard();
-                },
-
-                suggestBestMove() {
-                    // Sugere um movimento aleatório (em um sistema real, usaria um algoritmo)
-                    const possibleMoves = [
-                        'e2-e4', 'd2-d4', 'g1-f3', 'b1-c3', 'f2-f4',
-                        'e7-e5', 'd7-d5', 'g8-f6', 'b8-c6', 'f7-f5'
-                    ];
-                    
-                    const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-                    return `Sugestão de movimento: ${randomMove}. Você pode executá-lo digitando "mover ${randomMove}".`;
-                },
-
-                explainChessOpenings() {
-                    return `
-                        <h3>Aberturas de Xadrez</h3>
-                        <p>As aberturas são os primeiros movimentos do jogo, onde você desenvolve suas peças e controla o centro.</p>
-                        
-                        <h4>Aberturas Populares:</h4>
-                        <ul>
-                            <li><strong>Ruy López (1.e4 e5 2.Cf3 Cc6 3.Bb5)</strong>: Uma das aberturas mais antigas e analisadas.</li>
-                            <li><strong>Siciliana (1.e4 c5)</strong>: Defesa agressiva para as pretas contra 1.e4.</li>
-                            <li><strong>Francesa (1.e4 e6)</strong>: Defesa sólida que leva a estruturas de peões complexas.</li>
-                            <li><strong>Índia do Rei (1.d4 Cf6 2.c4 g6)</strong>: Defesa flexível que pode levar a ataques no flanco do rei.</li>
-                            <li><strong>Gambito da Dama (1.d4 d5 2.c4)</strong>: Abertura clássica onde as brancas sacrificam um peão para obter iniciativa.</li>
-                        </ul>
-                        
-                        <p>Dica: Estude algumas aberturas básicas e tente entender os planos estratégicos por trás delas.</p>
-                    `;
-                },
-
-                explainChessEndgames() {
-                    return `
-                        <h3>Finais de Xadrez</h3>
-                        <p>Os finais ocorrem quando poucas peças restam no tabuleiro. Conhecimento de finais é crucial para converter vantagens.</p>
-                        
-                        <h4>Finais Básicos:</h4>
-                        <ul>
-                            <li><strong>Rei e Dama vs Rei</strong>: O mais simples, mate em no máximo 10 movimentos.</li>
-                            <li><strong>Rei e Torre vs Rei</strong>: Mate em no máximo 16 movimentos.</li>
-                            <li><strong>Rei e 2 Bispos vs Rei</strong>: Mate forçado, requer precisão.</li>
-                            <li><strong>Rei, Bispo e Cavalo vs Rei</strong>: Mate mais complexo, limite de 33 movimentos.</li>
-                            <li><strong>Peões</strong>: Finais de peões dependem da capacidade de promoção.</li>
-                        </ul>
-                        
-                        <p>Dica: Pratique finais básicos regularmente - eles podem decidir muitas partidas.</p>
-                    `;
-                },
-
-                explainChessTactics() {
-                    return `
-                        <h3>Táticas de Xadrez</h3>
-                        <p>Táticas são manobras de curto prazo que aproveitam erros do oponente para ganhar vantagem material ou posicional.</p>
-                        
-                        <h4>Táticas Comuns:</h4>
-                        <ul>
-                            <li><strong>Garfo</strong>: Uma peça ataca duas ou mais peças inimigas simultaneamente.</li>
-                            <li><strong>Pino</strong>: Uma peça é "preso" porque mover-se exporia uma peça mais valiosa.</li>
-                            <li><strong>Descoberta</strong>: Mover uma peça revela um ataque de outra peça.</li>
-                            <li><strong>Xeque descoberto</strong>: Tipo especial de descoberta que resulta em xeque.</li>
-                            <li><strong>Skewer</strong>: Similar ao pino, mas a peça mais valiosa está na frente.</li>
-                            <li><strong>Defesa insuficiente</strong>: Uma peça está defendendo múltiplas ameaças.</li>
-                            <li><strong>Sacrifício</strong>: Dar material para obter vantagem posicional ou ataque.</li>
-                        </ul>
-                        
-                        <p>Dica: Resolver problemas táticos diariamente é uma das melhores formas de melhorar seu xadrez.</p>
-                    `;
-                },
-
-                tellChessHistory() {
-                    return `
-                        <h3>História do Xadrez</h3>
-                        <p>O xadrez tem uma história rica que remonta mais de 1500 anos:</p>
-                        
-                        <ul>
-                            <li><strong>Origens (século VI)</strong>: Surgiu na Índia como "Chaturanga", um jogo que simulava guerra.</li>
-                            <li><strong>Pérsia (século VII)</strong>: Transformou-se em "Shatranj" e se espalhou pelo mundo islâmico.</li>
-                            <li><strong>Europa (século X)</strong>: Chegou à Europa através da Espanha moura e da Rússia.</li>
-                            <li><strong>Regras modernas (século XV)</strong>: Na Espanha e Itália, a rainha e o bispo ganharam movimentos mais poderosos.</li>
-                            <li><strong>Primeiros campeonatos (século XIX)</strong>: Wilhelm Steinitz tornou-se o primeiro Campeão Mundial oficial em 1886.</li>
-                            <li><strong>Era moderna</strong>: Computadores como Deep Blue (1997) e AlphaZero revolucionaram o xadrez.</li>
-                        </ul>
-                        
-                        <p>Curiosidade: O xadrez é considerado esporte em mais de 100 países e é reconhecido pelo Comitê Olímpico Internacional.</p>
-                    `;
                 }
-            };
+                
+                analysis += `<li>Material: Brancas ${pieceCount.white} x ${pieceCount.black} Pretas</li>`;
+                analysis += `<li>Vez: ${this.chessBoard.turn === 'white' ? 'Brancas' : 'Pretas'}</li>`;
+                analysis += `<li>Movimentos realizados: ${this.chessBoard.moveHistory.length}</li>`;
+                analysis += '</ul>';
+                
+                return analysis + this.renderChessBoard();
+            },
 
+            suggestBestMove() {
+                // Sugere um movimento aleatório (em um sistema real, usaria um algoritmo)
+                const possibleMoves = [
+                    'e2-e4', 'd2-d4', 'g1-f3', 'b1-c3', 'f2-f4',
+                    'e7-e5', 'd7-d5', 'g8-f6', 'b8-c6', 'f7-f5'
+                ];
+                
+                const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+                return `Sugestão de movimento: ${randomMove}. Você pode executá-lo digitando "mover ${randomMove}".`;
+            },
+
+            explainChessOpenings() {
+                return `
+                    <h3>Aberturas de Xadrez</h3>
+                    <p>As aberturas são os primeiros movimentos do jogo, onde você desenvolve suas peças e controla o centro.</p>
+                    
+                    <h4>Aberturas Populares:</h4>
+                    <ul>
+                        <li><strong>Ruy López (1.e4 e5 2.Cf3 Cc6 3.Bb5)</strong>: Uma das aberturas mais antigas e analisadas.</li>
+                        <li><strong>Siciliana (1.e4 c5)</strong>: Defesa agressiva para as pretas contra 1.e4.</li>
+                        <li><strong>Francesa (1.e4 e6)</strong>: Defesa sólida que leva a estruturas de peões complexas.</li>
+                        <li><strong>Índia do Rei (1.d4 Cf6 2.c4 g6)</strong>: Defesa flexível que pode levar a ataques no flanco do rei.</li>
+                        <li><strong>Gambito da Dama (1.d4 d5 2.c4)</strong>: Abertura clássica onde as brancas sacrificam um peão para obter iniciativa.</li>
+                    </ul>
+                    
+                    <p>Dica: Estude algumas aberturas básicas e tente entender os planos estratégicos por trás delas.</p>
+                `;
+            },
+
+            explainChessEndgames() {
+                return `
+                    <h3>Finais de Xadrez</h3>
+                    <p>Os finais ocorrem quando poucas peças restam no tabuleiro. Conhecimento de finais é crucial para converter vantagens.</p>
+                    
+                    <h4>Finais Básicos:</h4>
+                    <ul>
+                        <li><strong>Rei e Dama vs Rei</strong>: O mais simples, mate em no máximo 10 movimentos.</li>
+                        <li><strong>Rei e Torre vs Rei</strong>: Mate em no máximo 16 movimentos.</li>
+                        <li><strong>Rei e 2 Bispos vs Rei</strong>: Mate forçado, requer precisão.</li>
+                        <li><strong>Rei, Bispo e Cavalo vs Rei</strong>: Mate mais complexo, limite de 33 movimentos.</li>
+                        <li><strong>Peões</strong>: Finais de peões dependem da capacidade de promoção.</li>
+                    </ul>
+                    
+                    <p>Dica: Pratique finais básicos regularmente - eles podem decidir muitas partidas.</p>
+                `;
+            },
+
+            explainChessTactics() {
+                return `
+                    <h3>Táticas de Xadrez</h3>
+                    <p>Táticas são manobras de curto prazo que aproveitam erros do oponente para ganhar vantagem material ou posicional.</p>
+                    
+                    <h4>Táticas Comuns:</h4>
+                    <ul>
+                        <li><strong>Garfo</strong>: Uma peça ataca duas ou mais peças inimigas simultaneamente.</li>
+                        <li><strong>Pino</strong>: Uma peça é "preso" porque mover-se exporia uma peça mais valiosa.</li>
+                        <li><strong>Descoberta</strong>: Mover uma peça revela um ataque de outra peça.</li>
+                        <li><strong>Xeque descoberto</strong>: Tipo especial de descoberta que resulta em xeque.</li>
+                        <li><strong>Skewer</strong>: Similar ao pino, mas a peça mais valiosa está na frente.</li>
+                        <li><strong>Defesa insuficiente</strong>: Uma peça está defendendo múltiplas ameaças.</li>
+                        <li><strong>Sacrifício</strong>: Dar material para obter vantagem posicional ou ataque.</li>
+                    </ul>
+                    
+                    <p>Dica: Resolver problemas táticos diariamente é uma das melhores formas de melhorar seu xadrez.</p>
+                `;
+            },
+
+            tellChessHistory() {
+                return `
+                    <h3>História do Xadrez</h3>
+                    <p>O xadrez tem uma história rica que remonta mais de 1500 anos:</p>
+                    
+                    <ul>
+                        <li><strong>Origens (século VI)</strong>: Surgiu na Índia como "Chaturanga", um jogo que simulava guerra.</li>
+                        <li><strong>Pérsia (século VII)</strong>: Transformou-se em "Shatranj" e se espalhou pelo mundo islâmico.</li>
+                        <li><strong>Europa (século X)</strong>: Chegou à Europa através da Espanha moura e da Rússia.</li>
+                        <li><strong>Regras modernas (século XV)</strong>: Na Espanha e Itália, a rainha e o bispo ganharam movimentos mais poderosos.</li>
+                        <li><strong>Primeiros campeonatos (século XIX)</strong>: Wilhelm Steinitz tornou-se o primeiro Campeão Mundial oficial em 1886.</li>
+                        <li><strong>Era moderna</strong>: Computadores como Deep Blue (1997) e AlphaZero revolucionaram o xadrez.</li>
+                    </ul>
+                    
+                    <p>Curiosidade: O xadrez é considerado esporte em mais de 100 países e é reconhecido pelo Comitê Olímpico Internacional.</p>
+                `;
+            }
+        };
+
+        // Inicializa o ViBot quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', () => {
             ViBot.init();
         });
     </script>
